@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>POSOpen UX Design Directions</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --line: #cbd5e1;
+      --primary: #0f766e;
+      --accent: #f97316;
+      --ok: #16a34a;
+      --warn: #d97706;
+      --danger: #dc2626;
+      --info: #2563eb;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 0% 0%, rgba(15, 118, 110, 0.12), transparent 40%),
+        radial-gradient(circle at 100% 0%, rgba(249, 115, 22, 0.12), transparent 42%),
+        var(--bg);
+    }
+
+    .wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+    }
+
+    .sub {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .chip {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 10px 14px;
+      box-shadow: var(--shadow);
+      font-size: 0.92rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      min-height: 430px;
+    }
+
+    .head {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .head h2 {
+      margin: 0;
+      font-size: 1.03rem;
+      font-family: "Manrope", "Segoe UI", sans-serif;
+    }
+
+    .badge {
+      font-size: 0.78rem;
+      border-radius: 999px;
+      padding: 6px 9px;
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .mock {
+      flex: 1;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .block {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .block h3 {
+      margin: 0 0 8px;
+      font-size: 0.9rem;
+      font-family: "Manrope", "Segoe UI", sans-serif;
+    }
+
+    .kpi {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 0.86rem;
+      color: var(--muted);
+      margin: 5px 0;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+    }
+
+    .cta {
+      border: none;
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      width: 100%;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    .note {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: auto;
+    }
+
+    .d1 .badge, .d1 .cta { background: #0f766e; }
+    .d2 .badge, .d2 .cta { background: #2563eb; }
+    .d3 .badge, .d3 .cta { background: #f97316; }
+    .d4 .badge, .d4 .cta { background: #334155; }
+    .d5 .badge, .d5 .cta { background: #7c3aed; }
+    .d6 .badge, .d6 .cta { background: #0f766e; }
+
+    .d1 .mock { background: linear-gradient(180deg, #f0fdfa, #ffffff); }
+    .d2 .mock { background: linear-gradient(180deg, #eff6ff, #ffffff); }
+    .d3 .mock { background: linear-gradient(180deg, #fff7ed, #ffffff); }
+    .d4 .mock { background: linear-gradient(180deg, #f8fafc, #ffffff); }
+    .d5 .mock { background: linear-gradient(180deg, #f5f3ff, #ffffff); }
+    .d6 .mock { background: linear-gradient(180deg, #ecfeff, #ffffff); }
+
+    footer {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    @media (max-width: 720px) {
+      .row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>POSOpen Design Directions</h1>
+    <p class="sub">6 visual directions for core check-in flow, role-aware operations, and offline confidence.</p>
+
+    <section class="legend">
+      <div class="chip">Focus: fast 20-second guest moment</div>
+      <div class="chip">Platform: tablet front-of-house + Windows back-office</div>
+      <div class="chip">Pattern stack: speed-first + guided orchestration</div>
+      <div class="chip">Visual goals: calm confidence + delightful clarity</div>
+    </section>
+
+    <section class="grid">
+      <article class="card d1">
+        <header class="head"><h2>Direction 1: Fast Lane Classic</h2><span class="badge">Balanced</span></header>
+        <div class="mock">
+          <div class="block"><h3>Primary Queue</h3><div class="kpi"><span class="dot" style="background:#16a34a"></span>3 Ready</div><div class="kpi"><span class="dot" style="background:#d97706"></span>2 Waiver Pending</div></div>
+          <div class="row"><div class="block"><h3>Quick Search</h3><p class="note">Scan or type family name</p></div><div class="block"><h3>Status Rail</h3><p class="note">Waiver, payment, sync</p></div></div>
+          <button class="cta">Complete Check-In</button>
+          <p class="note">Most balanced option for adoption speed and training ease.</p>
+        </div>
+      </article>
+
+      <article class="card d2">
+        <header class="head"><h2>Direction 2: Data-Forward Ops</h2><span class="badge">Manager-Friendly</span></header>
+        <div class="mock">
+          <div class="row"><div class="block"><h3>Ops KPIs</h3><div class="kpi"><span class="dot" style="background:#2563eb"></span>Sync Health 99%</div><div class="kpi"><span class="dot" style="background:#16a34a"></span>Queue Stable</div></div><div class="block"><h3>Issue Watch</h3><p class="note">Auto-prioritized blockers</p></div></div>
+          <div class="block"><h3>Guest Stream</h3><p class="note">Columned stream with fast action chips</p></div>
+          <button class="cta">Resolve & Continue</button>
+          <p class="note">Dense and analytical for operational visibility.</p>
+        </div>
+      </article>
+
+      <article class="card d3">
+        <header class="head"><h2>Direction 3: Family Warmth</h2><span class="badge">Guest-Delight</span></header>
+        <div class="mock">
+          <div class="block"><h3>Welcome Panel</h3><p class="note">Friendly prompts and next-step messaging</p></div>
+          <div class="row"><div class="block"><h3>Party Timeline</h3><p class="note">Now / Next / Complete</p></div><div class="block"><h3>Offers</h3><p class="note">Context-aware upsell prompts</p></div></div>
+          <button class="cta">Welcome & Check-In</button>
+          <p class="note">Best for emotional warmth and parent confidence.</p>
+        </div>
+      </article>
+
+      <article class="card d4">
+        <header class="head"><h2>Direction 4: Ultra-Minimal Speed</h2><span class="badge">High Throughput</span></header>
+        <div class="mock">
+          <div class="block"><h3>Single Task Canvas</h3><p class="note">One active record and one dominant action</p></div>
+          <div class="row"><div class="block"><h3>Signals</h3><p class="note">Tiny but clear status markers</p></div><div class="block"><h3>Shortcuts</h3><p class="note">Gesture + keyboard assist</p></div></div>
+          <button class="cta">Finish in 3 Taps</button>
+          <p class="note">Fastest flow, requires stronger onboarding.</p>
+        </div>
+      </article>
+
+      <article class="card d5">
+        <header class="head"><h2>Direction 5: Playful Premium</h2><span class="badge">Brand-Expressive</span></header>
+        <div class="mock">
+          <div class="block"><h3>Themed Moments</h3><p class="note">Subtle celebratory motion and iconography</p></div>
+          <div class="row"><div class="block"><h3>Milestones</h3><p class="note">Progress chips with rewards cues</p></div><div class="block"><h3>Staff Kudos</h3><p class="note">Gamified micro-feedback</p></div></div>
+          <button class="cta">Celebrate Check-In</button>
+          <p class="note">Highest personality, watch density and focus.</p>
+        </div>
+      </article>
+
+      <article class="card d6">
+        <header class="head"><h2>Direction 6: Guided Mission Control</h2><span class="badge">Recommended</span></header>
+        <div class="mock">
+          <div class="block"><h3>Next Best Action Engine</h3><p class="note">System suggests what to do now for each guest</p></div>
+          <div class="row"><div class="block"><h3>Confidence Strip</h3><p class="note">Waiver, payment, sync certainty signals</p></div><div class="block"><h3>Recovery Lane</h3><p class="note">Inline fixes, no restart required</p></div></div>
+          <button class="cta">Execute Next Action</button>
+          <p class="note">Best blend of speed, clarity, and resilience for POSOpen.</p>
+        </div>
+      </article>
+    </section>
+
+    <footer>
+      Review directions and choose one baseline, or combine elements across directions for a hybrid.
+    </footer>
+  </main>
+</body>
+</html>

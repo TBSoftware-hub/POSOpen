@@ -1,0 +1,96 @@
+# generated: 2026-03-28T15:07:27-07:00
+# last_updated: 2026-03-28T15:07:27-07:00
+# project: POSOpen
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog -> in-progress: Automatically when first story is created (via create-story)
+#   - in-progress -> done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-03-28T15:07:27-07:00
+last_updated: 2026-03-28T15:07:27-07:00
+project: POSOpen
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # All epics, stories, and retrospectives in order
+  epic-1: backlog
+  1-0-initialize-maui-starter-and-local-persistence-baseline: backlog
+  1-1-staff-account-management: backlog
+  1-2-role-assignment-and-enforcement: backlog
+  1-3-terminal-authentication-flow: backlog
+  1-4-governed-override-workflow: backlog
+  1-5-immutable-audit-trail-for-security-critical-actions: backlog
+  epic-1-retrospective: optional
+  epic-2: backlog
+  2-1-family-lookup-with-search-and-scan: backlog
+  2-2-waiver-aware-fast-path-check-in: backlog
+  2-3-new-or-incomplete-profile-admission: backlog
+  2-4-admission-completion-with-deferred-payment-continuity: backlog
+  2-5-check-in-performance-and-ux-compliance: backlog
+  epic-2-retrospective: optional
+  epic-3: backlog
+  3-1-build-mixed-cart-composition-by-fulfillment-context: backlog
+  3-2-enforce-compatibility-rules-and-guided-resolution: backlog
+  3-3-integrate-scanner-and-card-reader-for-checkout: backlog
+  3-4-print-receipts-and-preserve-offline-continuity: backlog
+  3-5-policy-bound-refund-workflow: backlog
+  epic-3-retrospective: optional
+  epic-4: backlog
+  4-1-implement-3-step-party-booking-flow: backlog
+  4-2-capture-deposits-and-build-party-timeline: backlog
+  4-3-manage-room-assignment-and-conflict-resolution: backlog
+  4-4-manage-catering-decor-options-with-risk-indicators: backlog
+  4-5-reserve-and-release-inventory-by-booking-policy: backlog
+  4-6-manager-substitution-policy-management: backlog
+  epic-4-retrospective: optional
+  epic-5: backlog
+  5-1-enable-offline-mode-for-critical-frontline-workflows: backlog
+  5-2-queue-offline-captured-operational-and-financial-actions: backlog
+  5-3-implement-reconnect-synchronization-and-deterministic-replay: backlog
+  5-4-prevent-duplicate-finalization-and-preserve-traceability: backlog
+  5-5-expose-sync-health-exceptions-and-tablet-led-failover: backlog
+  epic-5-retrospective: optional
+  epic-6: backlog
+  6-1-build-immutable-financial-event-ledger: backlog
+  6-2-provide-deferred-payment-exception-review: backlog
+  6-3-implement-end-of-day-reconciliation-workflow: backlog
+  6-4-deliver-manager-operational-and-risk-dashboards: backlog
+  6-5-implement-csv-export-and-per-location-performance-views: backlog
+  epic-6-retrospective: optional
+  epic-7: backlog
+  7-1-build-incident-investigation-workspace: backlog
+  7-2-implement-controlled-retry-workflow: backlog
+  7-3-implement-approved-rollback-and-configuration-correction: backlog
+  7-4-expose-integration-health-status: backlog
+  7-5-retain-diagnostic-evidence-for-post-incident-analysis: backlog
+  epic-7-retrospective: optional

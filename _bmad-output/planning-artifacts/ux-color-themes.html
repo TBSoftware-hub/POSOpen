@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>POSOpen Color Themes</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --line: #cbd5e1;
+      --text: #0f172a;
+      --muted: #475569;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 8px; font-family: "Manrope", "Segoe UI", sans-serif; }
+    p { margin: 0 0 20px; color: var(--muted); }
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .head { padding: 12px 14px; border-bottom: 1px solid var(--line); font-weight: 700; }
+    .palette { display: grid; grid-template-columns: repeat(3, 1fr); }
+    .swatch { min-height: 80px; padding: 8px; display: flex; align-items: end; font-size: 12px; font-weight: 700; }
+    .demo { padding: 12px 14px; display: grid; gap: 8px; }
+    .btn { border: 0; border-radius: 8px; padding: 10px 12px; color: #fff; font-weight: 700; }
+    .note { font-size: 12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>POSOpen Color Theme Visualizer</h1>
+    <p>Theme options derived from the UX visual foundation for rapid comparison.</p>
+
+    <section class="grid">
+      <article class="card">
+        <div class="head">Theme A: Calm Operations (Recommended)</div>
+        <div class="palette">
+          <div class="swatch" style="background:#0F766E;color:#fff">Primary #0F766E</div>
+          <div class="swatch" style="background:#0EA5E9;color:#fff">Secondary #0EA5E9</div>
+          <div class="swatch" style="background:#F97316;color:#111">Accent #F97316</div>
+          <div class="swatch" style="background:#16A34A;color:#fff">Success #16A34A</div>
+          <div class="swatch" style="background:#D97706;color:#111">Warning #D97706</div>
+          <div class="swatch" style="background:#DC2626;color:#fff">Error #DC2626</div>
+        </div>
+        <div class="demo">
+          <button class="btn" style="background:#0F766E">Complete Check-In</button>
+          <div class="note">Balances trust, clarity, and frontline speed.</div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="head">Theme B: Bright Family Energy</div>
+        <div class="palette">
+          <div class="swatch" style="background:#0284C7;color:#fff">Primary #0284C7</div>
+          <div class="swatch" style="background:#22C55E;color:#111">Secondary #22C55E</div>
+          <div class="swatch" style="background:#F59E0B;color:#111">Accent #F59E0B</div>
+          <div class="swatch" style="background:#16A34A;color:#fff">Success #16A34A</div>
+          <div class="swatch" style="background:#D97706;color:#111">Warning #D97706</div>
+          <div class="swatch" style="background:#DC2626;color:#fff">Error #DC2626</div>
+        </div>
+        <div class="demo">
+          <button class="btn" style="background:#0284C7">Welcome & Check-In</button>
+          <div class="note">Higher energy for guest-facing experiences.</div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="head">Theme C: Executive Clarity</div>
+        <div class="palette">
+          <div class="swatch" style="background:#334155;color:#fff">Primary #334155</div>
+          <div class="swatch" style="background:#2563EB;color:#fff">Secondary #2563EB</div>
+          <div class="swatch" style="background:#14B8A6;color:#111">Accent #14B8A6</div>
+          <div class="swatch" style="background:#16A34A;color:#fff">Success #16A34A</div>
+          <div class="swatch" style="background:#D97706;color:#111">Warning #D97706</div>
+          <div class="swatch" style="background:#DC2626;color:#fff">Error #DC2626</div>
+        </div>
+        <div class="demo">
+          <button class="btn" style="background:#334155">Resolve Alert</button>
+          <div class="note">Optimized for manager and operations contexts.</div>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
