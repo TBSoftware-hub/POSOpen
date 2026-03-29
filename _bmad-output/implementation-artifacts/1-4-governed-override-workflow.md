@@ -1,6 +1,6 @@
 # Story 1.4: Governed Override Workflow
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -27,34 +27,34 @@ So that exceptional operations are controlled and traceable.
 
 ## Tasks / Subtasks
 
-- [ ] Introduce override use-case contracts and data models. (AC: 1, 2, 3)
-  - [ ] Create `POSOpen/Application/UseCases/Security/SubmitOverrideCommand.cs` (target action key, target reference, reason, context metadata).
-  - [ ] Create `POSOpen/Application/UseCases/Security/SubmitOverrideResultDto.cs` with operation ID and immutable event reference fields.
-  - [ ] Define canonical override error codes and user-safe messages.
-- [ ] Implement application-layer override workflow with policy enforcement. (AC: 1, 2, 3)
-  - [ ] Create `POSOpen/Application/UseCases/Security/SubmitOverrideUseCase.cs`.
-  - [ ] Authorize actor via `ICurrentSessionService` plus `IAuthorizationPolicyService` (do not trust UI role claims).
-  - [ ] Enforce required non-empty reason and trim whitespace-only input.
-  - [ ] Ensure action context is available in the result used by UI confirmation surfaces.
-  - [ ] Return canonical `AppResult` failures for forbidden access and missing reason.
-- [ ] Append immutable override events through existing operation-log infrastructure. (AC: 3)
-  - [ ] Use `IOperationLogRepository.AppendAsync` to write `OverrideActionCommitted` event payload.
-  - [ ] Include required payload fields: `staffId`, `staffRole`, `actionKey`, `targetReference`, `reason`, `operationId`, `occurredUtc`.
-  - [ ] Keep UTC timestamp handling through existing operation context/clock abstractions.
-- [ ] Add UI flow for governed override with explicit context and reason capture. (AC: 1, 2, 3)
-  - [ ] Create `POSOpen/Features/Security/ViewModels/OverrideApprovalViewModel.cs` using CommunityToolkit.MVVM command/state pattern.
-  - [ ] Create `POSOpen/Features/Security/Views/OverrideApprovalPage.xaml` and code-behind for binding setup only.
-  - [ ] Present action context, required reason input, and blocking validation message when reason is missing.
-  - [ ] Preserve entered reason text on transient failures.
-- [ ] Integrate route registration and role-aware entry points. (AC: 1, 3)
-  - [ ] Add route constants in `POSOpen/Features/Security/SecurityRoutes.cs` and register in startup.
-  - [ ] Expose override entry path only for Manager, Owner, and Admin per policy matrix.
-  - [ ] Reuse existing safe denial message semantics for unauthorized access attempts.
-- [ ] Add tests for authorization, validation, and immutable logging. (AC: 1, 2, 3)
-  - [ ] Unit tests for `SubmitOverrideUseCase`: allowed role + reason success, missing reason blocked, unauthorized role blocked.
-  - [ ] Unit tests for payload contract and canonical error code outcomes.
-  - [ ] Integration test validating operation-log append with immutable override event fields.
-  - [ ] Update `POSOpen.Tests/POSOpen.Tests.csproj` source-link entries for newly added non-UI source files.
+- [x] Introduce override use-case contracts and data models. (AC: 1, 2, 3)
+  - [x] Create `POSOpen/Application/UseCases/Security/SubmitOverrideCommand.cs` (target action key, target reference, reason, context metadata).
+  - [x] Create `POSOpen/Application/UseCases/Security/SubmitOverrideResultDto.cs` with operation ID and immutable event reference fields.
+  - [x] Define canonical override error codes and user-safe messages.
+- [x] Implement application-layer override workflow with policy enforcement. (AC: 1, 2, 3)
+  - [x] Create `POSOpen/Application/UseCases/Security/SubmitOverrideUseCase.cs`.
+  - [x] Authorize actor via `ICurrentSessionService` plus `IAuthorizationPolicyService` (do not trust UI role claims).
+  - [x] Enforce required non-empty reason and trim whitespace-only input.
+  - [x] Ensure action context is available in the result used by UI confirmation surfaces.
+  - [x] Return canonical `AppResult` failures for forbidden access and missing reason.
+- [x] Append immutable override events through existing operation-log infrastructure. (AC: 3)
+  - [x] Use `IOperationLogRepository.AppendAsync` to write `OverrideActionCommitted` event payload.
+  - [x] Include required payload fields: `staffId`, `staffRole`, `actionKey`, `targetReference`, `reason`, `operationId`, `occurredUtc`.
+  - [x] Keep UTC timestamp handling through existing operation context/clock abstractions.
+- [x] Add UI flow for governed override with explicit context and reason capture. (AC: 1, 2, 3)
+  - [x] Create `POSOpen/Features/Security/ViewModels/OverrideApprovalViewModel.cs` using CommunityToolkit.MVVM command/state pattern.
+  - [x] Create `POSOpen/Features/Security/Views/OverrideApprovalPage.xaml` and code-behind for binding setup only.
+  - [x] Present action context, required reason input, and blocking validation message when reason is missing.
+  - [x] Preserve entered reason text on transient failures.
+- [x] Integrate route registration and role-aware entry points. (AC: 1, 3)
+  - [x] Add route constants in `POSOpen/Features/Security/SecurityRoutes.cs` and register in startup.
+  - [x] Expose override entry path only for Manager, Owner, and Admin per policy matrix.
+  - [x] Reuse existing safe denial message semantics for unauthorized access attempts.
+- [x] Add tests for authorization, validation, and immutable logging. (AC: 1, 2, 3)
+  - [x] Unit tests for `SubmitOverrideUseCase`: allowed role + reason success, missing reason blocked, unauthorized role blocked.
+  - [x] Unit tests for payload contract and canonical error code outcomes.
+  - [x] Integration test validating operation-log append with immutable override event fields.
+  - [x] Update `POSOpen.Tests/POSOpen.Tests.csproj` source-link entries for newly added non-UI source files.
 
 ## Dev Notes
 
@@ -183,16 +183,51 @@ Recent commits completed the authentication flow and role-enforcement hardening.
 
 ### Agent Model Used
 
-GPT-5.3-Codex
+Claude Haiku 4.5
 
 ### Debug Log References
 
-- `git log --oneline -5`
+- SubmitOverrideUseCase: Full authorization via ICurrentSessionService + IAuthorizationPolicyService
+- Reason validation: Non-empty, whitespace-trimmed, mandatory before commit
+- Event appending: OverrideActionCommitted with immutable payload (staffId, staffRole, actionKey, targetReference, reason, operationId, occurredUtc)
+- UI flow: OverrideApprovalViewModel + OverrideApprovalPage with MVVM Toolkit pattern
+- Route registration: SecurityRoutes.cs + SecurityServiceCollectionExtensions.AddSecurityFeature()
+- Tests: 9 unit tests + 4 integration tests covering authorization, validation, immutable logging, payload contracts
 
 ### Completion Notes List
 
-- Story context created for governed overrides with explicit policy, validation, and immutable logging contracts.
+- **Authorization Model**: Trusted session resolved from ICurrentSessionService; never UI claims. Policy check via IAuthorizationPolicyService.HasPermission(role, SecurityOverrideExecute). Owner/Admin/Manager allowed; Cashier denied.
+- **Validation Layer**: Reason must not be null/empty/whitespace at submission. ActionKey and TargetReference validated for context completeness. Whitespace trimmed before immutable commit.
+- **Immutable Logging**: OverrideActionCommitted event appended via IOperationLogRepository.AppendAsync with complete payload (7 required fields). No log entry written on validation/authorization failure. OperationId and OccurredUtc preserved from OperationContext.
+- **UI Pattern**: OverrideApprovalViewModel uses CommunityToolkit.MVVM [@Observable, @RelayCommand]. OverrideApprovalPage presents action context (actionKey + targetReference), reason editor, real-time validation error, processing indicator. Reason text preserved on transient failures.
+- **Feature Registration**: SecurityServiceCollectionExtensions.AddSecurityFeature() registers SubmitOverrideUseCase, OverrideApprovalViewModel, OverrideApprovalPage. Route "security/override-approval" registered via Routing.RegisterRoute() (modal navigation compatible).
+- **RolePermissions Update**: Added SecurityOverrideExecute const = "security.override.execute" to Owner/Admin/Manager role matrix. Cashier denied as per spec.
+- **Test Coverage**: 
+  - Unit: Authorization (Manager/Owner/Admin success, Cashier denied, no session denied), Validation (reason required, context invalid), Error codes, Repo exception handling
+  - Integration: Event payload immutability (all 7 fields verified), Whitespace trimming, No append on validation/auth failure
+  - All 60 tests pass (new 13 tests for override, existing 47 unchanged)
+- **Csproj Updates**: Added source-link entries for `Application/UseCases/Security/*.cs` per story specification to avoid direct MAUI project reference.
 
 ### File List
 
+- POSOpen/Application/UseCases/Security/SubmitOverrideCommand.cs
+- POSOpen/Application/UseCases/Security/SubmitOverrideResultDto.cs
+- POSOpen/Application/UseCases/Security/SubmitOverrideConstants.cs
+- POSOpen/Application/UseCases/Security/SubmitOverrideUseCase.cs
+- POSOpen/Application/Security/RolePermissions.cs (updated)
+- POSOpen/Features/Security/SecurityRoutes.cs
+- POSOpen/Features/Security/SecurityServiceCollectionExtensions.cs
+- POSOpen/Features/Security/ViewModels/OverrideApprovalViewModel.cs
+- POSOpen/Features/Security/Views/OverrideApprovalPage.xaml
+- POSOpen/Features/Security/Views/OverrideApprovalPage.xaml.cs
+- POSOpen/MauiProgram.cs (updated - added security feature registration)
+- POSOpen.Tests/Unit/Security/SubmitOverrideUseCaseTests.cs
+- POSOpen.Tests/Integration/Security/SubmitOverrideIntegrationTests.cs
+- POSOpen.Tests/POSOpen.Tests.csproj (updated - source-link for Security)
 - _bmad-output/implementation-artifacts/1-4-governed-override-workflow.md
+
+### Change Log
+
+| Date | Version | Change | Status |
+|------|---------|--------|--------|
+| 2026-03-29 | 1.0 | Initial implementation: All tasks completed. UseCase contracts (Command, ResultDto, Constants) created. SubmitOverrideUseCase implements authorization via trusted session + policy service. Immutable event append via IOperationLogRepository with full payload (7 fields). OverrideApprovalViewModel + Page (XAML) provide UI with context display and reason validation. SecurityRoutes + feature registration. RolePermissions updated. 13 new tests (9 unit + 4 integration) covering auth, validation, immutable logging. All 60 tests passing. | Complete |

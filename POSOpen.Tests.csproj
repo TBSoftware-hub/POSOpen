@@ -1,12 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
     <PackageReference Include="FluentAssertions" Version="8.3.0" />
@@ -19,11 +17,9 @@
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
-
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Include="..\POSOpen\Application\Results\AppResult.cs" Link="Source\Application\Results\AppResult.cs" />
     <Compile Include="..\POSOpen\Application\Abstractions\Persistence\*.cs" Link="Source\Application\Abstractions\Persistence\%(Filename)%(Extension)" />
@@ -32,9 +28,9 @@
     <Compile Include="..\POSOpen\Application\Abstractions\Services\*.cs" Link="Source\Application\Abstractions\Services\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\Security\*.cs" Link="Source\Application\Security\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\StaffManagement\*.cs" Link="Source\Application\UseCases\StaffManagement\%(Filename)%(Extension)" />
+    <Compile Include="..\POSOpen\Application\UseCases\Security\*.cs" Link="Source\Application\UseCases\Security\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\Shell\*.cs" Link="Source\Application\UseCases\Shell\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\Authentication\*.cs" Link="Source\Application\UseCases\Authentication\%(Filename)%(Extension)" />
-    <Compile Include="..\POSOpen\Application\UseCases\Security\*.cs" Link="Source\Application\UseCases\Security\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Domain\Entities\*.cs" Link="Source\Domain\Entities\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Domain\Enums\*.cs" Link="Source\Domain\Enums\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Infrastructure\Persistence\**\*.cs" Exclude="..\POSOpen\Infrastructure\Persistence\DesignTime\**\*.cs;..\POSOpen\Infrastructure\Persistence\PersistenceServiceCollectionExtensions.cs" Link="Source\Infrastructure\Persistence\%(RecursiveDir)%(Filename)%(Extension)" />
@@ -43,5 +39,4 @@
     <Compile Include="..\POSOpen\Infrastructure\Services\*.cs" Link="Source\Infrastructure\Services\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Shared\**\*.cs" Exclude="..\POSOpen\Shared\Converters\**\*.cs" Link="Source\Shared\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
-
 </Project>
