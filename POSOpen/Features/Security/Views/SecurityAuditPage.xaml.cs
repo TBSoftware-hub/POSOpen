@@ -16,6 +16,13 @@ public partial class SecurityAuditPage : ContentPage
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
-		await _viewModel.LoadAsync();
+		try
+		{
+			await _viewModel.LoadAsync();
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Debug.WriteLine($"SecurityAuditPage OnAppearing failed: {ex}");
+		}
 	}
 }

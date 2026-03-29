@@ -46,21 +46,32 @@ public sealed class ListSecurityAuditTrailUseCase
 				session.StaffId,
 				session.Role);
 
-			await _operationLogRepository.AppendAsync(
-				SecurityAuditEventTypes.SecurityAuditAccessDenied,
-				session.StaffId.ToString(),
-				new
-				{
-					actorStaffId = session.StaffId,
-					actorRole = session.Role.ToString(),
-					targetReference = "security-audit-trail",
-					actionType = SecurityAuditEventTypes.SecurityAuditAccessDenied,
-					operationId = context.OperationId,
-					occurredUtc = context.OccurredUtc
-				},
-				context,
-				version: 1,
-				cancellationToken: ct);
+			try
+			{
+				await _operationLogRepository.AppendAsync(
+					SecurityAuditEventTypes.SecurityAuditAccessDenied,
+					session.StaffId.ToString(),
+					new
+					{
+						actorStaffId = session.StaffId,
+						actorRole = session.Role.ToString(),
+						targetReference = "security-audit-trail",
+						actionType = SecurityAuditEventTypes.SecurityAuditAccessDenied,
+						operationId = context.OperationId,
+						occurredUtc = context.OccurredUtc
+					},
+					context,
+					version: 1,
+					cancellationToken: ct);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(
+					ex,
+					"Failed to append security audit access denied event. StaffId={StaffId}, Role={Role}.",
+					session.StaffId,
+					session.Role);
+			}
 
 			return AppResult<IReadOnlyList<SecurityAuditRecordDto>>.Failure(
 				ListSecurityAuditTrailConstants.ErrorAuthForbidden,

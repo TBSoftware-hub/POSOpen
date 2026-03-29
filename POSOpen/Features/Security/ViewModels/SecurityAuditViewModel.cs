@@ -2,22 +2,26 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.UseCases.Security;
-using POSOpen.Shared.Operational;
 
 namespace POSOpen.Features.Security.ViewModels;
 
 public partial class SecurityAuditViewModel : ObservableObject
 {
 	private readonly ListSecurityAuditTrailUseCase _listAuditTrailUseCase;
+	private readonly IOperationContextFactory _operationContextFactory;
 	private readonly ILogger<SecurityAuditViewModel> _logger;
 
 	public SecurityAuditViewModel(
 		ListSecurityAuditTrailUseCase listAuditTrailUseCase,
+		IOperationContextFactory operationContextFactory,
 		ILogger<SecurityAuditViewModel> logger)
 	{
 		_listAuditTrailUseCase = listAuditTrailUseCase;
+		_operationContextFactory = operationContextFactory;
 		_logger = logger;
+		AuditRecords.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasRecords));
 	}
 
 	[ObservableProperty]
@@ -31,6 +35,8 @@ public partial class SecurityAuditViewModel : ObservableObject
 
 	public ObservableCollection<SecurityAuditRecordDto> AuditRecords { get; } = new();
 
+	public bool HasRecords => AuditRecords.Count > 0;
+
 	[RelayCommand]
 	public async Task LoadAsync()
 	{
@@ -41,11 +47,7 @@ public partial class SecurityAuditViewModel : ObservableObject
 
 		try
 		{
-			var context = new OperationContext(
-				Guid.NewGuid(),
-				Guid.NewGuid(),
-				null,
-				DateTime.UtcNow);
+			var context = _operationContextFactory.CreateRoot();
 
 			var result = await _listAuditTrailUseCase.ExecuteAsync(context);
 
@@ -62,6 +64,12 @@ public partial class SecurityAuditViewModel : ObservableObject
 				ErrorMessage = result.UserMessage;
 				_logger.LogWarning("Security audit trail load failed: {ErrorCode}", result.ErrorCode);
 			}
+		}
+		catch (Exception ex)
+		{
+			HasError = true;
+			ErrorMessage = "The security audit trail is temporarily unavailable. Please try again.";
+			_logger.LogError(ex, "Unexpected error while loading security audit trail.");
 		}
 		finally
 		{

@@ -8,8 +8,6 @@ namespace POSOpen.Application.UseCases.Security;
 
 public sealed class SubmitOverrideUseCase
 {
-	private const string OverrideActionCommittedEvent = "OverrideActionCommitted";
-
 	private readonly ICurrentSessionService _currentSessionService;
 	private readonly IAuthorizationPolicyService _authorizationPolicyService;
 	private readonly IOperationLogRepository _operationLogRepository;
@@ -77,7 +75,7 @@ public sealed class SubmitOverrideUseCase
 		{
 			// Append immutable override event
 			await _operationLogRepository.AppendAsync(
-				OverrideActionCommittedEvent,
+				SecurityAuditEventTypes.OverrideActionCommitted,
 				session.StaffId.ToString(),
 				new OverrideActionCommittedPayload(
 					StaffId: session.StaffId,

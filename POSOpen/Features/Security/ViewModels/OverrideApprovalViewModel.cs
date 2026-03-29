@@ -2,24 +2,24 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using POSOpen.Application.Abstractions.Security;
+using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.UseCases.Security;
-using POSOpen.Shared.Operational;
 
 namespace POSOpen.Features.Security.ViewModels;
 
 public partial class OverrideApprovalViewModel : ObservableObject
 {
 	private readonly SubmitOverrideUseCase _submitOverrideUseCase;
-	private readonly ICurrentSessionService _currentSessionService;
+	private readonly IOperationContextFactory _operationContextFactory;
 	private readonly ILogger<OverrideApprovalViewModel> _logger;
 
 	public OverrideApprovalViewModel(
 		SubmitOverrideUseCase submitOverrideUseCase,
-		ICurrentSessionService currentSessionService,
+		IOperationContextFactory operationContextFactory,
 		ILogger<OverrideApprovalViewModel> logger)
 	{
 		_submitOverrideUseCase = submitOverrideUseCase;
-		_currentSessionService = currentSessionService;
+		_operationContextFactory = operationContextFactory;
 		_logger = logger;
 	}
 
@@ -67,12 +67,7 @@ public partial class OverrideApprovalViewModel : ObservableObject
 
 		try
 		{
-			// Create operation context
-			var context = new OperationContext(
-				Guid.NewGuid(),
-				Guid.NewGuid(),
-				null,
-				DateTime.UtcNow);
+			var context = _operationContextFactory.CreateRoot();
 
 			// Execute override use case
 			var command = new SubmitOverrideCommand(
@@ -91,7 +86,7 @@ public partial class OverrideApprovalViewModel : ObservableObject
 					context.OperationId);
 
 				// Navigate away on success
-				await Shell.Current.GoToAsync("..");
+				await global::Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
 			}
 			else
 			{
@@ -125,7 +120,10 @@ public partial class OverrideApprovalViewModel : ObservableObject
 	{
 		ActionKey = actionKey;
 		TargetReference = targetReference;
-		ActionContext = $"Action: {actionKey} | Target: {targetReference}";
+		ActionContext =
+			string.IsNullOrWhiteSpace(actionKey) || string.IsNullOrWhiteSpace(targetReference)
+				? "No override action context provided."
+				: $"Action: {actionKey} | Target: {targetReference}";
 		
 		// Reset input state
 		Reason = string.Empty;

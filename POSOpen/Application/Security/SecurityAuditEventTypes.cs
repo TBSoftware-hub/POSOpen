@@ -21,5 +21,6 @@ public static class SecurityAuditEventTypes
 		StaffAccountDeactivated,
 		StaffRoleAssigned,
 		OverrideActionCommitted,
+		SecurityAuditAccessDenied,
 	];
 }

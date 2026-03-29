@@ -17,10 +17,10 @@
             <Button
                 Text="Refresh"
                 Command="{Binding LoadCommand}"
-                BackgroundColor="#2196F3"
+                Background="#2196F3"
                 TextColor="White"
                 Padding="12,8"
-                IsEnabled="{Binding IsLoading, Converter={StaticResource InvertedBoolConverter}}" />
+                IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}" />
         </HorizontalStackLayout>
 
         <!-- Content area -->
@@ -56,7 +56,7 @@
                 <Button
                     Text="Retry"
                     Command="{Binding LoadCommand}"
-                    BackgroundColor="#2196F3"
+                    Background="#2196F3"
                     TextColor="White"
                     Padding="15,10"
                     HorizontalOptions="Center" />
@@ -64,6 +64,7 @@
 
             <!-- Empty state -->
             <VerticalStackLayout
+                IsVisible="False"
                 VerticalOptions="Center"
                 HorizontalOptions="Center"
                 Spacing="8">
@@ -72,8 +73,9 @@
                         <MultiTrigger.Conditions>
                             <BindingCondition Binding="{Binding IsLoading}" Value="False" />
                             <BindingCondition Binding="{Binding HasError}" Value="False" />
+                            <BindingCondition Binding="{Binding HasRecords}" Value="False" />
                         </MultiTrigger.Conditions>
-                        <Setter Property="IsVisible" Value="{Binding AuditRecords.Count, Converter={StaticResource ZeroToBoolConverter}}" />
+                        <Setter Property="IsVisible" Value="True" />
                     </MultiTrigger>
                 </VerticalStackLayout.Triggers>
                 <Label
@@ -89,26 +91,27 @@
                 Margin="10">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Frame
+                        <Border
                             Margin="0,4"
                             Padding="14"
-                            BorderColor="#E0E0E0"
-                            CornerRadius="6">
+                            Stroke="#E0E0E0"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 6">
                             <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
                                 <!-- Event type badge -->
-                                <Frame
+                                <Border
                                     Grid.Row="0" Grid.Column="0"
-                                    BackgroundColor="#1565C0"
+                                    Background="#1565C0"
                                     Padding="6,2"
-                                    CornerRadius="4"
+                                    StrokeShape="RoundRectangle 4"
                                     HorizontalOptions="Start"
-                                    HasShadow="False">
+                                    StrokeThickness="0">
                                     <Label
                                         Text="{Binding EventType}"
                                         TextColor="White"
                                         FontSize="11"
                                         FontAttributes="Bold" />
-                                </Frame>
+                                </Border>
                                 <!-- Occurred timestamp -->
                                 <Label
                                     Grid.Row="0" Grid.Column="1"
@@ -131,7 +134,7 @@
                                     TextColor="Gray"
                                     Margin="0,2,0,0" />
                             </Grid>
-                        </Frame>
+                        </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
