@@ -188,6 +188,12 @@ public sealed class CreateStaffAccountUseCaseTests
 		{
 			return Task.FromResult<IReadOnlyList<OperationLogEntry>>(Entries);
 		}
+
+		public Task<IReadOnlyList<OperationLogEntry>> ListByEventTypesAsync(IReadOnlyList<string> eventTypes, CancellationToken cancellationToken = default)
+		{
+			return Task.FromResult<IReadOnlyList<OperationLogEntry>>(
+				Entries.Where(e => eventTypes.Contains(e.EventType)).ToList());
+		}
 	}
 
 	private sealed class TestPasswordHasher : IPasswordHasher

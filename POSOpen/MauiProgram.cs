@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Features.Authentication;
+using POSOpen.Features.Security;
 using POSOpen.Features.StaffManagement;
 using POSOpen.Features.Shell;
 using POSOpen.Features.Shell.ViewModels;
@@ -25,6 +26,7 @@ public static class MauiProgram
 
 		builder.Services.AddPosOpenPersistence();
 		builder.Services.AddAuthenticationFeature();
+		builder.Services.AddSecurityFeature();
 		builder.Services.AddStaffManagement();
 		builder.Services.AddSingleton<IAppStateService, AppStateService>();
 		builder.Services.AddSingleton<AppShell>();

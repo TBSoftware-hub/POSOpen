@@ -151,5 +151,11 @@ public sealed class DeactivateStaffAccountUseCaseTests
 		{
 			return Task.FromResult<IReadOnlyList<OperationLogEntry>>(Entries);
 		}
+
+		public Task<IReadOnlyList<OperationLogEntry>> ListByEventTypesAsync(IReadOnlyList<string> eventTypes, CancellationToken cancellationToken = default)
+		{
+			return Task.FromResult<IReadOnlyList<OperationLogEntry>>(
+				Entries.Where(e => eventTypes.Contains(e.EventType)).ToList());
+		}
 	}
 }

@@ -68,9 +68,13 @@ public sealed class CreateStaffAccountUseCase
 			account.Id.ToString(),
 			new
 			{
-				account.Id,
+				actorStaffId = command.CreatedByStaffId,
+				targetReference = account.Id.ToString(),
+				actionType = "StaffAccountCreated",
 				account.Email,
-				account.Role
+				account.Role,
+				operationId = command.Context.OperationId,
+				occurredUtc = command.Context.OccurredUtc
 			},
 			command.Context,
 			version: 1,

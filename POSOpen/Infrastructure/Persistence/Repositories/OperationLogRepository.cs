@@ -59,4 +59,18 @@ public sealed class OperationLogRepository : IOperationLogRepository
 			.OrderBy(entry => entry.RecordedUtc)
 			.ToListAsync(cancellationToken);
 	}
+
+	public async Task<IReadOnlyList<OperationLogEntry>> ListByEventTypesAsync(
+		IReadOnlyList<string> eventTypes,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentNullException.ThrowIfNull(eventTypes);
+
+		await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+		return await dbContext.OperationLogEntries
+			.AsNoTracking()
+			.Where(entry => eventTypes.Contains(entry.EventType))
+			.OrderBy(entry => entry.RecordedUtc)
+			.ToListAsync(cancellationToken);
+	}
 }

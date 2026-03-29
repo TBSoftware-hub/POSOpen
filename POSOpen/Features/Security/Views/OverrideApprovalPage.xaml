@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="POSOpen.Features.Security.Views.OverrideApprovalPage"
+             Title="Governed Override">
+
+    <Grid Padding="20" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="15">
+        <!-- Action Context Display -->
+        <Label Grid.Row="0"
+            Text="Action Context" 
+            FontSize="16" 
+            FontAttributes="Bold"
+            Margin="0,0,0,5"/>
+
+        <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 8" Padding="15">
+            <Label 
+                Text="{Binding ActionContext}"
+                FontSize="14"
+                TextColor="#333333"/>
+        </Border>
+
+        <!-- Reason Input Section -->
+        <Label Grid.Row="2"
+            Text="Reason for Override" 
+            FontSize="16" 
+            FontAttributes="Bold"
+            Margin="0,10,0,5"/>
+
+        <Border Grid.Row="3" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 6" Padding="8">
+            <Editor
+            x:Name="ReasonInput"
+            AutoSize="TextChanges"
+            MinimumHeightRequest="100"
+            MaximumHeightRequest="200"
+            Placeholder="Enter reason for this override action..."
+            PlaceholderColor="LightGray"
+            FontSize="14"
+            Text="{Binding Reason}"/>
+        </Border>
+
+        <!-- Validation Error Message -->
+        <Label Grid.Row="4"
+            Text="A reason is required to proceed with this override action."
+            FontSize="12"
+            TextColor="Red"
+            IsVisible="{Binding IsReasonMissing}"
+            Margin="0,5,0,0"/>
+
+        <!-- Operation Error Message -->
+        <Label Grid.Row="5"
+            Text="{Binding ErrorMessage}"
+            FontSize="12"
+            TextColor="Red"
+            IsVisible="{Binding HasError}"
+            Margin="0,5,0,0"/>
+
+        <!-- Action Buttons -->
+        <Grid Grid.Row="6" ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,20,0,0">
+            <Button 
+                Grid.Column="0"
+                Text="Cancel"
+                Clicked="OnCancelClicked"
+                Background="LightGray"
+                TextColor="Black"
+                Padding="15,10"/>
+
+            <Button 
+                Grid.Column="1"
+                Text="Confirm Override"
+                Command="{Binding SubmitOverrideCommand}"
+                Background="OrangeRed"
+                TextColor="White"
+                Padding="15,10"
+                IsEnabled="{Binding IsProcessing, Converter={StaticResource InverseBoolConverter}}"/>
+        </Grid>
+
+        <!-- Processing Indicator -->
+        <ActivityIndicator Grid.Row="7"
+            IsRunning="{Binding IsProcessing}"
+            IsVisible="{Binding IsProcessing}"
+            HorizontalOptions="Center"
+            Margin="0,20,0,0"/>
+    </Grid>
+</ContentPage>

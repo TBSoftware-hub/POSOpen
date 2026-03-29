@@ -14,4 +14,8 @@ public interface IOperationLogRepository
 		CancellationToken cancellationToken = default);
 
 	Task<IReadOnlyList<OperationLogEntry>> ListAsync(CancellationToken cancellationToken = default);
+
+	Task<IReadOnlyList<OperationLogEntry>> ListByEventTypesAsync(
+		IReadOnlyList<string> eventTypes,
+		CancellationToken cancellationToken = default);
 }

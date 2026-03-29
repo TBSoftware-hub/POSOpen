@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="POSOpen.Features.Security.Views.SecurityAuditPage"
+             Title="Security Audit Trail">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Header with refresh -->
+        <HorizontalStackLayout Grid.Row="0" Padding="20,15" Spacing="10">
+            <Label
+                Text="Security Audit Trail"
+                FontSize="20"
+                FontAttributes="Bold"
+                VerticalOptions="Center"
+                HorizontalOptions="FillAndExpand" />
+            <Button
+                Text="Refresh"
+                Command="{Binding LoadCommand}"
+                Background="#2196F3"
+                TextColor="White"
+                Padding="12,8"
+                IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}" />
+        </HorizontalStackLayout>
+
+        <!-- Content area -->
+        <Grid Grid.Row="1">
+
+            <!-- Loading indicator -->
+            <VerticalStackLayout
+                IsVisible="{Binding IsLoading}"
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                Spacing="12">
+                <ActivityIndicator IsRunning="{Binding IsLoading}" Color="#2196F3" />
+                <Label Text="Loading audit records..." FontSize="14" TextColor="Gray" />
+            </VerticalStackLayout>
+
+            <!-- Error state -->
+            <VerticalStackLayout
+                IsVisible="{Binding HasError}"
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                Padding="30"
+                Spacing="12">
+                <Label
+                    Text="&#x26A0;"
+                    FontSize="40"
+                    HorizontalOptions="Center"
+                    TextColor="OrangeRed" />
+                <Label
+                    Text="{Binding ErrorMessage}"
+                    FontSize="14"
+                    TextColor="OrangeRed"
+                    HorizontalTextAlignment="Center" />
+                <Button
+                    Text="Retry"
+                    Command="{Binding LoadCommand}"
+                    Background="#2196F3"
+                    TextColor="White"
+                    Padding="15,10"
+                    HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+            <!-- Empty state -->
+            <VerticalStackLayout
+                IsVisible="False"
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                Spacing="8">
+                <VerticalStackLayout.Triggers>
+                    <MultiTrigger TargetType="VerticalStackLayout">
+                        <MultiTrigger.Conditions>
+                            <BindingCondition Binding="{Binding IsLoading}" Value="False" />
+                            <BindingCondition Binding="{Binding HasError}" Value="False" />
+                            <BindingCondition Binding="{Binding HasRecords}" Value="False" />
+                        </MultiTrigger.Conditions>
+                        <Setter Property="IsVisible" Value="True" />
+                    </MultiTrigger>
+                </VerticalStackLayout.Triggers>
+                <Label
+                    Text="No security audit records found."
+                    FontSize="14"
+                    TextColor="Gray"
+                    HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+
+            <!-- Audit records list -->
+            <CollectionView
+                ItemsSource="{Binding AuditRecords}"
+                Margin="10">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border
+                            Margin="0,4"
+                            Padding="14"
+                            Stroke="#E0E0E0"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 6">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                <!-- Event type badge -->
+                                <Border
+                                    Grid.Row="0" Grid.Column="0"
+                                    Background="#1565C0"
+                                    Padding="6,2"
+                                    StrokeShape="RoundRectangle 4"
+                                    HorizontalOptions="Start"
+                                    StrokeThickness="0">
+                                    <Label
+                                        Text="{Binding EventType}"
+                                        TextColor="White"
+                                        FontSize="11"
+                                        FontAttributes="Bold" />
+                                </Border>
+                                <!-- Occurred timestamp -->
+                                <Label
+                                    Grid.Row="0" Grid.Column="1"
+                                    Text="{Binding OccurredUtc, StringFormat='{0:yyyy-MM-dd HH:mm:ss} UTC'}"
+                                    FontSize="11"
+                                    TextColor="Gray"
+                                    VerticalOptions="Center" />
+                                <!-- Aggregate (target) -->
+                                <Label
+                                    Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                    Text="{Binding AggregateId, StringFormat='Target: {0}'}"
+                                    FontSize="12"
+                                    TextColor="#444444"
+                                    Margin="0,6,0,0" />
+                                <!-- Operation ID -->
+                                <Label
+                                    Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                    Text="{Binding OperationId, StringFormat='OperationId: {0}'}"
+                                    FontSize="10"
+                                    TextColor="Gray"
+                                    Margin="0,2,0,0" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </Grid>
+    </Grid>
+
+</ContentPage>
