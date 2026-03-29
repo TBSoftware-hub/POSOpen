@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using POSOpen.Application.UseCases.Shell;
 using POSOpen.Application.UseCases.StaffManagement;
 using POSOpen.Features.StaffManagement.ViewModels;
 using POSOpen.Features.StaffManagement.Views;
@@ -11,9 +12,11 @@ public static class StaffManagementServiceCollectionExtensions
 	{
 		services.AddTransient<CreateStaffAccountUseCase>();
 		services.AddTransient<UpdateStaffAccountUseCase>();
+		services.AddTransient<AssignStaffRoleUseCase>();
 		services.AddTransient<DeactivateStaffAccountUseCase>();
 		services.AddTransient<ListActiveStaffAccountsUseCase>();
 		services.AddTransient<GetStaffAccountByIdUseCase>();
+		services.AddTransient<ExecuteManagerOperationUseCase>();
 
 		services.AddTransient<StaffListViewModel>();
 		services.AddTransient<CreateStaffAccountViewModel>();

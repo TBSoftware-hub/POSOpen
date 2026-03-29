@@ -75,12 +75,6 @@ public sealed class UpdateStaffAccountUseCase
 			changedFields.Add("Email");
 		}
 
-		if (account.Role != command.Role)
-		{
-			account.Role = command.Role;
-			changedFields.Add("Role");
-		}
-
 		account.UpdatedAtUtc = command.Context.OccurredUtc;
 		account.UpdatedByStaffId = command.UpdatedByStaffId;
 		changedFields.Add("UpdatedAtUtc");
