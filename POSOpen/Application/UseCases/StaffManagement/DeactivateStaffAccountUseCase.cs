@@ -45,9 +45,12 @@ public sealed class DeactivateStaffAccountUseCase
 			account.Id.ToString(),
 			new
 			{
-				account.Id,
+				actorStaffId = command.UpdatedByStaffId,
+				targetReference = account.Id.ToString(),
+				actionType = "StaffAccountDeactivated",
 				account.Email,
-				DeactivatedByStaffId = command.UpdatedByStaffId
+				operationId = command.Context.OperationId,
+				occurredUtc = command.Context.OccurredUtc
 			},
 			command.Context,
 			version: 1,

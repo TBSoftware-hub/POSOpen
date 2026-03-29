@@ -1,6 +1,6 @@
 # Story 1.5: Immutable Audit Trail for Security-Critical Actions
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -27,30 +27,30 @@ So that governance and incident analysis are reliable.
 
 ## Tasks / Subtasks
 
-- [ ] Extend security-critical use cases to emit canonical immutable audit events. (AC: 1)
-  - [ ] Verify all existing account and role mutations always append operation-log events (`StaffAccountCreated`, `StaffAccountUpdated`, `StaffAccountDeactivated`, `StaffRoleAssigned`) with UTC occurrence time and trusted actor context.
-  - [ ] Add missing append-only audit events for override and elevation flows introduced in Story 1.4 (or wire stubs if 1.4 implementation is pending in branch).
-  - [ ] Standardize payload shape for security-critical audit events: `actorStaffId`, `targetReference`, `actionType`, `occurredUtc`, `operationId`, `correlationId`.
-  - [ ] Ensure audit append is coupled to mutation success and never executed as a mutable post-edit/update path.
-- [ ] Add an authorized audit query use case and contract. (AC: 2, 3)
-  - [ ] Create query contract in application layer (for example, `ListSecurityAuditTrailQuery`).
-  - [ ] Add authorization gate using `IAuthorizationPolicyService` + `ICurrentSessionService` so only Owner/Admin can query full audit trail.
-  - [ ] Add canonical failure semantics for unauthorized access (`AUTH_FORBIDDEN`) with user-safe messaging.
-  - [ ] Add denial logging event for rejected audit-trail access attempts.
-- [ ] Add repository query support for immutable chronological retrieval. (AC: 2)
-  - [ ] Add read method(s) to audit/operation-log repository abstraction for security event filtering.
-  - [ ] Ensure retrieval order is deterministic and chronological (UTC-based sort).
-  - [ ] Preserve append-only behavior: no edit/delete methods and no upsert path for audit records.
-- [ ] Expose audit-trail read in feature/UI surface for authorized roles. (AC: 2, 3)
-  - [ ] Add feature slice for audit-trail list/read interaction under role-gated navigation.
-  - [ ] Ensure unauthorized role attempts show safe denial message and do not reveal protected data.
-  - [ ] Keep UI logic thin; all access checks and audit logic remain in application services.
-- [ ] Add test coverage for immutability, access control, and ordering. (AC: 1, 2, 3)
-  - [ ] Unit tests: security-critical action paths append expected event types and canonical payload fields.
-  - [ ] Unit tests: unauthorized audit read returns `AUTH_FORBIDDEN` and logs denial attempt.
-  - [ ] Integration tests: audit entries are returned in chronological order and remain append-only.
-  - [ ] Integration tests: Owner/Admin can retrieve audit records; Cashier/Manager cannot.
-  - [ ] Update source-link entries in `POSOpen.Tests/POSOpen.Tests.csproj` for newly added non-UI source files.
+- [x] Extend security-critical use cases to emit canonical immutable audit events. (AC: 1)
+  - [x] Verify all existing account and role mutations always append operation-log events (`StaffAccountCreated`, `StaffAccountUpdated`, `StaffAccountDeactivated`, `StaffRoleAssigned`) with UTC occurrence time and trusted actor context.
+  - [x] Add missing append-only audit events for override and elevation flows introduced in Story 1.4 (or wire stubs if 1.4 implementation is pending in branch).
+  - [x] Standardize payload shape for security-critical audit events: `actorStaffId`, `targetReference`, `actionType`, `occurredUtc`, `operationId`, `correlationId`.
+  - [x] Ensure audit append is coupled to mutation success and never executed as a mutable post-edit/update path.
+- [x] Add an authorized audit query use case and contract. (AC: 2, 3)
+  - [x] Create query contract in application layer (for example, `ListSecurityAuditTrailQuery`).
+  - [x] Add authorization gate using `IAuthorizationPolicyService` + `ICurrentSessionService` so only Owner/Admin can query full audit trail.
+  - [x] Add canonical failure semantics for unauthorized access (`AUTH_FORBIDDEN`) with user-safe messaging.
+  - [x] Add denial logging event for rejected audit-trail access attempts.
+- [x] Add repository query support for immutable chronological retrieval. (AC: 2)
+  - [x] Add read method(s) to audit/operation-log repository abstraction for security event filtering.
+  - [x] Ensure retrieval order is deterministic and chronological (UTC-based sort).
+  - [x] Preserve append-only behavior: no edit/delete methods and no upsert path for audit records.
+- [x] Expose audit-trail read in feature/UI surface for authorized roles. (AC: 2, 3)
+  - [x] Add feature slice for audit-trail list/read interaction under role-gated navigation.
+  - [x] Ensure unauthorized role attempts show safe denial message and do not reveal protected data.
+  - [x] Keep UI logic thin; all access checks and audit logic remain in application services.
+- [x] Add test coverage for immutability, access control, and ordering. (AC: 1, 2, 3)
+  - [x] Unit tests: security-critical action paths append expected event types and canonical payload fields.
+  - [x] Unit tests: unauthorized audit read returns `AUTH_FORBIDDEN` and logs denial attempt.
+  - [x] Integration tests: audit entries are returned in chronological order and remain append-only.
+  - [x] Integration tests: Owner/Admin can retrieve audit records; Cashier/Manager cannot.
+  - [x] Update source-link entries in `POSOpen.Tests/POSOpen.Tests.csproj` for newly added non-UI source files.
 
 ## Dev Notes
 
@@ -171,10 +171,38 @@ GPT-5.3-Codex
 
 ### Completion Notes List
 
-- Story 1.5 context created with immutable audit-trail implementation guardrails and role-based access constraints.
-- Task breakdown includes append semantics, query authorization, denial logging, deterministic retrieval, and testing requirements.
-- Guidance intentionally reuses existing operation-log and authorization foundations from stories 1.1-1.3.
+- Implemented canonical immutable audit event constants and security-critical scope in application layer.
+- Added authorized security-audit query use case with session validation, permission gating, denial-event logging, and failure constants.
+- Extended operation-log repository contract and EF implementation with event-type filtered chronological retrieval.
+- Standardized payload fields for staff account create/update/deactivate operation-log events to include actor and target context.
+- Added Security Audit Trail UI surface (view model, page, route registration, and shell role gating for Owner/Admin).
+- Added focused unit and integration test suites for ordering, scope filtering, authorization, denial logging, and append-only behavior.
+- Executed full test project successfully: 74 passed, 0 failed, 0 skipped.
 
 ### File List
 
 - _bmad-output/implementation-artifacts/1-5-immutable-audit-trail-for-security-critical-actions.md
+- POSOpen/Application/Security/SecurityAuditEventTypes.cs
+- POSOpen/Application/Security/RolePermissions.cs
+- POSOpen/Application/Abstractions/Repositories/IOperationLogRepository.cs
+- POSOpen/Application/UseCases/StaffManagement/CreateStaffAccountUseCase.cs
+- POSOpen/Application/UseCases/StaffManagement/UpdateStaffAccountUseCase.cs
+- POSOpen/Application/UseCases/StaffManagement/DeactivateStaffAccountUseCase.cs
+- POSOpen/Application/UseCases/Security/SecurityAuditRecordDto.cs
+- POSOpen/Application/UseCases/Security/ListSecurityAuditTrailConstants.cs
+- POSOpen/Application/UseCases/Security/ListSecurityAuditTrailUseCase.cs
+- POSOpen/Infrastructure/Persistence/Repositories/OperationLogRepository.cs
+- POSOpen/Features/Security/SecurityRoutes.cs
+- POSOpen/Features/Security/SecurityServiceCollectionExtensions.cs
+- POSOpen/Features/Security/ViewModels/SecurityAuditViewModel.cs
+- POSOpen/Features/Security/Views/SecurityAuditPage.xaml
+- POSOpen/Features/Security/Views/SecurityAuditPage.xaml.cs
+- POSOpen/AppShell.xaml
+- POSOpen/AppShell.xaml.cs
+- POSOpen.Tests/Unit/Security/ListSecurityAuditTrailUseCaseTests.cs
+- POSOpen.Tests/Integration/Security/ListSecurityAuditTrailIntegrationTests.cs
+- POSOpen.Tests/Unit/Security/AuthenticateStaffUseCaseTests.cs
+- POSOpen.Tests/Unit/StaffManagement/CreateStaffAccountUseCaseTests.cs
+- POSOpen.Tests/Unit/StaffManagement/UpdateStaffAccountUseCaseTests.cs
+- POSOpen.Tests/Unit/StaffManagement/DeactivateStaffAccountUseCaseTests.cs
+- POSOpen.Tests/Unit/StaffManagement/AssignStaffRoleUseCaseTests.cs

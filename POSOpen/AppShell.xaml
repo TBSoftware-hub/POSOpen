@@ -6,6 +6,7 @@
     xmlns:authViews="clr-namespace:POSOpen.Features.Authentication.Views"
     xmlns:staffViews="clr-namespace:POSOpen.Features.StaffManagement.Views"
     xmlns:shellViews="clr-namespace:POSOpen.Features.Shell.Views"
+    xmlns:securityViews="clr-namespace:POSOpen.Features.Security.Views"
     Title="POSOpen">
 
     <ShellContent
@@ -31,5 +32,11 @@
         Title="Manager"
         ContentTemplate="{DataTemplate shellViews:ManagerOperationsPage}"
         Route="manager/operations" />
+
+    <ShellContent
+        x:Name="SecurityAuditShellContent"
+        Title="Audit Trail"
+        ContentTemplate="{DataTemplate securityViews:SecurityAuditPage}"
+        Route="security/audit-trail" />
 
 </Shell>

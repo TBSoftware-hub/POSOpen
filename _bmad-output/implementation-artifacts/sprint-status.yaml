@@ -49,7 +49,7 @@ development_status:
   1-2-role-assignment-and-enforcement: done
   1-3-terminal-authentication-flow: done
   1-4-governed-override-workflow: done
-  1-5-immutable-audit-trail-for-security-critical-actions: ready-for-dev
+  1-5-immutable-audit-trail-for-security-critical-actions: review
   epic-1-retrospective: optional
   epic-2: backlog
   2-1-family-lookup-with-search-and-scan: backlog

@@ -13,7 +13,12 @@ public static class SecurityServiceCollectionExtensions
 		services.AddTransient<OverrideApprovalViewModel>();
 		services.AddTransient<OverrideApprovalPage>();
 
+		services.AddTransient<ListSecurityAuditTrailUseCase>();
+		services.AddTransient<SecurityAuditViewModel>();
+		services.AddTransient<SecurityAuditPage>();
+
 		Routing.RegisterRoute(SecurityRoutes.OverrideApproval, typeof(OverrideApprovalPage));
+		Routing.RegisterRoute(SecurityRoutes.SecurityAuditTrail, typeof(SecurityAuditPage));
 		return services;
 	}
 }

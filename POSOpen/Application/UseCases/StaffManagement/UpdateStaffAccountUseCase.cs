@@ -87,8 +87,12 @@ public sealed class UpdateStaffAccountUseCase
 			account.Id.ToString(),
 			new
 			{
-				account.Id,
-				UpdatedFields = changedFields
+				actorStaffId = command.UpdatedByStaffId,
+				targetReference = account.Id.ToString(),
+				actionType = "StaffAccountUpdated",
+				updatedFields = changedFields,
+				operationId = command.Context.OperationId,
+				occurredUtc = command.Context.OccurredUtc
 			},
 			command.Context,
 			version: 1,

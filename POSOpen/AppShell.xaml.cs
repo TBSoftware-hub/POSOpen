@@ -47,6 +47,7 @@ public partial class AppShell : Shell
 			HomeShellContent.IsVisible = false;
 			StaffShellContent.IsVisible = false;
 			ManagerShellContent.IsVisible = false;
+			SecurityAuditShellContent.IsVisible = false;
 			return;
 		}
 
@@ -54,5 +55,6 @@ public partial class AppShell : Shell
 		HomeShellContent.IsVisible = true;
 		StaffShellContent.IsVisible = _authorizationPolicyService.HasPermission(session.Role, RolePermissions.StaffManagementView);
 		ManagerShellContent.IsVisible = _authorizationPolicyService.HasPermission(session.Role, RolePermissions.ManagerOperationsView);
+		SecurityAuditShellContent.IsVisible = _authorizationPolicyService.HasPermission(session.Role, RolePermissions.SecurityAuditRead);
 	}
 }
