@@ -3,9 +3,16 @@
     x:Class="POSOpen.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:authViews="clr-namespace:POSOpen.Features.Authentication.Views"
     xmlns:staffViews="clr-namespace:POSOpen.Features.StaffManagement.Views"
     xmlns:shellViews="clr-namespace:POSOpen.Features.Shell.Views"
     Title="POSOpen">
+
+    <ShellContent
+        x:Name="SignInShellContent"
+        Title="Sign In"
+        ContentTemplate="{DataTemplate authViews:SignInPage}"
+        Route="signin" />
 
     <ShellContent
         x:Name="HomeShellContent"

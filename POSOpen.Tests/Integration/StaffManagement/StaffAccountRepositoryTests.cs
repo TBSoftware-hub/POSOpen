@@ -72,6 +72,54 @@ public sealed class StaffAccountRepositoryTests
 	}
 
 	[Fact]
+	public async Task Repository_applies_auth_failed_attempt_lockout_and_success_reset_updates()
+	{
+		var databasePath = TestDatabasePaths.Create();
+		await using var dbContextFactory = new TestDbContextFactory(databasePath);
+		var initializer = new AppDbContextInitializer(dbContextFactory, NullLogger<AppDbContextInitializer>.Instance);
+		await initializer.InitializeAsync();
+		var repository = new StaffAccountRepository(dbContextFactory);
+		var now = new DateTime(2026, 3, 29, 18, 0, 0, DateTimeKind.Utc);
+
+		var account = StaffAccount.Create(
+			Guid.NewGuid(),
+			"Alex",
+			"Taylor",
+			"auth@example.com",
+			"hash",
+			"salt",
+			StaffRole.Cashier,
+			StaffAccountStatus.Active,
+			now,
+			now,
+			null,
+			null);
+
+		await repository.AddAsync(account);
+
+		for (var attempt = 1; attempt <= 5; attempt++)
+		{
+			await repository.RecordFailedSignInAttemptAsync(
+				account.Id,
+				now.AddMinutes(attempt),
+				lockoutThreshold: 5,
+				lockoutDuration: TimeSpan.FromMinutes(15));
+		}
+
+		var locked = await repository.GetByNormalizedEmailForAuthenticationAsync(" AUTH@EXAMPLE.COM ");
+		locked.Should().NotBeNull();
+		locked!.FailedLoginAttempts.Should().Be(5);
+		locked.LockedUntilUtc.Should().Be(now.AddMinutes(20));
+
+		await repository.RecordSuccessfulSignInAsync(account.Id, now.AddMinutes(30));
+
+		var reset = await repository.GetByIdAsync(account.Id);
+		reset.Should().NotBeNull();
+		reset!.FailedLoginAttempts.Should().Be(0);
+		reset.LockedUntilUtc.Should().BeNull();
+	}
+
+	[Fact]
 	public async Task Create_use_case_writes_operation_log_entry_to_repository()
 	{
 		var databasePath = TestDatabasePaths.Create();

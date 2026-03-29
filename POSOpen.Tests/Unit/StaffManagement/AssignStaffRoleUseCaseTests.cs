@@ -132,9 +132,47 @@ public sealed class AssignStaffRoleUseCaseTests
 			return Task.FromResult(_accounts.SingleOrDefault(account => account.Email == normalized));
 		}
 
+		public Task<StaffAccount?> GetByNormalizedEmailForAuthenticationAsync(string email, CancellationToken ct = default)
+		{
+			var normalized = email.Trim().ToLowerInvariant();
+			return Task.FromResult(_accounts.SingleOrDefault(account => account.Email == normalized));
+		}
+
 		public Task<IReadOnlyList<StaffAccount>> ListActiveAsync(CancellationToken ct = default)
 		{
 			return Task.FromResult<IReadOnlyList<StaffAccount>>(_accounts.Where(account => account.Status == StaffAccountStatus.Active).ToList());
+		}
+
+		public Task<StaffAccount?> RecordFailedSignInAttemptAsync(Guid staffAccountId, DateTime occurredUtc, int lockoutThreshold, TimeSpan lockoutDuration, CancellationToken ct = default)
+		{
+			var account = _accounts.SingleOrDefault(x => x.Id == staffAccountId);
+			if (account is null)
+			{
+				return Task.FromResult<StaffAccount?>(null);
+			}
+
+			account.FailedLoginAttempts += 1;
+			if (account.FailedLoginAttempts >= lockoutThreshold)
+			{
+				account.LockedUntilUtc = occurredUtc.Add(lockoutDuration);
+			}
+
+			account.UpdatedAtUtc = occurredUtc;
+			return Task.FromResult<StaffAccount?>(account);
+		}
+
+		public Task<StaffAccount?> RecordSuccessfulSignInAsync(Guid staffAccountId, DateTime occurredUtc, CancellationToken ct = default)
+		{
+			var account = _accounts.SingleOrDefault(x => x.Id == staffAccountId);
+			if (account is null)
+			{
+				return Task.FromResult<StaffAccount?>(null);
+			}
+
+			account.FailedLoginAttempts = 0;
+			account.LockedUntilUtc = null;
+			account.UpdatedAtUtc = occurredUtc;
+			return Task.FromResult<StaffAccount?>(account);
 		}
 
 		public Task UpdateAsync(StaffAccount account, CancellationToken ct = default)
