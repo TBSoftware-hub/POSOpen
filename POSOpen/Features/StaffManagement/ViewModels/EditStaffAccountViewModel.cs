@@ -42,6 +42,7 @@ public partial class EditStaffAccountViewModel : ObservableObject
 	private string _emailError = string.Empty;
 
 	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasSummaryError))]
 	private string _summaryError = string.Empty;
 
 	public EditStaffAccountViewModel(
@@ -73,7 +74,6 @@ public partial class EditStaffAccountViewModel : ObservableObject
 		{
 			PageState = ViewModelState.Error;
 			SummaryError = result.UserMessage;
-			OnPropertyChanged(nameof(HasSummaryError));
 			OnPropertyChanged(nameof(IsBusy));
 			return;
 		}
@@ -96,7 +96,6 @@ public partial class EditStaffAccountViewModel : ObservableObject
 		{
 			PageState = ViewModelState.Error;
 			SummaryError = "Resolve the highlighted errors and try again.";
-			OnPropertyChanged(nameof(HasSummaryError));
 			return;
 		}
 
@@ -126,7 +125,6 @@ public partial class EditStaffAccountViewModel : ObservableObject
 				SummaryError = result.UserMessage;
 			}
 
-			OnPropertyChanged(nameof(HasSummaryError));
 			OnPropertyChanged(nameof(IsBusy));
 			return;
 		}
@@ -160,7 +158,6 @@ public partial class EditStaffAccountViewModel : ObservableObject
 		{
 			PageState = ViewModelState.Error;
 			SummaryError = result.UserMessage;
-			OnPropertyChanged(nameof(HasSummaryError));
 			OnPropertyChanged(nameof(IsBusy));
 			return;
 		}

@@ -8,7 +8,7 @@
              Title="Staff Accounts">
 
     <Grid RowDefinitions="Auto,*,Auto" Padding="16" RowSpacing="12">
-        <Border Grid.Row="0" Padding="12" Background="#ECFDF5" IsVisible="{Binding HasError}"
+        <Border Grid.Row="0" Padding="12" Background="#FEF2F2" IsVisible="{Binding HasError}"
                 AutomationId="staff-list-error-banner"
                 SemanticProperties.Description="Staff list error message">
             <Label Text="{Binding ErrorMessage}" TextColor="#DC2626" />

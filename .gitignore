@@ -1,0 +1,12 @@
+# Build outputs
+**/bin/
+**/obj/
+
+# Test outputs
+TestResults/
+**/TestResults/
+
+# User-specific IDE files
+.vs/
+*.user
+*.suo

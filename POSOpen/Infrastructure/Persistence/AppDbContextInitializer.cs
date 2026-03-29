@@ -22,14 +22,24 @@ public sealed class AppDbContextInitializer : IAppDbContextInitializer
 		await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 		var migrations = dbContext.Database.GetMigrations().ToArray();
 
-		if (migrations.Any())
+		if (!migrations.Any())
 		{
-			await dbContext.Database.MigrateAsync(cancellationToken);
-			_logger.LogInformation("Applied {MigrationCount} EF Core migrations.", migrations.Count());
+			await dbContext.Database.EnsureCreatedAsync(cancellationToken);
+			_logger.LogInformation("Created encrypted SQLite baseline without migrations.");
 			return;
 		}
 
-		await dbContext.Database.EnsureCreatedAsync(cancellationToken);
-		_logger.LogInformation("Created encrypted SQLite baseline without migrations.");
+		var pendingMigrations = (await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).ToArray();
+		if (pendingMigrations.Any())
+		{
+			await dbContext.Database.MigrateAsync(cancellationToken);
+			_logger.LogInformation(
+				"Applied {PendingMigrationCount} pending EF Core migrations: {PendingMigrationNames}",
+				pendingMigrations.Length,
+				string.Join(", ", pendingMigrations));
+			return;
+		}
+
+		_logger.LogInformation("No pending EF Core migrations detected.");
 	}
 }

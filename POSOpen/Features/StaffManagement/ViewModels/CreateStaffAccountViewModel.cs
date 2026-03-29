@@ -43,6 +43,7 @@ public partial class CreateStaffAccountViewModel : ObservableObject
 	private string _passwordError = string.Empty;
 
 	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasSummaryError))]
 	private string _summaryError = string.Empty;
 
 	public CreateStaffAccountViewModel(
@@ -90,7 +91,6 @@ public partial class CreateStaffAccountViewModel : ObservableObject
 		{
 			PageState = ViewModelState.Error;
 			SummaryError = "Resolve the highlighted errors and try again.";
-			OnPropertyChanged(nameof(HasSummaryError));
 			return;
 		}
 
@@ -113,7 +113,6 @@ public partial class CreateStaffAccountViewModel : ObservableObject
 			PageState = ViewModelState.Error;
 			MapResultErrors(result.ErrorCode, result.UserMessage);
 			OnPropertyChanged(nameof(IsBusy));
-			OnPropertyChanged(nameof(HasSummaryError));
 			return;
 		}
 
