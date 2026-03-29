@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:staffViewModels="clr-namespace:POSOpen.Features.StaffManagement.ViewModels"
+             x:Class="POSOpen.Features.StaffManagement.Views.CreateStaffAccountPage"
+             x:DataType="staffViewModels:CreateStaffAccountViewModel"
+             Title="Add Staff">
+
+    <Grid RowDefinitions="*,Auto" Padding="16" RowSpacing="12">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="10" MaximumWidthRequest="600" HorizontalOptions="Center">
+                <Border Padding="10" Background="#FEF2F2" IsVisible="{Binding HasSummaryError}" AutomationId="create-staff-summary-error" SemanticProperties.Description="Create staff summary error">
+                    <Label Text="{Binding SummaryError}" TextColor="#DC2626" />
+                </Border>
+
+                <Label Text="First Name *" />
+                <Entry Text="{Binding FirstName}" AutomationId="create-staff-first-name" SemanticProperties.Description="First name" />
+                <Label Text="{Binding FirstNameError}" TextColor="#DC2626" FontSize="12" />
+
+                <Label Text="Last Name *" />
+                <Entry Text="{Binding LastName}" AutomationId="create-staff-last-name" SemanticProperties.Description="Last name" />
+                <Label Text="{Binding LastNameError}" TextColor="#DC2626" FontSize="12" />
+
+                <Label Text="Email *" />
+                <Entry Text="{Binding Email}" Unfocused="OnEmailUnfocused" Keyboard="Email" AutomationId="create-staff-email" SemanticProperties.Description="Email address" />
+                <Label Text="{Binding EmailError}" TextColor="#DC2626" FontSize="12" />
+
+                <Label Text="Password *" />
+                <Entry Text="{Binding Password}" IsPassword="True" AutomationId="create-staff-password" SemanticProperties.Description="Password" />
+                <Label Text="{Binding PasswordError}" TextColor="#DC2626" FontSize="12" />
+
+                <Label Text="Role *" />
+                <Picker ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}" AutomationId="create-staff-role" SemanticProperties.Description="Staff role" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Border Grid.Row="1" StrokeThickness="0" Background="White" Padding="0,6,0,0">
+            <Button Text="Create Staff Account" Command="{Binding SubmitCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" AutomationId="create-staff-submit" SemanticProperties.Description="Create staff account" />
+        </Border>
+    </Grid>
+</ContentPage>

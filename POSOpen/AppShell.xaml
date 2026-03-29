@@ -3,12 +3,18 @@
     x:Class="POSOpen.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:POSOpen"
+    xmlns:staffViews="clr-namespace:POSOpen.Features.StaffManagement.Views"
+    xmlns:shellViews="clr-namespace:POSOpen.Features.Shell.Views"
     Title="POSOpen">
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Title="Mission Control"
+        ContentTemplate="{DataTemplate shellViews:HomePage}"
+        Route="home" />
+
+    <ShellContent
+        Title="Staff"
+        ContentTemplate="{DataTemplate staffViews:StaffListPage}"
+        Route="staff/list" />
 
 </Shell>
