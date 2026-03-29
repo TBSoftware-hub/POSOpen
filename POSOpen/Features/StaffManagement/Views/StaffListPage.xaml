@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:staffUseCases="clr-namespace:POSOpen.Application.UseCases.StaffManagement"
+             xmlns:staffViewModels="clr-namespace:POSOpen.Features.StaffManagement.ViewModels"
+             x:Class="POSOpen.Features.StaffManagement.Views.StaffListPage"
+             x:DataType="staffViewModels:StaffListViewModel"
+             Title="Staff Accounts">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16" RowSpacing="12">
+        <Border Grid.Row="0" Padding="12" Background="#ECFDF5" IsVisible="{Binding HasError}"
+                AutomationId="staff-list-error-banner"
+                SemanticProperties.Description="Staff list error message">
+            <Label Text="{Binding ErrorMessage}" TextColor="#DC2626" />
+        </Border>
+
+        <Grid Grid.Row="1">
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               AutomationId="staff-list-loading"
+                               SemanticProperties.Description="Loading staff list" />
+
+            <CollectionView ItemsSource="{Binding StaffAccounts}"
+                            SelectionMode="None"
+                            IsVisible="{Binding IsEmpty, Converter={StaticResource InverseBoolConverter}}"
+                            AutomationId="staff-list-collection"
+                            SemanticProperties.Description="Active staff account list">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="staffUseCases:StaffAccountDto">
+                        <Border Margin="0,0,0,10" Padding="14" Background="White" Stroke="#D1D5DB" StrokeShape="RoundRectangle 14">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                <Border Grid.Column="0" WidthRequest="40" HeightRequest="40" Background="#0F766E" StrokeThickness="0" StrokeShape="RoundRectangle 20">
+                                    <Label Text="{Binding FirstName}" HorizontalOptions="Center" VerticalOptions="Center" TextColor="White" FontAttributes="Bold" FontSize="12" LineBreakMode="NoWrap" />
+                                </Border>
+                                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                    <Label Text="{Binding FirstName}" FontAttributes="Bold" />
+                                    <Label Text="{Binding LastName}" FontSize="12" TextColor="#334155" />
+                                    <Label Text="{Binding Role}" TextColor="#334155" FontSize="12" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="2" Spacing="8">
+                                    <Border StrokeThickness="0" Background="#DCFCE7" Padding="8,4" StrokeShape="RoundRectangle 12">
+                                        <Label Text="{Binding Status}" TextColor="#166534" FontSize="12" />
+                                    </Border>
+                                    <Button Text="Edit"
+                                            FontSize="12"
+                                            Padding="10,6"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.NavigateToEditCommand}"
+                                            CommandParameter="{Binding .}" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <VerticalStackLayout IsVisible="{Binding IsEmpty}"
+                                 VerticalOptions="Center"
+                                 Spacing="10"
+                                 AutomationId="staff-list-empty-state"
+                                 SemanticProperties.Description="No staff accounts empty state">
+                <Label Text="No staff accounts yet" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" />
+                <Label Text="Add your first team member to begin." HorizontalOptions="Center" />
+                <Button Text="Add Staff Member" Command="{Binding NavigateToCreateCommand}" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Grid>
+
+        <Border Grid.Row="2" StrokeThickness="0" Background="#FFFFFF" Padding="0,6,0,0">
+            <Button Text="Add Staff"
+                    Command="{Binding NavigateToCreateCommand}"
+                    AutomationId="staff-list-add-button"
+                    SemanticProperties.Description="Add staff account" />
+        </Border>
+    </Grid>
+</ContentPage>

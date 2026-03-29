@@ -33,6 +33,8 @@ public static class PersistenceServiceCollectionExtensions
 		services.AddSingleton<IAppDbContextInitializer, AppDbContextInitializer>();
 		services.AddTransient<IOperationLogRepository, OperationLogRepository>();
 		services.AddTransient<IOutboxRepository, OutboxRepository>();
+		services.AddTransient<IStaffAccountRepository, StaffAccountRepository>();
+		services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
 
 		return services;
 	}

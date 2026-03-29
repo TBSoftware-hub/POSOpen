@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:staffViewModels="clr-namespace:POSOpen.Features.StaffManagement.ViewModels"
+             x:Class="POSOpen.Features.StaffManagement.Views.EditStaffAccountPage"
+             x:DataType="staffViewModels:EditStaffAccountViewModel"
+             Title="Edit Staff">
+
+    <Grid RowDefinitions="*,Auto" Padding="16" RowSpacing="12">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="10" MaximumWidthRequest="600" HorizontalOptions="Center">
+                <Border Padding="10" Background="#FEF2F2" IsVisible="{Binding HasSummaryError}" AutomationId="edit-staff-summary-error" SemanticProperties.Description="Edit staff summary error">
+                    <Label Text="{Binding SummaryError}" TextColor="#DC2626" />
+                </Border>
+
+                <Label Text="First Name *" />
+                <Entry Text="{Binding FirstName}" AutomationId="edit-staff-first-name" SemanticProperties.Description="First name" />
+                <Label Text="{Binding FirstNameError}" TextColor="#DC2626" FontSize="12" />
+
+                <Label Text="Last Name *" />
+                <Entry Text="{Binding LastName}" AutomationId="edit-staff-last-name" SemanticProperties.Description="Last name" />
+                <Label Text="{Binding LastNameError}" TextColor="#DC2626" FontSize="12" />
+
+                <Label Text="Email *" />
+                <Entry Text="{Binding Email}" Keyboard="Email" AutomationId="edit-staff-email" SemanticProperties.Description="Email address" />
+                <Label Text="{Binding EmailError}" TextColor="#DC2626" FontSize="12" />
+
+                <Label Text="Role *" />
+                <Picker ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}" AutomationId="edit-staff-role" SemanticProperties.Description="Staff role" />
+
+                <Button Text="Deactivate Account"
+                        Command="{Binding DeactivateCommand}"
+                        Background="#FFFFFF"
+                        TextColor="#DC2626"
+                        BorderColor="#DC2626"
+                        BorderWidth="1"
+                        AutomationId="edit-staff-deactivate"
+                        SemanticProperties.Description="Deactivate account" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Border Grid.Row="1" StrokeThickness="0" Background="White" Padding="0,6,0,0">
+            <Button Text="Save Changes"
+                    Command="{Binding SaveCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
+                    AutomationId="edit-staff-save"
+                    SemanticProperties.Description="Save account changes" />
+        </Border>
+    </Grid>
+</ContentPage>
