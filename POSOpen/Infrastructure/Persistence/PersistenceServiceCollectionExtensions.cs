@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using POSOpen.Application.Abstractions.Persistence;
 using POSOpen.Application.Abstractions.Repositories;
+using POSOpen.Application.Abstractions.Security;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Infrastructure.Persistence.Repositories;
 using POSOpen.Infrastructure.Security;
@@ -16,6 +17,8 @@ public static class PersistenceServiceCollectionExtensions
 		services.AddSingleton<IEncryptionKeyProvider, SecureStorageEncryptionKeyProvider>();
 		services.AddSingleton<IUtcClock, SystemUtcClock>();
 		services.AddSingleton<IOperationContextFactory, OperationContextFactory>();
+		services.AddSingleton<IAuthorizationPolicyService, AuthorizationPolicyService>();
+		services.AddSingleton<ICurrentSessionService, AppStateCurrentSessionService>();
 		services.AddSingleton(CreateDatabasePathOptions());
 		services.AddDbContextFactory<PosOpenDbContext>((serviceProvider, options) =>
 		{

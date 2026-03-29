@@ -27,16 +27,19 @@
     <Compile Include="..\POSOpen\Application\Results\AppResult.cs" Link="Source\Application\Results\AppResult.cs" />
     <Compile Include="..\POSOpen\Application\Abstractions\Persistence\*.cs" Link="Source\Application\Abstractions\Persistence\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\Abstractions\Repositories\*.cs" Link="Source\Application\Abstractions\Repositories\%(Filename)%(Extension)" />
+    <Compile Include="..\POSOpen\Application\Abstractions\Security\*.cs" Link="Source\Application\Abstractions\Security\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\Abstractions\Services\*.cs" Link="Source\Application\Abstractions\Services\%(Filename)%(Extension)" />
+    <Compile Include="..\POSOpen\Application\Security\*.cs" Link="Source\Application\Security\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\StaffManagement\*.cs" Link="Source\Application\UseCases\StaffManagement\%(Filename)%(Extension)" />
+    <Compile Include="..\POSOpen\Application\UseCases\Shell\*.cs" Link="Source\Application\UseCases\Shell\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Domain\Entities\*.cs" Link="Source\Domain\Entities\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Domain\Enums\*.cs" Link="Source\Domain\Enums\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Infrastructure\Persistence\**\*.cs"
              Exclude="..\POSOpen\Infrastructure\Persistence\DesignTime\**\*.cs;..\POSOpen\Infrastructure\Persistence\PersistenceServiceCollectionExtensions.cs"
              Link="Source\Infrastructure\Persistence\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Infrastructure\Security\Pbkdf2PasswordHasher.cs" Link="Source\Infrastructure\Security\Pbkdf2PasswordHasher.cs" />
-    <Compile Include="..\POSOpen\Infrastructure\Services\OperationContextFactory.cs" Link="Source\Infrastructure\Services\OperationContextFactory.cs" />
-    <Compile Include="..\POSOpen\Infrastructure\Services\SystemUtcClock.cs" Link="Source\Infrastructure\Services\SystemUtcClock.cs" />
+    <Compile Include="..\POSOpen\Infrastructure\Security\AuthorizationPolicyService.cs" Link="Source\Infrastructure\Security\AuthorizationPolicyService.cs" />
+    <Compile Include="..\POSOpen\Infrastructure\Services\*.cs" Link="Source\Infrastructure\Services\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Shared\**\*.cs"
              Exclude="..\POSOpen\Shared\Converters\**\*.cs"
              Link="Source\Shared\%(RecursiveDir)%(Filename)%(Extension)" />

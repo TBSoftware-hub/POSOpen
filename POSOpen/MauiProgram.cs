@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Features.StaffManagement;
+using POSOpen.Features.Shell;
 using POSOpen.Features.Shell.ViewModels;
 using POSOpen.Features.Shell.Views;
 using POSOpen.Infrastructure.Persistence;
@@ -26,7 +27,11 @@ public static class MauiProgram
 		builder.Services.AddSingleton<IAppStateService, AppStateService>();
 		builder.Services.AddSingleton<AppShell>();
 		builder.Services.AddSingleton<HomePage>();
+		builder.Services.AddSingleton<ManagerOperationsPage>();
 		builder.Services.AddSingleton<HomeViewModel>();
+		builder.Services.AddSingleton<ManagerOperationsViewModel>();
+
+		Routing.RegisterRoute(ShellRoutes.ManagerOperations, typeof(ManagerOperationsPage));
 
 #if DEBUG
 		builder.Logging.AddDebug();

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:POSOpen.Features.Shell.ViewModels"
+             x:Class="POSOpen.Features.Shell.Views.ManagerOperationsPage"
+             x:DataType="viewModels:ManagerOperationsViewModel"
+             Title="Manager Operations">
+
+	<Grid Padding="24">
+		<Border Stroke="#D1DCE5"
+		        Background="{AppThemeBinding Light=#FAFCFE, Dark=#1F252B}"
+		        Padding="20"
+		        StrokeShape="RoundRectangle 20">
+			<VerticalStackLayout Spacing="10">
+				<Label Text="{Binding Title}"
+				       FontSize="24"
+				       FontAttributes="Bold" />
+				<Label Text="{Binding Summary}" />
+			</VerticalStackLayout>
+		</Border>
+	</Grid>
+
+</ContentPage>

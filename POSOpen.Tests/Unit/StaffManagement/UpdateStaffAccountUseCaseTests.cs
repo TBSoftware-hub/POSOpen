@@ -82,7 +82,7 @@ public sealed class UpdateStaffAccountUseCaseTests
 		result.Payload!.FirstName.Should().Be("Alice");
 		result.Payload.LastName.Should().Be("Smith");
 		result.Payload.Email.Should().Be("alice@example.com");
-		result.Payload.Role.Should().Be(StaffRole.Admin);
+		result.Payload.Role.Should().Be(StaffRole.Cashier);
 		account.UpdatedAtUtc.Should().Be(now);
 		operationLogs.Entries.Should().ContainSingle(entry => entry.EventType == "StaffAccountUpdated");
 	}

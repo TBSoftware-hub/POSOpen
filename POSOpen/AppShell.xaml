@@ -8,13 +8,21 @@
     Title="POSOpen">
 
     <ShellContent
+        x:Name="HomeShellContent"
         Title="Mission Control"
         ContentTemplate="{DataTemplate shellViews:HomePage}"
         Route="home" />
 
     <ShellContent
+        x:Name="StaffShellContent"
         Title="Staff"
         ContentTemplate="{DataTemplate staffViews:StaffListPage}"
         Route="staff/list" />
+
+    <ShellContent
+        x:Name="ManagerShellContent"
+        Title="Manager"
+        ContentTemplate="{DataTemplate shellViews:ManagerOperationsPage}"
+        Route="manager/operations" />
 
 </Shell>

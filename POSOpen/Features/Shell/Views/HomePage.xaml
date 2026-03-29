@@ -6,7 +6,7 @@
              x:DataType="viewModels:HomeViewModel"
              Title="Mission Control">
 
-	<Grid RowDefinitions="Auto,Auto,*"
+	<Grid RowDefinitions="Auto,Auto,Auto,*"
 	      Padding="24"
 	      RowSpacing="18">
 		<Border Grid.Row="0"
@@ -64,7 +64,18 @@
 			</Border>
 		</Grid>
 
-		<Border Grid.Row="2"
+		<VerticalStackLayout Grid.Row="2" Spacing="10">
+			<Border Padding="12"
+			        Background="#FEF2F2"
+			        IsVisible="{Binding HasAuthorizationMessage}">
+				<Label Text="{Binding AuthorizationMessage}" TextColor="#DC2626" />
+			</Border>
+
+			<Button Text="Open Manager Operations"
+			        Command="{Binding OpenManagerOperationsCommand}" />
+		</VerticalStackLayout>
+
+		<Border Grid.Row="3"
 		        StrokeThickness="1"
 		        Stroke="#D1DCE5"
 		        Background="{AppThemeBinding Light=#FAFCFE, Dark=#1F252B}"
