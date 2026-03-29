@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="POSOpen.Features.Security.Views.OverrideApprovalPage"
+             Title="Governed Override">
+
+    <VerticalStackLayout Padding="20" Spacing="15">
+        <!-- Action Context Display -->
+        <Label 
+            Text="Action Context" 
+            FontSize="16" 
+            FontAttributes="Bold"
+            Margin="0,0,0,5"/>
+        
+        <Frame BorderColor="LightGray" Padding="15" CornerRadius="8">
+            <Label 
+                Text="{Binding ActionContext}"
+                FontSize="14"
+                TextColor="#333333"/>
+        </Frame>
+
+        <!-- Reason Input Section -->
+        <Label 
+            Text="Reason for Override" 
+            FontSize="16" 
+            FontAttributes="Bold"
+            Margin="0,10,0,5"/>
+
+        <Editor
+            x:Name="ReasonInput"
+            AutoSize="TextChanges"
+            MinimumHeightRequest="100"
+            MaximumHeightRequest="200"
+            Placeholder="Enter reason for this override action..."
+            PlaceholderColor="LightGray"
+            FontSize="14"
+            Text="{Binding Reason}"
+            BorderColor="LightGray"
+            BorderWidth="1"/>
+
+        <!-- Validation Error Message -->
+        <Label 
+            Text="A reason is required to proceed with this override action."
+            FontSize="12"
+            TextColor="Red"
+            IsVisible="{Binding IsReasonMissing}"
+            Margin="0,5,0,0"/>
+
+        <!-- Operation Error Message -->
+        <Label 
+            Text="{Binding ErrorMessage}"
+            FontSize="12"
+            TextColor="Red"
+            IsVisible="{Binding HasError}"
+            Margin="0,5,0,0"/>
+
+        <!-- Action Buttons -->
+        <HorizontalStackLayout Spacing="10" Margin="0,20,0,0">
+            <Button 
+                Text="Cancel"
+                Clicked="OnCancelClicked"
+                BackgroundColor="LightGray"
+                TextColor="Black"
+                Padding="15,10"
+                HorizontalOptions="FillAndExpand"/>
+
+            <Button 
+                Text="Confirm Override"
+                Command="{Binding SubmitOverrideCommand}"
+                BackgroundColor="OrangeRed"
+                TextColor="White"
+                Padding="15,10"
+                HorizontalOptions="FillAndExpand"
+                IsEnabled="{Binding IsProcessing, Converter={StaticResource InvertedBoolConverter}}"/>
+        </HorizontalStackLayout>
+
+        <!-- Processing Indicator -->
+        <ActivityIndicator 
+            IsRunning="{Binding IsProcessing}"
+            IsVisible="{Binding IsProcessing}"
+            HorizontalOptions="Center"
+            Margin="0,20,0,0"/>
+    </VerticalStackLayout>
+</ContentPage>

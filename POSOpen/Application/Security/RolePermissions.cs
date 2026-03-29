@@ -8,6 +8,7 @@ public static class RolePermissions
 	public const string ManagerOperationsView = "manager.operations.view";
 	public const string ManagerOperationsExecute = "manager.operations.execute";
 	public const string StaffManagementView = "staff.management.view";
+	public const string SecurityOverrideExecute = "security.override.execute";
 
 	private static readonly IReadOnlyDictionary<StaffRole, HashSet<string>> PermissionsByRole =
 		new Dictionary<StaffRole, HashSet<string>>
@@ -17,19 +18,22 @@ public static class RolePermissions
 				StaffRoleAssign,
 				ManagerOperationsView,
 				ManagerOperationsExecute,
-				StaffManagementView
+				StaffManagementView,
+				SecurityOverrideExecute
 			},
 			[StaffRole.Admin] = new(StringComparer.Ordinal)
 			{
 				StaffRoleAssign,
 				ManagerOperationsView,
 				ManagerOperationsExecute,
-				StaffManagementView
+				StaffManagementView,
+				SecurityOverrideExecute
 			},
 			[StaffRole.Manager] = new(StringComparer.Ordinal)
 			{
 				ManagerOperationsView,
-				ManagerOperationsExecute
+				ManagerOperationsExecute,
+				SecurityOverrideExecute
 			},
 			[StaffRole.Cashier] = new(StringComparer.Ordinal)
 			{
