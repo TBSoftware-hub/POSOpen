@@ -1,0 +1,43 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install MAUI workload
+        run: dotnet workload install maui --ignore-failed-sources
+
+      - name: Install EF Core CLI
+        shell: pwsh
+        run: |
+          dotnet tool install --global dotnet-ef --version 10.0.2
+          Add-Content -Path $env:GITHUB_PATH -Value "$env:USERPROFILE\.dotnet\tools"
+
+      - name: Restore
+        run: dotnet restore POSOpen.sln
+
+      - name: Build Windows target
+        run: dotnet build POSOpen.sln --configuration Release --framework net10.0-windows10.0.19041.0 --no-restore
+
+      - name: Run tests
+        run: dotnet test POSOpen.Tests/POSOpen.Tests.csproj --configuration Release --framework net10.0-windows10.0.19041.0 --no-build
+
+      - name: Validate EF migrations startup path
+        env:
+          POSOPEN_SQLITE_PASSWORD: ci-validation-key
+        run: dotnet ef database update --project POSOpen/POSOpen.csproj --framework net10.0-windows10.0.19041.0 --context POSOpen.Infrastructure.Persistence.PosOpenDbContext --no-build

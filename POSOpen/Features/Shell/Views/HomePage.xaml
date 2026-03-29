@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:POSOpen.Features.Shell.ViewModels"
+             x:Class="POSOpen.Features.Shell.Views.HomePage"
+             x:DataType="viewModels:HomeViewModel"
+             Title="Mission Control">
+
+	<Grid RowDefinitions="Auto,Auto,*"
+	      Padding="24"
+	      RowSpacing="18">
+		<Border Grid.Row="0"
+		        StrokeThickness="0"
+		        Background="{AppThemeBinding Light=#13293D, Dark=#13293D}"
+		        Padding="20"
+		        StrokeShape="RoundRectangle 24">
+			<VerticalStackLayout Spacing="8">
+				<Label Text="{Binding Headline}"
+				       FontSize="28"
+				       FontAttributes="Bold"
+				       TextColor="White"
+				       SemanticProperties.HeadingLevel="Level1" />
+				<Label Text="{Binding SubHeadline}"
+				       FontSize="16"
+				       TextColor="#E6EEF5" />
+			</VerticalStackLayout>
+		</Border>
+
+		<Grid Grid.Row="1"
+		      ColumnDefinitions="*,*"
+		      ColumnSpacing="12">
+			<Border Grid.Column="0"
+			        StrokeThickness="0"
+			        Background="{AppThemeBinding Light=#F5B700, Dark=#7A5A00}"
+			        Padding="16"
+			        StrokeShape="RoundRectangle 20"
+			        SemanticProperties.Description="{Binding TerminalModeA11y}">
+				<VerticalStackLayout Spacing="4">
+					<Label Text="Terminal Mode"
+					       FontSize="12"
+					       TextColor="#3D2C00" />
+					<Label Text="{Binding TerminalMode}"
+					       FontSize="20"
+					       FontAttributes="Bold"
+					       TextColor="#241800" />
+				</VerticalStackLayout>
+			</Border>
+
+			<Border Grid.Column="1"
+			        StrokeThickness="0"
+			        Background="{AppThemeBinding Light=#D6EFFF, Dark=#1D4D63}"
+			        Padding="16"
+			        StrokeShape="RoundRectangle 20"
+			        SemanticProperties.Description="{Binding SyncStateA11y}">
+				<VerticalStackLayout Spacing="4">
+					<Label Text="Sync State"
+					       FontSize="12"
+					       TextColor="#103247" />
+					<Label Text="{Binding SyncState}"
+					       FontSize="20"
+					       FontAttributes="Bold"
+					       TextColor="#0B2433" />
+				</VerticalStackLayout>
+			</Border>
+		</Grid>
+
+		<Border Grid.Row="2"
+		        StrokeThickness="1"
+		        Stroke="#D1DCE5"
+		        Background="{AppThemeBinding Light=#FAFCFE, Dark=#1F252B}"
+		        Padding="20"
+		        StrokeShape="RoundRectangle 24">
+			<VerticalStackLayout Spacing="12">
+				<Label Text="Foundation Guardrails"
+				       FontSize="18"
+				       FontAttributes="Bold" />
+				<Label Text="Presentation routes through ViewModels, application services own policy and orchestration, and infrastructure is isolated behind abstractions. This baseline is now ready for persistence, queueing, and test scaffolding." />
+				<Label Text="{Binding FoundationStatus}"
+				       FontSize="12"
+				       TextColor="#52606D" />
+			</VerticalStackLayout>
+		</Border>
+	</Grid>
+
+</ContentPage>

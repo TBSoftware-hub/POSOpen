@@ -1,16 +1,22 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿namespace POSOpen;
 
-namespace POSOpen;
-
-public partial class App : Application
+public partial class App : global::Microsoft.Maui.Controls.Application
 {
-	public App()
+	private readonly Application.Abstractions.Persistence.IAppDbContextInitializer _dbContextInitializer;
+	private readonly AppShell _appShell;
+
+	public App(
+		Application.Abstractions.Persistence.IAppDbContextInitializer dbContextInitializer,
+		AppShell appShell)
 	{
 		InitializeComponent();
+		_dbContextInitializer = dbContextInitializer;
+		_dbContextInitializer.InitializeAsync().GetAwaiter().GetResult();
+		_appShell = appShell;
 	}
 
-	protected override Window CreateWindow(IActivationState? activationState)
+	protected override global::Microsoft.Maui.Controls.Window CreateWindow(IActivationState? activationState)
 	{
-		return new Window(new AppShell());
+		return new global::Microsoft.Maui.Controls.Window(_appShell);
 	}
 }
