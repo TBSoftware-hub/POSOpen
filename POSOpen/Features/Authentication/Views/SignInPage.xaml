@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:authViewModels="clr-namespace:POSOpen.Features.Authentication.ViewModels"
+             x:Class="POSOpen.Features.Authentication.Views.SignInPage"
+             x:DataType="authViewModels:SignInViewModel"
+             Title="Terminal Sign-In">
+
+    <Grid RowDefinitions="*,Auto,*"
+          Padding="20"
+          RowSpacing="14"
+          MaximumWidthRequest="580"
+          HorizontalOptions="Center">
+
+        <VerticalStackLayout Grid.Row="1" Spacing="12">
+            <Label Text="Sign In"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+
+            <Label Text="Use your staff credentials to continue."
+                   HorizontalOptions="Center"
+                   TextColor="#52606D" />
+
+            <Border Padding="10"
+                    Background="#FEF2F2"
+                    IsVisible="{Binding HasError}">
+                <Label Text="{Binding ErrorMessage}" TextColor="#DC2626" />
+            </Border>
+
+            <Label Text="Email" />
+            <Entry Text="{Binding Email}"
+                   Keyboard="Email"
+                   AutomationId="signin-email"
+                   SemanticProperties.Description="Staff email" />
+
+            <Label Text="Password" />
+            <Entry Text="{Binding Password}"
+                   IsPassword="True"
+                   AutomationId="signin-password"
+                   SemanticProperties.Description="Staff password" />
+
+            <Button Text="Sign In"
+                    Command="{Binding SignInCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
+                    AutomationId="signin-submit"
+                    SemanticProperties.Description="Sign in to terminal" />
+        </VerticalStackLayout>
+    </Grid>
+
+</ContentPage>

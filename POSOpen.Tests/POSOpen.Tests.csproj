@@ -32,6 +32,7 @@
     <Compile Include="..\POSOpen\Application\Security\*.cs" Link="Source\Application\Security\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\StaffManagement\*.cs" Link="Source\Application\UseCases\StaffManagement\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\Shell\*.cs" Link="Source\Application\UseCases\Shell\%(Filename)%(Extension)" />
+    <Compile Include="..\POSOpen\Application\UseCases\Authentication\*.cs" Link="Source\Application\UseCases\Authentication\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Domain\Entities\*.cs" Link="Source\Domain\Entities\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Domain\Enums\*.cs" Link="Source\Domain\Enums\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Infrastructure\Persistence\**\*.cs"
