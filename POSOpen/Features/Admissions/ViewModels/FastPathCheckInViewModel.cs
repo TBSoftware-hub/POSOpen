@@ -237,7 +237,6 @@ public partial class FastPathCheckInViewModel : ObservableObject
 		}
 
 		IsLoading = true;
-		ResetCompletionState();
 		try
 		{
 			var result = await _evaluateFastPathCheckInUseCase.ExecuteAsync(

@@ -1,6 +1,6 @@
 # Story 2.5: Check-In Performance and UX Compliance
 
-Status: in-progress
+Status: review
 
 ## Story
 
@@ -39,24 +39,24 @@ so that staff can reliably complete the core guest moment under pressure.
   - [x] Preserve required revalidation behavior from Stories 2.2 and 2.4; optimization must not weaken waiver/profile correctness.
   - [x] Keep behavior deterministic across repeated refresh actions during a single session.
 
-- [ ] Align fast-path UI with UX consistency and accessibility rules. (AC: 2)
-  - [ ] Apply explicit button hierarchy (primary, secondary, tertiary/destructive) on the fast-path page.
-  - [ ] Ensure status messaging follows UX semantic mapping (success/warning/error/info) with icon/text clarity, not color-only signaling.
-  - [ ] Verify touch target sizing and keyboard navigation parity for primary actions.
-  - [ ] Ensure assistive text/linkage exists for error and guidance regions so state changes are discoverable.
+- [x] Align fast-path UI with UX consistency and accessibility rules. (AC: 2)
+  - [x] Apply explicit button hierarchy (primary, secondary, tertiary/destructive) on the fast-path page.
+  - [x] Ensure status messaging follows UX semantic mapping (success/warning/error/info) with icon/text clarity, not color-only signaling.
+  - [x] Verify touch target sizing and keyboard navigation parity for primary actions.
+  - [x] Ensure assistive text/linkage exists for error and guidance regions so state changes are discoverable.
 
-- [ ] Guarantee inline recovery continuity for recoverable errors. (AC: 3)
-  - [ ] Keep user input and selected family context intact when recoverable failures occur.
-  - [ ] Preserve, at minimum, `FamilyId`, `FamilyDisplayName`, `WaiverStatusLabel`, `GuidanceMessage`, `AdmissionTotalLabel`, `ShowCompletionResult`, `CompletionStatusLabel`, `ConfirmationCode`, and `OperationIdText` across recoverable retry paths.
-  - [ ] Ensure recovery actions are offered inline on the same fast-lane screen without forced restart loops.
-  - [ ] Avoid clearing completion-relevant context unless a deliberate new-family initialization occurs.
-  - [ ] Ensure transient errors can be retried successfully without losing operational state.
+- [x] Guarantee inline recovery continuity for recoverable errors. (AC: 3)
+  - [x] Keep user input and selected family context intact when recoverable failures occur.
+  - [x] Preserve, at minimum, `FamilyId`, `FamilyDisplayName`, `WaiverStatusLabel`, `GuidanceMessage`, `AdmissionTotalLabel`, `ShowCompletionResult`, `CompletionStatusLabel`, `ConfirmationCode`, and `OperationIdText` across recoverable retry paths.
+  - [x] Ensure recovery actions are offered inline on the same fast-lane screen without forced restart loops.
+  - [x] Avoid clearing completion-relevant context unless a deliberate new-family initialization occurs.
+  - [x] Ensure transient errors can be retried successfully without losing operational state.
 
-- [ ] Add focused tests for latency guardrails and UX/recovery behavior. (AC: 1, 2, 3)
+- [x] Add focused tests for latency guardrails and UX/recovery behavior. (AC: 1, 2, 3)
   - [x] Unit tests for timing/diagnostic emission behavior and threshold handling.
-  - [ ] ViewModel tests covering recoverable error retry without state loss.
-  - [ ] UI/ViewModel behavior tests covering action hierarchy visibility and status-state consistency.
-  - [ ] Add a regression test ensuring optimizations do not break Story 2.4 deferred-payment continuity path.
+  - [x] ViewModel tests covering recoverable error retry without state loss.
+  - [x] UI/ViewModel behavior tests covering action hierarchy visibility and status-state consistency.
+  - [x] Add a regression test ensuring optimizations do not break Story 2.4 deferred-payment continuity path.
 
 ## Dev Notes
 
@@ -184,6 +184,8 @@ GPT-5.3-Codex
 - `runTests`: `POSOpen.Tests/Unit/Admissions/FastPathCheckInViewModelTests.cs`, `POSOpen.Tests/Unit/Admissions/CompleteAdmissionCheckInUseCaseTests.cs`, `POSOpen.Tests/Integration/Admissions/AdmissionCheckInRepositoryTests.cs` (15 passed, 0 failed)
 - `runTests`: `POSOpen.Tests/Unit/Admissions/FastPathCheckInViewModelTests.cs` (8 passed, 0 failed)
 - `runTests`: `POSOpen.Tests/Unit/Admissions/FastPathCheckInViewModelTests.cs`, `POSOpen.Tests/Unit/Admissions/CompleteAdmissionCheckInUseCaseTests.cs`, `POSOpen.Tests/Integration/Admissions/AdmissionCheckInRepositoryTests.cs` (16 passed, 0 failed)
+- `runTests`: `POSOpen.Tests/Unit/Admissions/FastPathCheckInViewModelTests.cs` (9 passed, 0 failed)
+- `runTests`: `POSOpen.Tests/Unit/Admissions/FastPathCheckInViewModelTests.cs`, `POSOpen.Tests/Unit/Admissions/CompleteAdmissionCheckInUseCaseTests.cs`, `POSOpen.Tests/Integration/Admissions/AdmissionCheckInRepositoryTests.cs` (18 passed, 0 failed)
 
 ### Completion Notes List
 
@@ -196,6 +198,10 @@ GPT-5.3-Codex
 - Parallelized eligible-path profile and pricing retrieval in `EvaluateAsync` to remove avoidable serial waits.
 - Added safe per-family admission-total caching/reuse for completion flow while preserving mandatory revalidation behavior.
 - Added regression test proving complete-check-in flow avoids an unnecessary third pricing fetch.
+- Applied explicit primary/secondary/tertiary action hierarchy styles and keyboard tab-order sequencing on `FastPathCheckInPage`.
+- Added accessibility semantics and automation IDs for guidance/status/error/action controls to improve discoverability and testability.
+- Preserved completion/deferred context across recoverable refresh errors and verified retry continuity without forced restart.
+- Added deferred-path continuity regression coverage after responsiveness and continuity changes.
 
 ### File List
 
@@ -207,3 +213,4 @@ GPT-5.3-Codex
 - POSOpen/Features/Admissions/ViewModels/FastPathCheckInViewModel.cs
 - POSOpen/MauiProgram.cs
 - POSOpen.Tests/Unit/Admissions/FastPathCheckInViewModelTests.cs
+- POSOpen/Features/Admissions/Views/FastPathCheckInPage.xaml

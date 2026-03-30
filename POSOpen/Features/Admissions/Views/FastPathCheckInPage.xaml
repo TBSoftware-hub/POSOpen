@@ -6,6 +6,37 @@
              x:DataType="admissionsViewModels:FastPathCheckInViewModel"
              Title="Fast-Path Check-In">
 
+       <ContentPage.Resources>
+              <Style x:Key="PrimaryActionButtonStyle"
+                        TargetType="Button">
+                     <Setter Property="BackgroundColor" Value="#0F766E" />
+                     <Setter Property="TextColor" Value="White" />
+                     <Setter Property="FontAttributes" Value="Bold" />
+                     <Setter Property="HeightRequest" Value="48" />
+                     <Setter Property="CornerRadius" Value="10" />
+                     <Setter Property="Padding" Value="16,12" />
+              </Style>
+
+              <Style x:Key="SecondaryActionButtonStyle"
+                        TargetType="Button">
+                     <Setter Property="BackgroundColor" Value="#FFFFFF" />
+                     <Setter Property="TextColor" Value="#0F172A" />
+                     <Setter Property="BorderColor" Value="#CBD5E1" />
+                     <Setter Property="BorderWidth" Value="1" />
+                     <Setter Property="HeightRequest" Value="48" />
+                     <Setter Property="CornerRadius" Value="10" />
+                     <Setter Property="Padding" Value="16,12" />
+              </Style>
+
+              <Style x:Key="TertiaryActionButtonStyle"
+                        TargetType="Button"
+                        BasedOn="{StaticResource SecondaryActionButtonStyle}">
+                     <Setter Property="BackgroundColor" Value="#F8FAFC" />
+                     <Setter Property="TextColor" Value="#334155" />
+                     <Setter Property="BorderColor" Value="#E2E8F0" />
+              </Style>
+       </ContentPage.Resources>
+
     <Grid RowDefinitions="Auto,*,Auto"
           Padding="16"
           RowSpacing="12">
@@ -30,13 +61,17 @@
             <VerticalStackLayout Spacing="4">
                 <Label Text="Waiver Status"
                        TextColor="White"
-                       FontSize="12" />
+                       FontSize="12"
+                       SemanticProperties.Description="Waiver status section" />
                 <Label Text="{Binding WaiverStatusLabel}"
                        TextColor="White"
                        FontSize="18"
-                       FontAttributes="Bold" />
+                       FontAttributes="Bold"
+                       AutomationId="fast-path-waiver-status-label" />
                 <Label Text="{Binding GuidanceMessage}"
-                       TextColor="White" />
+                       TextColor="White"
+                       AutomationId="fast-path-guidance-message"
+                       SemanticProperties.Description="Current guidance and next best action" />
             </VerticalStackLayout>
         </Border>
 
@@ -74,7 +109,9 @@
                     StrokeShape="RoundRectangle 8">
                 <Label Text="{Binding ErrorMessage}"
                        TextColor="#B91C1C"
-                       Padding="10" />
+                                      Padding="10"
+                                      AutomationId="fast-path-error-message"
+                                      SemanticProperties.Description="Recoverable error details" />
             </Border>
 
             <Border Grid.Row="4"
@@ -95,7 +132,8 @@
                     <Label Grid.Row="0"
                            Text="{Binding CompletionStatusLabel}"
                            FontAttributes="Bold"
-                           TextColor="#14532D" />
+                           TextColor="#14532D"
+                           AutomationId="fast-path-completion-status-label" />
                     <Label Grid.Row="1"
                            Text="{Binding CompletionGuidance}"
                            TextColor="#14532D" />
@@ -111,17 +149,29 @@
             <Button Grid.Row="5"
                     Text="Refresh Waiver Status"
                     IsVisible="{Binding ShowRefreshAction}"
-                    Command="{Binding RefreshWaiverStatusCommand}" />
+                  Command="{Binding RefreshWaiverStatusCommand}"
+                  Style="{StaticResource SecondaryActionButtonStyle}"
+                  AutomationId="fast-path-refresh-button"
+                  SemanticProperties.Description="Refresh waiver status without leaving this screen"
+                  TabIndex="1" />
 
             <Button Grid.Row="6"
                     Text="Start Waiver Recovery"
                     IsVisible="{Binding ShowRecoveryAction}"
-                    Command="{Binding StartWaiverRecoveryCommand}" />
+                  Command="{Binding StartWaiverRecoveryCommand}"
+                  Style="{StaticResource SecondaryActionButtonStyle}"
+                  AutomationId="fast-path-recovery-button"
+                  SemanticProperties.Description="Start waiver recovery flow while preserving current check-in context"
+                  TabIndex="2" />
 
            <Button Grid.Row="7"
                   Text="Complete Profile"
                   IsVisible="{Binding ShowProfileCompletionAction}"
-                  Command="{Binding StartProfileCompletionCommand}" />
+                Command="{Binding StartProfileCompletionCommand}"
+                Style="{StaticResource TertiaryActionButtonStyle}"
+                AutomationId="fast-path-profile-button"
+                SemanticProperties.Description="Open profile completion for required fields"
+                TabIndex="3" />
 
            <ActivityIndicator Grid.Row="8"
                                IsVisible="{Binding IsLoading}"
@@ -130,6 +180,10 @@
 
         <Button Grid.Row="2"
                 Text="Complete Check-In"
-                Command="{Binding CompleteCheckInCommand}" />
+              Command="{Binding CompleteCheckInCommand}"
+              Style="{StaticResource PrimaryActionButtonStyle}"
+              AutomationId="fast-path-complete-check-in-button"
+              SemanticProperties.Description="Primary action to complete check-in"
+              TabIndex="0" />
     </Grid>
 </ContentPage>

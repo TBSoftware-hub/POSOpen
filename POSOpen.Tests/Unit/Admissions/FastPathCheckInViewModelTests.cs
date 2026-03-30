@@ -282,6 +282,93 @@ public sealed class FastPathCheckInViewModelTests
 			Times.Exactly(2));
 	}
 
+	[Fact]
+	public async Task RefreshWaiverStatusCommand_when_recoverable_error_occurs_preserves_completion_context_and_recovers_on_retry()
+	{
+		var familyId = Guid.NewGuid();
+		var shouldFail = false;
+		var repository = new Mock<IFamilyProfileRepository>();
+		repository
+			.Setup(x => x.GetByIdAsync(familyId, It.IsAny<CancellationToken>()))
+			.Returns<Guid, CancellationToken>((_, _) =>
+			{
+				if (shouldFail)
+				{
+					throw new InvalidOperationException("transient");
+				}
+
+				return Task.FromResult(CreateProfile(familyId, WaiverStatus.Valid));
+			});
+
+		var viewModel = new FastPathCheckInViewModel(
+			CreateUseCase(repository.Object),
+			CreateProfileAdmissionUseCase(repository.Object),
+			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.DeferredEligible),
+			new StubAdmissionPricingService(),
+			Mock.Of<IFastPathCheckInUiService>(),
+			new ControlledLatencyTimer(1000, 1100, 1200, 1300, 1400, 1500),
+			Mock.Of<ICheckInLatencyMonitor>());
+		viewModel.Initialize(familyId);
+
+		await viewModel.LoadAsync();
+		await viewModel.CompleteCheckInCommand.ExecuteAsync(null);
+
+		var originalStatusLabel = viewModel.CompletionStatusLabel;
+		var originalOperationId = viewModel.OperationIdText;
+		var originalGuidance = viewModel.GuidanceMessage;
+
+		shouldFail = true;
+		await viewModel.RefreshWaiverStatusCommand.ExecuteAsync(null);
+
+		viewModel.ErrorMessage.Should().Be(EvaluateFastPathCheckInConstants.SafeFastPathUnavailableMessage);
+		viewModel.ShowCompletionResult.Should().BeTrue();
+		viewModel.CompletionStatusLabel.Should().Be(originalStatusLabel);
+		viewModel.OperationIdText.Should().Be(originalOperationId);
+		viewModel.GuidanceMessage.Should().Be(originalGuidance);
+
+		shouldFail = false;
+		await viewModel.RefreshWaiverStatusCommand.ExecuteAsync(null);
+
+		viewModel.ErrorMessage.Should().BeNull();
+		viewModel.ShowCompletionResult.Should().BeTrue();
+		viewModel.CompletionStatusLabel.Should().Be(originalStatusLabel);
+		viewModel.OperationIdText.Should().Be(originalOperationId);
+	}
+
+	[Fact]
+	public async Task CompleteCheckInCommand_deferred_continuity_remains_intact_after_responsiveness_optimizations()
+	{
+		var familyId = Guid.NewGuid();
+		var repository = new Mock<IFamilyProfileRepository>();
+		repository
+			.Setup(x => x.GetByIdAsync(familyId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(CreateProfile(familyId, WaiverStatus.Valid));
+
+		var pricingService = new Mock<IAdmissionPricingService>();
+		pricingService
+			.Setup(x => x.GetAdmissionTotalAsync(familyId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(new AdmissionTotal(2500, "USD"));
+
+		var viewModel = new FastPathCheckInViewModel(
+			CreateUseCase(repository.Object),
+			CreateProfileAdmissionUseCase(repository.Object),
+			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.DeferredEligible),
+			pricingService.Object,
+			Mock.Of<IFastPathCheckInUiService>(),
+			new ControlledLatencyTimer(1000, 1100, 1200, 1300),
+			Mock.Of<ICheckInLatencyMonitor>());
+		viewModel.Initialize(familyId);
+
+		await viewModel.LoadAsync();
+		await viewModel.CompleteCheckInCommand.ExecuteAsync(null);
+
+		viewModel.ShowCompletionResult.Should().BeTrue();
+		viewModel.IsDeferredQueued.Should().BeTrue();
+		viewModel.CompletionStatusLabel.Should().Be(CompleteAdmissionCheckInConstants.SettlementLabelDeferred);
+		viewModel.OperationIdText.Should().NotBeNullOrWhiteSpace();
+		pricingService.Verify(x => x.GetAdmissionTotalAsync(familyId, It.IsAny<CancellationToken>()), Times.Exactly(2));
+	}
+
 	private static EvaluateFastPathCheckInUseCase CreateUseCase(IFamilyProfileRepository repository)
 	{
 		var currentSession = new Mock<ICurrentSessionService>();
