@@ -51,15 +51,15 @@ development_status:
   1-4-governed-override-workflow: done
   1-5-immutable-audit-trail-for-security-critical-actions: done
   epic-1-retrospective: optional
-  epic-2: in-progress
+  epic-2: done
   2-1-family-lookup-with-search-and-scan: done
   2-2-waiver-aware-fast-path-check-in: done
   2-3-new-or-incomplete-profile-admission: done
   2-4-admission-completion-with-deferred-payment-continuity: done
   2-5-check-in-performance-and-ux-compliance: done
   epic-2-retrospective: optional
-  epic-3: backlog
-  3-1-build-mixed-cart-composition-by-fulfillment-context: backlog
+  epic-3: in-progress
+  3-1-build-mixed-cart-composition-by-fulfillment-context: ready-for-dev
   3-2-enforce-compatibility-rules-and-guided-resolution: backlog
   3-3-integrate-scanner-and-card-reader-for-checkout: backlog
   3-4-print-receipts-and-preserve-offline-continuity: backlog
