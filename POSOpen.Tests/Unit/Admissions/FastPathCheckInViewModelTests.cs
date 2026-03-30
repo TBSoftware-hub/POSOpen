@@ -250,6 +250,38 @@ public sealed class FastPathCheckInViewModelTests
 			Times.Once);
 	}
 
+	[Fact]
+	public async Task CompleteCheckInCommand_reuses_evaluated_total_and_avoids_extra_pricing_fetch()
+	{
+		var familyId = Guid.NewGuid();
+		var repository = new Mock<IFamilyProfileRepository>();
+		repository
+			.Setup(x => x.GetByIdAsync(familyId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(CreateProfile(familyId, WaiverStatus.Valid));
+
+		var pricingService = new Mock<IAdmissionPricingService>();
+		pricingService
+			.Setup(x => x.GetAdmissionTotalAsync(familyId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(new AdmissionTotal(2500, "USD"));
+
+		var viewModel = new FastPathCheckInViewModel(
+			CreateUseCase(repository.Object),
+			CreateProfileAdmissionUseCase(repository.Object),
+			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.Authorized),
+			pricingService.Object,
+			Mock.Of<IFastPathCheckInUiService>(),
+			new ControlledLatencyTimer(1000, 1100, 2000, 2100),
+			Mock.Of<ICheckInLatencyMonitor>());
+		viewModel.Initialize(familyId);
+
+		await viewModel.LoadAsync();
+		await viewModel.CompleteCheckInCommand.ExecuteAsync(null);
+
+		pricingService.Verify(
+			x => x.GetAdmissionTotalAsync(familyId, It.IsAny<CancellationToken>()),
+			Times.Exactly(2));
+	}
+
 	private static EvaluateFastPathCheckInUseCase CreateUseCase(IFamilyProfileRepository repository)
 	{
 		var currentSession = new Mock<ICurrentSessionService>();

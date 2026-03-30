@@ -33,11 +33,11 @@ so that staff can reliably complete the core guest moment under pressure.
   - [x] Ensure diagnostics include operation/correlation context when available and never expose unsafe internal details in user-facing text.
   - [x] Keep the implementation local-first and non-blocking; performance telemetry must not delay check-in completion.
 
-- [ ] Optimize fast-path check-in responsiveness for the connected path. (AC: 1)
-  - [ ] Review `FastPathCheckInViewModel` flow and remove avoidable serial waits in refresh/evaluate path.
-  - [ ] Cache or reuse story-safe values within the active check-in context where this does not violate data freshness rules from Story 2.2.
-  - [ ] Preserve required revalidation behavior from Stories 2.2 and 2.4; optimization must not weaken waiver/profile correctness.
-  - [ ] Keep behavior deterministic across repeated refresh actions during a single session.
+- [x] Optimize fast-path check-in responsiveness for the connected path. (AC: 1)
+  - [x] Review `FastPathCheckInViewModel` flow and remove avoidable serial waits in refresh/evaluate path.
+  - [x] Cache or reuse story-safe values within the active check-in context where this does not violate data freshness rules from Story 2.2.
+  - [x] Preserve required revalidation behavior from Stories 2.2 and 2.4; optimization must not weaken waiver/profile correctness.
+  - [x] Keep behavior deterministic across repeated refresh actions during a single session.
 
 - [ ] Align fast-path UI with UX consistency and accessibility rules. (AC: 2)
   - [ ] Apply explicit button hierarchy (primary, secondary, tertiary/destructive) on the fast-path page.
@@ -182,6 +182,8 @@ GPT-5.3-Codex
 
 - `runTests`: `POSOpen.Tests/Unit/Admissions/FastPathCheckInViewModelTests.cs` (8 passed, 0 failed)
 - `runTests`: `POSOpen.Tests/Unit/Admissions/FastPathCheckInViewModelTests.cs`, `POSOpen.Tests/Unit/Admissions/CompleteAdmissionCheckInUseCaseTests.cs`, `POSOpen.Tests/Integration/Admissions/AdmissionCheckInRepositoryTests.cs` (15 passed, 0 failed)
+- `runTests`: `POSOpen.Tests/Unit/Admissions/FastPathCheckInViewModelTests.cs` (8 passed, 0 failed)
+- `runTests`: `POSOpen.Tests/Unit/Admissions/FastPathCheckInViewModelTests.cs`, `POSOpen.Tests/Unit/Admissions/CompleteAdmissionCheckInUseCaseTests.cs`, `POSOpen.Tests/Integration/Admissions/AdmissionCheckInRepositoryTests.cs` (16 passed, 0 failed)
 
 ### Completion Notes List
 
@@ -191,6 +193,9 @@ GPT-5.3-Codex
 - Implemented deterministic AC1 latency instrumentation in `FastPathCheckInViewModel` with measurement boundary at first user-visible feedback update.
 - Added non-blocking latency diagnostics contracts and infrastructure adapters for timing and monitoring.
 - Added and passed threshold tests for `<= 2000ms` and `> 2000ms` latency behavior.
+- Parallelized eligible-path profile and pricing retrieval in `EvaluateAsync` to remove avoidable serial waits.
+- Added safe per-family admission-total caching/reuse for completion flow while preserving mandatory revalidation behavior.
+- Added regression test proving complete-check-in flow avoids an unnecessary third pricing fetch.
 
 ### File List
 
