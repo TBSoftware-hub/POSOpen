@@ -1,6 +1,6 @@
 # Story 2.3: New or Incomplete Profile Admission
 
-Status: review
+Status: done
 
 ## Story
 
