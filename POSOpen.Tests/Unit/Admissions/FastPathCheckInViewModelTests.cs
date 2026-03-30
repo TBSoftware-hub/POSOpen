@@ -33,7 +33,9 @@ public sealed class FastPathCheckInViewModelTests
 			profileAdmissionUseCase,
 			completeUseCase,
 			new StubAdmissionPricingService(),
-			Mock.Of<IFastPathCheckInUiService>());
+			Mock.Of<IFastPathCheckInUiService>(),
+			new ControlledLatencyTimer(0, 1500),
+			Mock.Of<ICheckInLatencyMonitor>());
 		viewModel.Initialize(familyId);
 
 		await viewModel.LoadAsync();
@@ -60,7 +62,9 @@ public sealed class FastPathCheckInViewModelTests
 			CreateProfileAdmissionUseCase(repository.Object),
 			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.DeferredEligible),
 			new StubAdmissionPricingService(),
-			Mock.Of<IFastPathCheckInUiService>());
+			Mock.Of<IFastPathCheckInUiService>(),
+			new ControlledLatencyTimer(0, 1500),
+			Mock.Of<ICheckInLatencyMonitor>());
 		viewModel.Initialize(familyId);
 
 		await viewModel.LoadAsync();
@@ -89,7 +93,9 @@ public sealed class FastPathCheckInViewModelTests
 			profileAdmissionUseCase,
 			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.Authorized),
 			new StubAdmissionPricingService(),
-			Mock.Of<IFastPathCheckInUiService>());
+			Mock.Of<IFastPathCheckInUiService>(),
+			new ControlledLatencyTimer(0, 1500),
+			Mock.Of<ICheckInLatencyMonitor>());
 		viewModel.Initialize(familyId);
 
 		await viewModel.RefreshWaiverStatusCommand.ExecuteAsync(null);
@@ -116,7 +122,9 @@ public sealed class FastPathCheckInViewModelTests
 			CreateProfileAdmissionUseCase(repository.Object),
 			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.Authorized),
 			new StubAdmissionPricingService(),
-			uiService.Object);
+			uiService.Object,
+			new ControlledLatencyTimer(0, 1500),
+			Mock.Of<ICheckInLatencyMonitor>());
 		viewModel.Initialize(familyId);
 
 		await viewModel.StartWaiverRecoveryCommand.ExecuteAsync(null);
@@ -143,7 +151,9 @@ public sealed class FastPathCheckInViewModelTests
 			CreateProfileAdmissionUseCase(repository.Object),
 			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.Authorized),
 			new StubAdmissionPricingService(),
-			uiService.Object);
+			uiService.Object,
+			new ControlledLatencyTimer(0, 1500),
+			Mock.Of<ICheckInLatencyMonitor>());
 		viewModel.Initialize(familyId);
 
 		await viewModel.LoadAsync();
@@ -167,13 +177,77 @@ public sealed class FastPathCheckInViewModelTests
 			CreateProfileAdmissionUseCase(repository.Object),
 			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.Authorized),
 			new StubAdmissionPricingService(),
-			Mock.Of<IFastPathCheckInUiService>());
+			Mock.Of<IFastPathCheckInUiService>(),
+			new ControlledLatencyTimer(0, 1500),
+			Mock.Of<ICheckInLatencyMonitor>());
 		viewModel.Initialize(familyId);
 
 		await viewModel.LoadAsync();
 
 		viewModel.IsEligible.Should().BeFalse();
 		viewModel.ErrorMessage.Should().Be(ProfileAdmissionConstants.SafeProfileSaveFailedMessage);
+	}
+
+	[Fact]
+	public async Task LoadAsync_when_feedback_is_within_two_seconds_records_non_breach_latency()
+	{
+		var familyId = Guid.NewGuid();
+		var repository = new Mock<IFamilyProfileRepository>();
+		repository
+			.Setup(x => x.GetByIdAsync(familyId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(CreateProfile(familyId, WaiverStatus.Valid));
+
+		var latencyMonitor = new Mock<ICheckInLatencyMonitor>();
+		var viewModel = new FastPathCheckInViewModel(
+			CreateUseCase(repository.Object),
+			CreateProfileAdmissionUseCase(repository.Object),
+			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.Authorized),
+			new StubAdmissionPricingService(),
+			Mock.Of<IFastPathCheckInUiService>(),
+			new ControlledLatencyTimer(1000, 2500),
+			latencyMonitor.Object);
+		viewModel.Initialize(familyId);
+
+		await viewModel.LoadAsync();
+
+		latencyMonitor.Verify(
+			x => x.Record(
+				"EvaluateFastPathCheckIn",
+				familyId,
+				1500,
+				false),
+			Times.Once);
+	}
+
+	[Fact]
+	public async Task LoadAsync_when_feedback_exceeds_two_seconds_records_threshold_breach()
+	{
+		var familyId = Guid.NewGuid();
+		var repository = new Mock<IFamilyProfileRepository>();
+		repository
+			.Setup(x => x.GetByIdAsync(familyId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(CreateProfile(familyId, WaiverStatus.Valid));
+
+		var latencyMonitor = new Mock<ICheckInLatencyMonitor>();
+		var viewModel = new FastPathCheckInViewModel(
+			CreateUseCase(repository.Object),
+			CreateProfileAdmissionUseCase(repository.Object),
+			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.Authorized),
+			new StubAdmissionPricingService(),
+			Mock.Of<IFastPathCheckInUiService>(),
+			new ControlledLatencyTimer(1000, 3501),
+			latencyMonitor.Object);
+		viewModel.Initialize(familyId);
+
+		await viewModel.LoadAsync();
+
+		latencyMonitor.Verify(
+			x => x.Record(
+				"EvaluateFastPathCheckIn",
+				familyId,
+				2501,
+				true),
+			Times.Once);
 	}
 
 	private static EvaluateFastPathCheckInUseCase CreateUseCase(IFamilyProfileRepository repository)
@@ -275,6 +349,39 @@ public sealed class FastPathCheckInViewModelTests
 		public Task<AdmissionTotal> GetAdmissionTotalAsync(Guid familyId, CancellationToken cancellationToken = default)
 		{
 			return Task.FromResult(new AdmissionTotal(2500, "USD"));
+		}
+	}
+
+	private sealed class ControlledLatencyTimer : ICheckInLatencyTimer
+	{
+		private readonly Queue<long> _timestamps;
+		private long _lastTimestamp;
+
+		public ControlledLatencyTimer(params long[] timestamps)
+		{
+			if (timestamps.Length == 0)
+			{
+				throw new ArgumentException("At least one timestamp value is required.", nameof(timestamps));
+			}
+
+			_timestamps = new Queue<long>(timestamps);
+			_lastTimestamp = timestamps[^1];
+		}
+
+		public long GetTimestamp()
+		{
+			if (_timestamps.Count == 0)
+			{
+				return _lastTimestamp;
+			}
+
+			_lastTimestamp = _timestamps.Dequeue();
+			return _lastTimestamp;
+		}
+
+		public double GetElapsedMilliseconds(long startTimestamp, long endTimestamp)
+		{
+			return endTimestamp - startTimestamp;
 		}
 	}
 }

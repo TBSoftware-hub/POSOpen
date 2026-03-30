@@ -1,6 +1,6 @@
 # Story 2.5: Check-In Performance and UX Compliance
 
-Status: ready-for-dev
+Status: in-progress
 
 ## Story
 
@@ -26,12 +26,12 @@ so that staff can reliably complete the core guest moment under pressure.
 
 ## Tasks / Subtasks
 
-- [ ] Define and enforce a story-scoped check-in performance contract in the admissions flow. (AC: 1)
-  - [ ] Add a small timing abstraction for check-in interaction latency measurement that can be unit-tested with deterministic time control.
-  - [ ] Define an explicit measurement boundary for AC1: start at command invocation in `FastPathCheckInViewModel` and stop at first user-visible feedback state update (`GuidanceMessage`, `ErrorMessage`, or `ShowCompletionResult`).
-  - [ ] Measure elapsed time for the connected returning-family fast-path lane and emit structured diagnostics when elapsed time exceeds 2 seconds.
-  - [ ] Ensure diagnostics include operation/correlation context when available and never expose unsafe internal details in user-facing text.
-  - [ ] Keep the implementation local-first and non-blocking; performance telemetry must not delay check-in completion.
+- [x] Define and enforce a story-scoped check-in performance contract in the admissions flow. (AC: 1)
+  - [x] Add a small timing abstraction for check-in interaction latency measurement that can be unit-tested with deterministic time control.
+  - [x] Define an explicit measurement boundary for AC1: start at command invocation in `FastPathCheckInViewModel` and stop at first user-visible feedback state update (`GuidanceMessage`, `ErrorMessage`, or `ShowCompletionResult`).
+  - [x] Measure elapsed time for the connected returning-family fast-path lane and emit structured diagnostics when elapsed time exceeds 2 seconds.
+  - [x] Ensure diagnostics include operation/correlation context when available and never expose unsafe internal details in user-facing text.
+  - [x] Keep the implementation local-first and non-blocking; performance telemetry must not delay check-in completion.
 
 - [ ] Optimize fast-path check-in responsiveness for the connected path. (AC: 1)
   - [ ] Review `FastPathCheckInViewModel` flow and remove avoidable serial waits in refresh/evaluate path.
@@ -53,7 +53,7 @@ so that staff can reliably complete the core guest moment under pressure.
   - [ ] Ensure transient errors can be retried successfully without losing operational state.
 
 - [ ] Add focused tests for latency guardrails and UX/recovery behavior. (AC: 1, 2, 3)
-  - [ ] Unit tests for timing/diagnostic emission behavior and threshold handling.
+  - [x] Unit tests for timing/diagnostic emission behavior and threshold handling.
   - [ ] ViewModel tests covering recoverable error retry without state loss.
   - [ ] UI/ViewModel behavior tests covering action hierarchy visibility and status-state consistency.
   - [ ] Add a regression test ensuring optimizations do not break Story 2.4 deferred-payment continuity path.
@@ -180,14 +180,25 @@ GPT-5.3-Codex
 
 ### Debug Log References
 
-- Story creation workflow only; no build/test command required for artifact generation.
+- `runTests`: `POSOpen.Tests/Unit/Admissions/FastPathCheckInViewModelTests.cs` (8 passed, 0 failed)
+- `runTests`: `POSOpen.Tests/Unit/Admissions/FastPathCheckInViewModelTests.cs`, `POSOpen.Tests/Unit/Admissions/CompleteAdmissionCheckInUseCaseTests.cs`, `POSOpen.Tests/Integration/Admissions/AdmissionCheckInRepositoryTests.cs` (15 passed, 0 failed)
 
 ### Completion Notes List
 
 - Created Story 2.5 implementation artifact with performance, UX consistency, and recovery continuity guardrails.
 - Incorporated NFR1 and UX consistency patterns into actionable tasks and file-level implementation guidance.
 - Anchored story context to existing admissions flow delivered in Stories 2.1-2.4.
+- Implemented deterministic AC1 latency instrumentation in `FastPathCheckInViewModel` with measurement boundary at first user-visible feedback update.
+- Added non-blocking latency diagnostics contracts and infrastructure adapters for timing and monitoring.
+- Added and passed threshold tests for `<= 2000ms` and `> 2000ms` latency behavior.
 
 ### File List
 
 - _bmad-output/implementation-artifacts/2-5-check-in-performance-and-ux-compliance.md
+- POSOpen/Application/Abstractions/Services/ICheckInLatencyTimer.cs
+- POSOpen/Application/Abstractions/Services/ICheckInLatencyMonitor.cs
+- POSOpen/Infrastructure/Services/StopwatchCheckInLatencyTimer.cs
+- POSOpen/Infrastructure/Services/LoggingCheckInLatencyMonitor.cs
+- POSOpen/Features/Admissions/ViewModels/FastPathCheckInViewModel.cs
+- POSOpen/MauiProgram.cs
+- POSOpen.Tests/Unit/Admissions/FastPathCheckInViewModelTests.cs

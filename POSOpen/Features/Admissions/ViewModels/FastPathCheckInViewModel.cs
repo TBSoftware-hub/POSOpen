@@ -9,24 +9,33 @@ namespace POSOpen.Features.Admissions.ViewModels;
 
 public partial class FastPathCheckInViewModel : ObservableObject
 {
+	private const double FeedbackLatencyThresholdMilliseconds = 2000;
+	private const string EvaluateInteractionName = "EvaluateFastPathCheckIn";
+
 	private readonly EvaluateFastPathCheckInUseCase _evaluateFastPathCheckInUseCase;
 	private readonly ProfileAdmissionUseCase _profileAdmissionUseCase;
 	private readonly CompleteAdmissionCheckInUseCase _completeAdmissionCheckInUseCase;
 	private readonly IAdmissionPricingService _admissionPricingService;
 	private readonly IFastPathCheckInUiService _uiService;
+	private readonly ICheckInLatencyTimer _checkInLatencyTimer;
+	private readonly ICheckInLatencyMonitor _checkInLatencyMonitor;
 
 	public FastPathCheckInViewModel(
 		EvaluateFastPathCheckInUseCase evaluateFastPathCheckInUseCase,
 		ProfileAdmissionUseCase profileAdmissionUseCase,
 		CompleteAdmissionCheckInUseCase completeAdmissionCheckInUseCase,
 		IAdmissionPricingService admissionPricingService,
-		IFastPathCheckInUiService uiService)
+		IFastPathCheckInUiService uiService,
+		ICheckInLatencyTimer checkInLatencyTimer,
+		ICheckInLatencyMonitor checkInLatencyMonitor)
 	{
 		_evaluateFastPathCheckInUseCase = evaluateFastPathCheckInUseCase;
 		_profileAdmissionUseCase = profileAdmissionUseCase;
 		_completeAdmissionCheckInUseCase = completeAdmissionCheckInUseCase;
 		_admissionPricingService = admissionPricingService;
 		_uiService = uiService;
+		_checkInLatencyTimer = checkInLatencyTimer;
+		_checkInLatencyMonitor = checkInLatencyMonitor;
 	}
 
 	public Guid? FamilyId { get; private set; }
@@ -191,8 +200,32 @@ public partial class FastPathCheckInViewModel : ObservableObject
 
 	private async Task EvaluateAsync(bool isRefreshRequested, CancellationToken ct)
 	{
+		var startTimestamp = _checkInLatencyTimer.GetTimestamp();
+		var latencyCaptured = false;
+
+		void CaptureLatency()
+		{
+			if (latencyCaptured)
+			{
+				return;
+			}
+
+			var elapsedMilliseconds = _checkInLatencyTimer.GetElapsedMilliseconds(
+				startTimestamp,
+				_checkInLatencyTimer.GetTimestamp());
+
+			_checkInLatencyMonitor.Record(
+				EvaluateInteractionName,
+				FamilyId,
+				elapsedMilliseconds,
+				elapsedMilliseconds > FeedbackLatencyThresholdMilliseconds);
+
+			latencyCaptured = true;
+		}
+
 		if (FamilyId is null)
 		{
+			CaptureLatency();
 			ErrorMessage = "Select a family before starting fast-path check-in.";
 			return;
 		}
@@ -207,11 +240,13 @@ public partial class FastPathCheckInViewModel : ObservableObject
 
 			if (!result.IsSuccess || result.Payload is null)
 			{
+				CaptureLatency();
 				ErrorMessage = result.UserMessage;
 				return;
 			}
 
 			var payload = result.Payload;
+			CaptureLatency();
 			FamilyDisplayName = payload.FamilyDisplayName;
 			WaiverStatus = payload.WaiverStatus;
 			WaiverStatusLabel = payload.WaiverStatusLabel;
@@ -251,6 +286,7 @@ public partial class FastPathCheckInViewModel : ObservableObject
 		}
 		catch
 		{
+			CaptureLatency();
 			ErrorMessage = EvaluateFastPathCheckInConstants.SafeFastPathUnavailableMessage;
 		}
 		finally
