@@ -4,6 +4,7 @@ using POSOpen.Domain.Enums;
 
 public static class RolePermissions
 {
+	public const string AdmissionsLookup = "admissions.lookup";
 	public const string StaffRoleAssign = "staff.role.assign";
 	public const string ManagerOperationsView = "manager.operations.view";
 	public const string ManagerOperationsExecute = "manager.operations.execute";
@@ -16,6 +17,7 @@ public static class RolePermissions
 		{
 			[StaffRole.Owner] = new(StringComparer.Ordinal)
 			{
+				AdmissionsLookup,
 				StaffRoleAssign,
 				ManagerOperationsView,
 				ManagerOperationsExecute,
@@ -25,6 +27,7 @@ public static class RolePermissions
 			},
 			[StaffRole.Admin] = new(StringComparer.Ordinal)
 			{
+				AdmissionsLookup,
 				StaffRoleAssign,
 				ManagerOperationsView,
 				ManagerOperationsExecute,
@@ -34,12 +37,14 @@ public static class RolePermissions
 			},
 			[StaffRole.Manager] = new(StringComparer.Ordinal)
 			{
+				AdmissionsLookup,
 				ManagerOperationsView,
 				ManagerOperationsExecute,
 				SecurityOverrideExecute
 			},
 			[StaffRole.Cashier] = new(StringComparer.Ordinal)
 			{
+				AdmissionsLookup
 			}
 		};
 

@@ -35,6 +35,7 @@
     <Compile Include="..\POSOpen\Application\UseCases\Shell\*.cs" Link="Source\Application\UseCases\Shell\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\Authentication\*.cs" Link="Source\Application\UseCases\Authentication\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\Security\*.cs" Link="Source\Application\UseCases\Security\%(Filename)%(Extension)" />
+    <Compile Include="..\POSOpen\Application\UseCases\Admissions\*.cs" Link="Source\Application\UseCases\Admissions\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Domain\Entities\*.cs" Link="Source\Domain\Entities\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Domain\Enums\*.cs" Link="Source\Domain\Enums\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Infrastructure\Persistence\**\*.cs" Exclude="..\POSOpen\Infrastructure\Persistence\DesignTime\**\*.cs;..\POSOpen\Infrastructure\Persistence\PersistenceServiceCollectionExtensions.cs" Link="Source\Infrastructure\Persistence\%(RecursiveDir)%(Filename)%(Extension)" />

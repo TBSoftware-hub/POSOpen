@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:authViews="clr-namespace:POSOpen.Features.Authentication.Views"
+    xmlns:admissionsViews="clr-namespace:POSOpen.Features.Admissions.Views"
     xmlns:staffViews="clr-namespace:POSOpen.Features.StaffManagement.Views"
     xmlns:shellViews="clr-namespace:POSOpen.Features.Shell.Views"
     xmlns:securityViews="clr-namespace:POSOpen.Features.Security.Views"
@@ -20,6 +21,12 @@
         Title="Mission Control"
         ContentTemplate="{DataTemplate shellViews:HomePage}"
         Route="home" />
+
+    <ShellContent
+        x:Name="AdmissionsShellContent"
+        Title="Admissions"
+        ContentTemplate="{DataTemplate admissionsViews:FamilyLookupPage}"
+        Route="admissions/family-lookup" />
 
     <ShellContent
         x:Name="StaffShellContent"
