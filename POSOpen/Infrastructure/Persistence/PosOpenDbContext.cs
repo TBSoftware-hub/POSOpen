@@ -14,6 +14,8 @@ public sealed class PosOpenDbContext : DbContext
 
 	public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
+	public DbSet<AdmissionCheckInRecord> AdmissionCheckInRecords => Set<AdmissionCheckInRecord>();
+
 	public DbSet<FamilyProfile> FamilyProfiles => Set<FamilyProfile>();
 
 	public DbSet<StaffAccount> StaffAccounts => Set<StaffAccount>();

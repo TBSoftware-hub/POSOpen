@@ -12,6 +12,7 @@ public static class AdmissionsServiceCollectionExtensions
 		services.AddTransient<SearchFamiliesUseCase>();
 		services.AddTransient<EvaluateFastPathCheckInUseCase>();
 		services.AddTransient<ProfileAdmissionUseCase>();
+		services.AddTransient<CompleteAdmissionCheckInUseCase>();
 		services.AddTransient<FamilyLookupViewModel>();
 		services.AddTransient<FastPathCheckInViewModel>();
 		services.AddTransient<NewProfileAdmissionViewModel>();

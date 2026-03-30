@@ -8,6 +8,7 @@ using POSOpen.Application.UseCases.Admissions;
 using POSOpen.Domain.Entities;
 using POSOpen.Domain.Enums;
 using POSOpen.Features.Admissions.ViewModels;
+using POSOpen.Shared.Operational;
 
 namespace POSOpen.Tests.Unit.Admissions;
 
@@ -26,8 +27,13 @@ public sealed class FastPathCheckInViewModelTests
 
 		var useCase = CreateUseCase(repository.Object);
 		var profileAdmissionUseCase = CreateProfileAdmissionUseCase(repository.Object);
-		var uiService = new Mock<IFastPathCheckInUiService>();
-		var viewModel = new FastPathCheckInViewModel(useCase, profileAdmissionUseCase, uiService.Object);
+		var completeUseCase = CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.Authorized);
+		var viewModel = new FastPathCheckInViewModel(
+			useCase,
+			profileAdmissionUseCase,
+			completeUseCase,
+			new StubAdmissionPricingService(),
+			Mock.Of<IFastPathCheckInUiService>());
 		viewModel.Initialize(familyId);
 
 		await viewModel.LoadAsync();
@@ -37,7 +43,34 @@ public sealed class FastPathCheckInViewModelTests
 
 		viewModel.IsEligible.Should().BeFalse();
 		viewModel.ErrorMessage.Should().Be("Fast-path completion is blocked until waiver requirements are satisfied.");
-		uiService.Verify(x => x.ShowFastPathReadyAsync(), Times.Never);
+		viewModel.ShowCompletionResult.Should().BeFalse();
+	}
+
+	[Fact]
+	public async Task CompleteCheckInCommand_when_settlement_is_deferred_shows_queued_state_and_operation_id()
+	{
+		var familyId = Guid.NewGuid();
+		var repository = new Mock<IFamilyProfileRepository>();
+		repository
+			.Setup(x => x.GetByIdAsync(familyId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(CreateProfile(familyId, WaiverStatus.Valid));
+
+		var viewModel = new FastPathCheckInViewModel(
+			CreateUseCase(repository.Object),
+			CreateProfileAdmissionUseCase(repository.Object),
+			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.DeferredEligible),
+			new StubAdmissionPricingService(),
+			Mock.Of<IFastPathCheckInUiService>());
+		viewModel.Initialize(familyId);
+
+		await viewModel.LoadAsync();
+		await viewModel.CompleteCheckInCommand.ExecuteAsync(null);
+
+		viewModel.ErrorMessage.Should().BeNull();
+		viewModel.ShowCompletionResult.Should().BeTrue();
+		viewModel.IsDeferredQueued.Should().BeTrue();
+		viewModel.CompletionStatusLabel.Should().Be(CompleteAdmissionCheckInConstants.SettlementLabelDeferred);
+		viewModel.OperationIdText.Should().NotBeNullOrWhiteSpace();
 	}
 
 	[Fact]
@@ -51,7 +84,12 @@ public sealed class FastPathCheckInViewModelTests
 
 		var useCase = CreateUseCase(repository.Object);
 		var profileAdmissionUseCase = CreateProfileAdmissionUseCase(repository.Object);
-		var viewModel = new FastPathCheckInViewModel(useCase, profileAdmissionUseCase, Mock.Of<IFastPathCheckInUiService>());
+		var viewModel = new FastPathCheckInViewModel(
+			useCase,
+			profileAdmissionUseCase,
+			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.Authorized),
+			new StubAdmissionPricingService(),
+			Mock.Of<IFastPathCheckInUiService>());
 		viewModel.Initialize(familyId);
 
 		await viewModel.RefreshWaiverStatusCommand.ExecuteAsync(null);
@@ -76,6 +114,8 @@ public sealed class FastPathCheckInViewModelTests
 		var viewModel = new FastPathCheckInViewModel(
 			CreateUseCase(repository.Object),
 			CreateProfileAdmissionUseCase(repository.Object),
+			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.Authorized),
+			new StubAdmissionPricingService(),
 			uiService.Object);
 		viewModel.Initialize(familyId);
 
@@ -101,6 +141,8 @@ public sealed class FastPathCheckInViewModelTests
 		var viewModel = new FastPathCheckInViewModel(
 			CreateUseCase(repository.Object),
 			CreateProfileAdmissionUseCase(repository.Object),
+			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.Authorized),
+			new StubAdmissionPricingService(),
 			uiService.Object);
 		viewModel.Initialize(familyId);
 
@@ -123,6 +165,8 @@ public sealed class FastPathCheckInViewModelTests
 		var viewModel = new FastPathCheckInViewModel(
 			CreateUseCase(repository.Object),
 			CreateProfileAdmissionUseCase(repository.Object),
+			CreateCompleteUseCase(repository.Object, AdmissionSettlementDecisionType.Authorized),
+			new StubAdmissionPricingService(),
 			Mock.Of<IFastPathCheckInUiService>());
 		viewModel.Initialize(familyId);
 
@@ -175,5 +219,62 @@ public sealed class FastPathCheckInViewModelTests
 			currentSession.Object,
 			authorization.Object,
 			Microsoft.Extensions.Logging.Abstractions.NullLogger<ProfileAdmissionUseCase>.Instance);
+	}
+
+	private static CompleteAdmissionCheckInUseCase CreateCompleteUseCase(
+		IFamilyProfileRepository repository,
+		AdmissionSettlementDecisionType settlementDecisionType)
+	{
+		var evaluateUseCase = CreateUseCase(repository);
+		var profileUseCase = CreateProfileAdmissionUseCase(repository);
+
+		var currentSession = new Mock<ICurrentSessionService>();
+		currentSession
+			.Setup(x => x.GetCurrent())
+			.Returns(new CurrentSession(Guid.NewGuid(), StaffRole.Cashier, 1, 1));
+
+		var authorization = new Mock<IAuthorizationPolicyService>();
+		authorization
+			.Setup(x => x.HasPermission(It.IsAny<StaffRole>(), RolePermissions.AdmissionsLookup))
+			.Returns(true);
+
+		var settlementService = new Mock<IAdmissionSettlementService>();
+		settlementService
+			.Setup(x => x.AttemptAuthorizationAsync(
+				It.IsAny<Guid>(),
+				It.IsAny<long>(),
+				It.IsAny<string>(),
+				It.IsAny<OperationContext>(),
+				It.IsAny<CancellationToken>()))
+			.ReturnsAsync(new AdmissionSettlementDecision(settlementDecisionType, "processor-ref", null, null));
+
+		var repositoryMock = new Mock<IAdmissionCheckInRepository>();
+		repositoryMock
+			.Setup(x => x.SaveCompletionAsync(It.IsAny<AdmissionCheckInPersistenceRequest>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync((AdmissionCheckInPersistenceRequest request, CancellationToken _) => request.Record);
+
+		var operationContextFactory = new Mock<IOperationContextFactory>();
+		operationContextFactory
+			.Setup(x => x.CreateRoot(It.IsAny<Guid?>()))
+			.Returns(new OperationContext(Guid.NewGuid(), Guid.NewGuid(), null, DateTime.UtcNow));
+
+		return new CompleteAdmissionCheckInUseCase(
+			evaluateUseCase,
+			profileUseCase,
+			currentSession.Object,
+			authorization.Object,
+			settlementService.Object,
+			repositoryMock.Object,
+			operationContextFactory.Object,
+			Mock.Of<IAppStateService>(),
+			Microsoft.Extensions.Logging.Abstractions.NullLogger<CompleteAdmissionCheckInUseCase>.Instance);
+	}
+
+	private sealed class StubAdmissionPricingService : IAdmissionPricingService
+	{
+		public Task<AdmissionTotal> GetAdmissionTotalAsync(Guid familyId, CancellationToken cancellationToken = default)
+		{
+			return Task.FromResult(new AdmissionTotal(2500, "USD"));
+		}
 	}
 }

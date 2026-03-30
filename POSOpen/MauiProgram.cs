@@ -31,6 +31,8 @@ public static class MauiProgram
 		builder.Services.AddSecurityFeature();
 		builder.Services.AddStaffManagement();
 		builder.Services.AddSingleton<IAppStateService, AppStateService>();
+		builder.Services.AddTransient<IAdmissionSettlementService, DefaultAdmissionSettlementService>();
+		builder.Services.AddTransient<IAdmissionPricingService, FlatAdmissionPricingService>();
 		builder.Services.AddTransient<IFastPathCheckInUiService, FastPathCheckInUiService>();
 		builder.Services.AddTransient<IProfileAdmissionUiService, ProfileAdmissionUiService>();
 		builder.Services.AddSingleton<AppShell>();
