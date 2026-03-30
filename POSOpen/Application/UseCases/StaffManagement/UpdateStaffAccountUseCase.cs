@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using POSOpen.Application.Abstractions.Repositories;
 using POSOpen.Application.Results;
+using POSOpen.Application.Security;
 using POSOpen.Domain.Entities;
 
 namespace POSOpen.Application.UseCases.StaffManagement;
@@ -89,7 +90,7 @@ public sealed class UpdateStaffAccountUseCase
 			{
 				actorStaffId = command.UpdatedByStaffId,
 				targetReference = account.Id.ToString(),
-				actionType = "StaffAccountUpdated",
+				actionType = SecurityAuditEventTypes.StaffAccountUpdated,
 				updatedFields = changedFields,
 				operationId = command.Context.OperationId,
 				occurredUtc = command.Context.OccurredUtc

@@ -1,6 +1,6 @@
 # Story 1.5: Immutable Audit Trail for Security-Critical Actions
 
-Status: review
+Status: done
 
 ## Story
 
@@ -157,6 +157,26 @@ Recent completed work in Epic 1 (stories 1.1 through 1.3) establishes the concre
 - [Source: POSOpen/Application/UseCases/StaffManagement/CreateStaffAccountUseCase.cs]
 - [Source: POSOpen/Application/UseCases/StaffManagement/UpdateStaffAccountUseCase.cs]
 - [Source: POSOpen/Application/UseCases/StaffManagement/DeactivateStaffAccountUseCase.cs]
+
+## Review Findings
+
+Code review performed on diff `918bd3e..HEAD`. Three layers: Blind Hunter, Edge Case Hunter, Acceptance Auditor.
+
+### Patch (must fix before done)
+
+- [x] [Review][Patch] `OverrideApprovalPage.xaml` — `ActivityIndicator` is at `Grid.Row="7"` but `RowDefinitions` declares only 7 rows (indices 0–6); Row="7" is out-of-bounds and will silently overflow into an implicit row. Add an 8th `Auto` row definition. [POSOpen/Features/Security/Views/OverrideApprovalPage.xaml]
+- [x] [Review][Patch] `CreateStaffAccountUseCase`, `UpdateStaffAccountUseCase`, `DeactivateStaffAccountUseCase` — payload `actionType` fields use raw string literals (`"StaffAccountCreated"`, `"StaffAccountUpdated"`, `"StaffAccountDeactivated"`) instead of `SecurityAuditEventTypes` constants. Any rename of a constant would silently diverge. Replace with the corresponding `SecurityAuditEventTypes.*` references. [POSOpen/Application/UseCases/StaffManagement/]
+- [x] [Review][Patch] `AssignStaffRoleUseCase` — not updated to story 1.5 standards: still uses hardcoded `"StaffRoleAssigned"` string (should be `SecurityAuditEventTypes.StaffRoleAssigned`) and non-standard payload keys `changedByStaffId` / `staffAccountId` (should be `actorStaffId` / `targetReference`). The story task explicitly required standardizing all security-critical event payloads. [POSOpen/Application/UseCases/StaffManagement/AssignStaffRoleUseCase.cs]
+
+### Defer (logged, not blocking)
+
+- [x] [Review][Defer] `SecurityAuditViewModel` outer `catch` block sets `ErrorMessage` to a hardcoded string literal instead of `ListSecurityAuditTrailConstants.SafeAuditTrailUnavailableMessage`. Text is identical, but bypasses the constant. Deferred — cosmetic inconsistency only. [POSOpen/Features/Security/ViewModels/SecurityAuditViewModel.cs]
+- [x] [Review][Defer] `SecurityAuditViewModel.LoadAsync` has no guard against concurrent invocations. Navigating away and back quickly can queue multiple in-flight reads with no cancellation. Deferred — minor UX edge case, no data-integrity risk. [POSOpen/Features/Security/ViewModels/SecurityAuditViewModel.cs]
+
+### Dismissed
+
+- `InverseBoolConverter` — confirmed registered in `App.xaml`; all XAML references are valid. ✅
+- `CollectionView` always-visible concern — `HasRecords`/`!HasRecords` mutually exclusive via `MultiTrigger`; empty state handled correctly. ✅
 
 ## Dev Agent Record
 
