@@ -10,15 +10,21 @@ public partial class FastPathCheckInViewModel : ObservableObject
 {
 	private readonly EvaluateFastPathCheckInUseCase _evaluateFastPathCheckInUseCase;
 	private readonly ProfileAdmissionUseCase _profileAdmissionUseCase;
+	private readonly CompleteAdmissionCheckInUseCase _completeAdmissionCheckInUseCase;
+	private readonly IAdmissionPricingService _admissionPricingService;
 	private readonly IFastPathCheckInUiService _uiService;
 
 	public FastPathCheckInViewModel(
 		EvaluateFastPathCheckInUseCase evaluateFastPathCheckInUseCase,
 		ProfileAdmissionUseCase profileAdmissionUseCase,
+		CompleteAdmissionCheckInUseCase completeAdmissionCheckInUseCase,
+		IAdmissionPricingService admissionPricingService,
 		IFastPathCheckInUiService uiService)
 	{
 		_evaluateFastPathCheckInUseCase = evaluateFastPathCheckInUseCase;
 		_profileAdmissionUseCase = profileAdmissionUseCase;
+		_completeAdmissionCheckInUseCase = completeAdmissionCheckInUseCase;
+		_admissionPricingService = admissionPricingService;
 		_uiService = uiService;
 	}
 
@@ -50,6 +56,30 @@ public partial class FastPathCheckInViewModel : ObservableObject
 
 	[ObservableProperty]
 	private bool _isLoading;
+
+	[ObservableProperty]
+	private string _admissionTotalLabel = "$25.00 USD";
+
+	[ObservableProperty]
+	private bool _showCompletionResult;
+
+	[ObservableProperty]
+	private bool _isDeferredQueued;
+
+	[ObservableProperty]
+	private string _completionStatusLabel = string.Empty;
+
+	[ObservableProperty]
+	private string _completionGuidance = string.Empty;
+
+	[ObservableProperty]
+	private string _confirmationCode = string.Empty;
+
+	[ObservableProperty]
+	private string _receiptReference = string.Empty;
+
+	[ObservableProperty]
+	private string _operationIdText = string.Empty;
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(HasError))]
@@ -91,11 +121,29 @@ public partial class FastPathCheckInViewModel : ObservableObject
 		try
 		{
 			ErrorMessage = null;
-			await _uiService.ShowFastPathReadyAsync();
+			IsLoading = true;
+
+			var total = await _admissionPricingService.GetAdmissionTotalAsync(FamilyId!.Value, CancellationToken.None);
+			var result = await _completeAdmissionCheckInUseCase.ExecuteAsync(
+				new CompleteAdmissionCheckInCommand(FamilyId.Value, total.AmountCents, total.CurrencyCode),
+				CancellationToken.None);
+
+			if (!result.IsSuccess || result.Payload is null)
+			{
+				ErrorMessage = result.UserMessage;
+				ShowCompletionResult = false;
+				return;
+			}
+
+			ApplyCompletionState(result.Payload);
 		}
 		catch
 		{
-			ErrorMessage = EvaluateFastPathCheckInConstants.SafeFastPathUnavailableMessage;
+			ErrorMessage = CompleteAdmissionCheckInConstants.SafeCompletionFailedMessage;
+		}
+		finally
+		{
+			IsLoading = false;
 		}
 	}
 
@@ -172,6 +220,9 @@ public partial class FastPathCheckInViewModel : ObservableObject
 
 			if (IsEligible && FamilyId is not null)
 			{
+				var total = await _admissionPricingService.GetAdmissionTotalAsync(FamilyId.Value, ct);
+				AdmissionTotalLabel = FormatTotal(total.AmountCents, total.CurrencyCode);
+
 				var draftResult = await _profileAdmissionUseCase.InitializeAsync(
 					new InitializeProfileAdmissionDraftQuery(FamilyId.Value, null),
 					ct);
@@ -203,5 +254,24 @@ public partial class FastPathCheckInViewModel : ObservableObject
 		{
 			IsLoading = false;
 		}
+	}
+
+	private void ApplyCompletionState(AdmissionCompletionResultDto result)
+	{
+		ShowCompletionResult = true;
+		IsDeferredQueued = result.SettlementStatus == AdmissionSettlementStatus.DeferredQueued;
+		CompletionStatusLabel = result.SettlementStatusLabel;
+		CompletionGuidance = result.GuidanceMessage;
+		ConfirmationCode = result.ConfirmationCode;
+		ReceiptReference = result.ReceiptReference;
+		OperationIdText = result.OperationId.ToString();
+		GuidanceMessage = result.GuidanceMessage;
+		ErrorMessage = null;
+	}
+
+	private static string FormatTotal(long amountCents, string currencyCode)
+	{
+		var amount = amountCents / 100m;
+		return $"{amount:C2} {currencyCode.Trim().ToUpperInvariant()}";
 	}
 }

@@ -41,7 +41,7 @@
         </Border>
 
          <Grid Grid.Row="1"
-                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
               RowSpacing="10">
             <Label Grid.Row="0"
                    Text="Selected Family"
@@ -51,6 +51,23 @@
                    AutomationId="fast-path-family-display" />
 
             <Border Grid.Row="2"
+                    Background="#E0F2FE"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="10">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Grid.Column="0"
+                           Text="Admissions total"
+                           TextColor="#0C4A6E"
+                           FontAttributes="Bold" />
+                    <Label Grid.Column="1"
+                           Text="{Binding AdmissionTotalLabel}"
+                           TextColor="#0C4A6E"
+                           FontAttributes="Bold" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="3"
                     Background="#FEF2F2"
                     StrokeThickness="0"
                     IsVisible="{Binding HasError}"
@@ -60,22 +77,53 @@
                        Padding="10" />
             </Border>
 
-            <Button Grid.Row="3"
+            <Border Grid.Row="4"
+                    Background="#DCFCE7"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="10"
+                    IsVisible="{Binding ShowCompletionResult}">
+                <Border.Triggers>
+                    <DataTrigger TargetType="Border"
+                                 Binding="{Binding IsDeferredQueued}"
+                                 Value="True">
+                        <Setter Property="Background" Value="#FEF3C7" />
+                    </DataTrigger>
+                </Border.Triggers>
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+                      RowSpacing="4">
+                    <Label Grid.Row="0"
+                           Text="{Binding CompletionStatusLabel}"
+                           FontAttributes="Bold"
+                           TextColor="#14532D" />
+                    <Label Grid.Row="1"
+                           Text="{Binding CompletionGuidance}"
+                           TextColor="#14532D" />
+                    <Label Grid.Row="2"
+                           Text="{Binding ConfirmationCode, StringFormat='Confirmation: {0}'}"
+                           TextColor="#14532D" />
+                    <Label Grid.Row="3"
+                           Text="{Binding OperationIdText, StringFormat='Operation ID: {0}'}"
+                           TextColor="#14532D" />
+                </Grid>
+            </Border>
+
+            <Button Grid.Row="5"
                     Text="Refresh Waiver Status"
                     IsVisible="{Binding ShowRefreshAction}"
                     Command="{Binding RefreshWaiverStatusCommand}" />
 
-            <Button Grid.Row="4"
+            <Button Grid.Row="6"
                     Text="Start Waiver Recovery"
                     IsVisible="{Binding ShowRecoveryAction}"
                     Command="{Binding StartWaiverRecoveryCommand}" />
 
-           <Button Grid.Row="5"
+           <Button Grid.Row="7"
                   Text="Complete Profile"
                   IsVisible="{Binding ShowProfileCompletionAction}"
                   Command="{Binding StartProfileCompletionCommand}" />
 
-           <ActivityIndicator Grid.Row="6"
+           <ActivityIndicator Grid.Row="8"
                                IsVisible="{Binding IsLoading}"
                                IsRunning="{Binding IsLoading}" />
         </Grid>
