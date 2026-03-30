@@ -1,6 +1,6 @@
 # Story 3.1: Build Mixed-Cart Composition by Fulfillment Context
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -27,46 +27,53 @@ So that I can complete one combined transaction for the customer.
 
 ## Tasks / Subtasks
 
-- [ ] Domain model: Define cart entities and fulfillment context enum. (AC: 1)
-  - [ ] Add `FulfillmentContext` enum to `POSOpen/Domain/Enums/FulfillmentContext.cs` with values: `Admission = 0`, `RetailItem = 1`, `PartyDeposit = 2`, `CateringAddon = 3`.
-  - [ ] Add `CartStatus` enum to `POSOpen/Domain/Enums/CartStatus.cs` with values: `Open = 0`, `Completed = 1`, `Cancelled = 2`.
-  - [ ] Add `CartSession` entity to `POSOpen/Domain/Entities/CartSession.cs` with static `Create(...)` factory, `Id`, `FamilyId?`, `StaffId`, `Status`, `CreatedAtUtc`, `UpdatedAtUtc`, `LineItems` (collection), and computed (not EF-mapped) `TotalAmountCents` = sum of `LineTotalCents` across items.
-  - [ ] Add `CartLineItem` entity to `POSOpen/Domain/Entities/CartLineItem.cs` with static `Create(...)` factory, `Id`, `CartSessionId`, `Description` (max 200 chars), `FulfillmentContext`, `ReferenceId?`, `Quantity`, `UnitAmountCents`, `CurrencyCode`, `CreatedAtUtc`, `UpdatedAtUtc`, and computed (not EF-mapped) `LineTotalCents` = `Quantity * UnitAmountCents`.
+- [x] Domain model: Define cart entities and fulfillment context enum. (AC: 1)
+  - [x] Add `FulfillmentContext` enum to `POSOpen/Domain/Enums/FulfillmentContext.cs` with values: `Admission = 0`, `RetailItem = 1`, `PartyDeposit = 2`, `CateringAddon = 3`.
+  - [x] Add `CartStatus` enum to `POSOpen/Domain/Enums/CartStatus.cs` with values: `Open = 0`, `Completed = 1`, `Cancelled = 2`.
+  - [x] Add `CartSession` entity to `POSOpen/Domain/Entities/CartSession.cs` with static `Create(...)` factory, `Id`, `FamilyId?`, `StaffId`, `Status`, `CreatedAtUtc`, `UpdatedAtUtc`, `LineItems` (collection), and computed (not EF-mapped) `TotalAmountCents` = sum of `LineTotalCents` across items.
+  - [x] Add `CartLineItem` entity to `POSOpen/Domain/Entities/CartLineItem.cs` with static `Create(...)` factory, `Id`, `CartSessionId`, `Description` (max 200 chars), `FulfillmentContext`, `ReferenceId?`, `Quantity`, `UnitAmountCents`, `CurrencyCode`, `CreatedAtUtc`, `UpdatedAtUtc`, and computed (not EF-mapped) `LineTotalCents` = `Quantity * UnitAmountCents`.
 
-- [ ] Application layer: Repository interface and use cases. (AC: 1, 2, 3)
-  - [ ] Add `ICartSessionRepository` to `POSOpen/Application/Abstractions/Repositories/ICartSessionRepository.cs` with methods: `GetByIdAsync(Guid cartSessionId, CancellationToken)`, `GetOpenCartForStaffAsync(Guid staffId, CancellationToken)`, `AddAsync(CartSession, CancellationToken)`, `SaveChangesAsync(CancellationToken)`.
-  - [ ] Add DTO types in `POSOpen/Application/UseCases/Checkout/`: `CartSessionDto` (maps from `CartSession` including grouped line items), `CartLineItemDto` (including `LineTotalCents`).
-  - [ ] Add `GetOrCreateCartSessionUseCase` in `POSOpen/Application/UseCases/Checkout/GetOrCreateCartSessionUseCase.cs`: finds the open cart for a staff ID or creates a new one, returns `AppResult<CartSessionDto>`.
-  - [ ] Add `AddCartLineItemCommand` record and `AddCartLineItemUseCase` in `POSOpen/Application/UseCases/Checkout/`: validates cart is Open and quantity > 0, adds `CartLineItem` to cart, saves, returns `AppResult<CartSessionDto>`.
-  - [ ] Add `RemoveCartLineItemCommand` record and `RemoveCartLineItemUseCase`: validates item exists in cart, removes it, saves, returns `AppResult<CartSessionDto>`.
-  - [ ] Add `UpdateCartLineItemQuantityCommand` record and `UpdateCartLineItemQuantityUseCase`: validates new quantity >= 1, updates `Quantity` and `UpdatedAtUtc`, saves, returns `AppResult<CartSessionDto>`.
-  - [ ] All error codes follow canonical pattern: `CART_NOT_FOUND`, `CART_NOT_OPEN`, `INVALID_QUANTITY`, `LINE_ITEM_NOT_FOUND`.
+- [x] Application layer: Repository interface and use cases. (AC: 1, 2, 3)
+  - [x] Add `ICartSessionRepository` to `POSOpen/Application/Abstractions/Repositories/ICartSessionRepository.cs` with methods: `GetByIdAsync(Guid cartSessionId, CancellationToken)`, `GetOpenCartForStaffAsync(Guid staffId, CancellationToken)`, `AddAsync(CartSession, CancellationToken)`, `SaveChangesAsync(CancellationToken)`.
+  - [x] Add DTO types in `POSOpen/Application/UseCases/Checkout/`: `CartSessionDto` (maps from `CartSession` including grouped line items), `CartLineItemDto` (including `LineTotalCents`).
+  - [x] Add `GetOrCreateCartSessionUseCase` in `POSOpen/Application/UseCases/Checkout/GetOrCreateCartSessionUseCase.cs`: finds the open cart for a staff ID or creates a new one, returns `AppResult<CartSessionDto>`.
+  - [x] Add `AddCartLineItemCommand` record and `AddCartLineItemUseCase` in `POSOpen/Application/UseCases/Checkout/`: validates cart is Open and quantity > 0, adds `CartLineItem` to cart, saves, returns `AppResult<CartSessionDto>`.
+  - [x] Add `RemoveCartLineItemCommand` record and `RemoveCartLineItemUseCase`: validates item exists in cart, removes it, saves, returns `AppResult<CartSessionDto>`.
+  - [x] Add `UpdateCartLineItemQuantityCommand` record and `UpdateCartLineItemQuantityUseCase`: validates new quantity >= 1, updates `Quantity` and `UpdatedAtUtc`, saves, returns `AppResult<CartSessionDto>`.
+  - [x] All error codes follow canonical pattern: `CART_NOT_FOUND`, `CART_NOT_OPEN`, `INVALID_QUANTITY`, `LINE_ITEM_NOT_FOUND`.
 
-- [ ] Infrastructure: EF configuration, DbContext, and repository implementation. (AC: 1, 2, 3)
-  - [ ] Add `CartSessionConfiguration` in `POSOpen/Infrastructure/Persistence/Configurations/CartSessionConfiguration.cs`: table `cart_sessions`, snake_case column mapping, `CartStatus` stored as `int`, UTC datetime conversion, index on `staff_id + status`.
-  - [ ] Add `CartLineItemConfiguration` in `POSOpen/Infrastructure/Persistence/Configurations/CartLineItemConfiguration.cs`: table `cart_line_items`, snake_case column mapping, `FulfillmentContext` stored as `int`, FK `cart_session_id → cart_sessions.id`, `Description` max 200, index on `cart_session_id`. Ignore computed properties `LineTotalCents`.
-  - [ ] Add `DbSet<CartSession>` and `DbSet<CartLineItem>` to `PosOpenDbContext`.
-  - [ ] Generate EF migration: `dotnet ef migrations add AddCartTables --project POSOpen --startup-project POSOpen --output-dir Infrastructure/Persistence/Migrations` — verify migration is clean and run `dotnet ef database update`.
-  - [ ] Add `CartSessionRepository` in `POSOpen/Infrastructure/Persistence/Repositories/CartSessionRepository.cs`: implements `ICartSessionRepository`, uses `IDbContextFactory<PosOpenDbContext>`, eager-loads `LineItems` via `.Include(s => s.LineItems)` in all reads, `GetOpenCartForStaffAsync` filters `Status == CartStatus.Open`.
-  - [ ] Ignore `CartSession.TotalAmountCents` and `CartLineItem.LineTotalCents` in EF configuration using `builder.Ignore(x => x.TotalAmountCents)` / `builder.Ignore(x => x.LineTotalCents)`.
+- [x] Infrastructure: EF configuration, DbContext, and repository implementation. (AC: 1, 2, 3)
+  - [x] Add `CartSessionConfiguration` in `POSOpen/Infrastructure/Persistence/Configurations/CartSessionConfiguration.cs`: table `cart_sessions`, snake_case column mapping, `CartStatus` stored as `int`, UTC datetime conversion, index on `staff_id + status`.
+  - [x] Add `CartLineItemConfiguration` in `POSOpen/Infrastructure/Persistence/Configurations/CartLineItemConfiguration.cs`: table `cart_line_items`, snake_case column mapping, `FulfillmentContext` stored as `int`, FK `cart_session_id → cart_sessions.id`, `Description` max 200, index on `cart_session_id`. Ignore computed properties `LineTotalCents`.
+  - [x] Add `DbSet<CartSession>` and `DbSet<CartLineItem>` to `PosOpenDbContext`.
+  - [x] Generate EF migration: `dotnet ef migrations add AddCartTables --project POSOpen --startup-project POSOpen --output-dir Infrastructure/Persistence/Migrations` — verify migration is clean and run `dotnet ef database update`.
+  - [x] Add `CartSessionRepository` in `POSOpen/Infrastructure/Persistence/Repositories/CartSessionRepository.cs`: implements `ICartSessionRepository`, uses `IDbContextFactory<PosOpenDbContext>`, eager-loads `LineItems` via `.Include(s => s.LineItems)` in all reads, `GetOpenCartForStaffAsync` filters `Status == CartStatus.Open`.
+  - [x] Ignore `CartSession.TotalAmountCents` and `CartLineItem.LineTotalCents` in EF configuration using `builder.Ignore(x => x.TotalAmountCents)` / `builder.Ignore(x => x.LineTotalCents)`.
 
-- [ ] Presentation: Cart ViewModel, pages, and DI registration. (AC: 2, 3)
-  - [ ] Create `CartViewModel` in `POSOpen/Features/Checkout/ViewModels/CartViewModel.cs` using `ObservableObject`. Observable properties: `ObservableCollection<CartLineItemGroupViewModel> ItemGroups`, `string GrandTotalLabel`, `string StatusMessage`, `bool IsLoading`, `bool HasItems`. Commands: `InitializeCommand` (calls `GetOrCreateCartSessionUseCase`), `RemoveItemCommand(Guid lineItemId)`, `UpdateQuantityCommand(Guid lineItemId, int newQuantity)`.
-  - [ ] Create `CartLineItemGroupViewModel` (plain class, not ObservableObject) with `string GroupName`, `string GroupIcon`, `FulfillmentContext Context`, `ObservableCollection<CartLineItemViewModel> Items`, `string SubtotalLabel`. Recalculates `SubtotalLabel` from its items.
-  - [ ] Create `CartLineItemViewModel` (`ObservableObject`) with `Guid Id`, `string Description`, `FulfillmentContext FulfillmentContext`, `[ObservableProperty] int Quantity`, `string UnitPriceLabel`, `string LineTotalLabel`. `Quantity` changes trigger line total recalculation.
-  - [ ] Create `AddLineItemViewModel` in `POSOpen/Features/Checkout/ViewModels/AddLineItemViewModel.cs` with observable properties: `string Description`, `int Quantity = 1`, `string UnitPrice` (string entry, parsed to cents), `FulfillmentContext SelectedContext`, `IReadOnlyList<FulfillmentContext> AvailableContexts`, `string ErrorMessage`. Commands: `ConfirmAddCommand` (validates and returns via navigation + query parameter or MessagingCenter-free callback), `CancelCommand`.
-  - [ ] `CartViewModel.RefreshGroupsFromDto(CartSessionDto)` rebuilds `ItemGroups` from DTO, grouping items by `FulfillmentContext` in canonical order (Admission → RetailItem → PartyDeposit → CateringAddon), computing `SubtotalLabel` per group and `GrandTotalLabel` as sum. Group names: `"Admissions"`, `"Retail"`, `"Party Deposit"`, `"Catering Add-ons"`. Group icons (emoji prefixes): 🎟 Admissions, 🛍 Retail, 🎉 Party Deposit, 🍽 Catering.
-  - [ ] Create `CartPage.xaml` and code-behind in `POSOpen/Features/Checkout/Views/CartPage.xaml`: `CollectionView` with `IsGrouped="True"` bound to `ItemGroups`, group header shows group name + subtotal, each item row shows description / qty / unit price / line total + "Remove" `ImageButton`, bottom bar shows grand total + `"+ Add Item"` button (navigates to `AddLineItemPage`) + disabled `"Proceed to Payment"` button (Story 3.3 placeholder).
-  - [ ] Create `AddLineItemPage.xaml` and code-behind in `POSOpen/Features/Checkout/Views/AddLineItemPage.xaml`: Picker for `FulfillmentContext`, `Entry` for description, `Entry` for quantity (numeric), `Entry` for unit price (decimal), Confirm/Cancel buttons. On confirm, calls `CartViewModel.AddItemAsync(command)` passed via BindingContext or query parameter pattern.
-  - [ ] Create `CheckoutRoutes.cs` in `POSOpen/Features/Checkout/` with constants `Cart = "checkout/cart"`, `AddLineItem = "checkout/add-line-item"`.
-  - [ ] Create `CheckoutServiceCollectionExtensions.cs` in `POSOpen/Features/Checkout/` registering use cases (Transient), `CartSessionRepository` as `ICartSessionRepository` (Scoped), ViewModel and pages (Transient), and routes.
-  - [ ] Register `AddCheckoutFeature()` in `MauiProgram.cs`.
-  - [ ] Add a "New Checkout" button on `HomePage.xaml` that navigates to `checkout/cart`.
+- [x] Presentation: Cart ViewModel, pages, and DI registration. (AC: 2, 3)
+  - [x] Create `CartViewModel` in `POSOpen/Features/Checkout/ViewModels/CartViewModel.cs` using `ObservableObject`. Observable properties: `ObservableCollection<CartLineItemGroupViewModel> ItemGroups`, `string GrandTotalLabel`, `string StatusMessage`, `bool IsLoading`, `bool HasItems`. Commands: `InitializeCommand` (calls `GetOrCreateCartSessionUseCase`), `RemoveItemCommand(Guid lineItemId)`, `UpdateQuantityCommand(Guid lineItemId, int newQuantity)`.
+  - [x] Create `CartLineItemGroupViewModel` (plain class, not ObservableObject) with `string GroupName`, `string GroupIcon`, `FulfillmentContext Context`, `ObservableCollection<CartLineItemViewModel> Items`, `string SubtotalLabel`. Recalculates `SubtotalLabel` from its items.
+  - [x] Create `CartLineItemViewModel` (`ObservableObject`) with `Guid Id`, `string Description`, `FulfillmentContext FulfillmentContext`, `[ObservableProperty] int Quantity`, `string UnitPriceLabel`, `string LineTotalLabel`. `Quantity` changes trigger line total recalculation.
+  - [x] Create `AddLineItemViewModel` in `POSOpen/Features/Checkout/ViewModels/AddLineItemViewModel.cs` with observable properties: `string Description`, `int Quantity = 1`, `string UnitPrice` (string entry, parsed to cents), `FulfillmentContext SelectedContext`, `IReadOnlyList<FulfillmentContext> AvailableContexts`, `string ErrorMessage`. Commands: `ConfirmAddCommand` (validates and returns via navigation + query parameter or MessagingCenter-free callback), `CancelCommand`.
+  - [x] `CartViewModel.RefreshGroupsFromDto(CartSessionDto)` rebuilds `ItemGroups` from DTO, grouping items by `FulfillmentContext` in canonical order (Admission → RetailItem → PartyDeposit → CateringAddon), computing `SubtotalLabel` per group and `GrandTotalLabel` as sum. Group names: `"Admissions"`, `"Retail"`, `"Party Deposit"`, `"Catering Add-ons"`. Group icons (emoji prefixes): 🎟 Admissions, 🛍 Retail, 🎉 Party Deposit, 🍽 Catering.
+  - [x] Create `CartPage.xaml` and code-behind in `POSOpen/Features/Checkout/Views/CartPage.xaml`: `CollectionView` with `IsGrouped="True"` bound to `ItemGroups`, group header shows group name + subtotal, each item row shows description / qty / unit price / line total + "Remove" `ImageButton`, bottom bar shows grand total + `"+ Add Item"` button (navigates to `AddLineItemPage`) + disabled `"Proceed to Payment"` button (Story 3.3 placeholder).
+  - [x] Create `AddLineItemPage.xaml` and code-behind in `POSOpen/Features/Checkout/Views/AddLineItemPage.xaml`: Picker for `FulfillmentContext`, `Entry` for description, `Entry` for quantity (numeric), `Entry` for unit price (decimal), Confirm/Cancel buttons. On confirm, calls `CartViewModel.AddItemAsync(command)` passed via BindingContext or query parameter pattern.
+  - [x] Create `CheckoutRoutes.cs` in `POSOpen/Features/Checkout/` with constants `Cart = "checkout/cart"`, `AddLineItem = "checkout/add-line-item"`.
+  - [x] Create `CheckoutServiceCollectionExtensions.cs` in `POSOpen/Features/Checkout/` registering use cases (Transient), `CartSessionRepository` as `ICartSessionRepository` (Scoped), ViewModel and pages (Transient), and routes.
+  - [x] Register `AddCheckoutFeature()` in `MauiProgram.cs`.
+  - [x] Add a "New Checkout" button on `HomePage.xaml` that navigates to `checkout/cart`.
 
-- [ ] Tests: Unit and integration tests covering all ACs. (AC: 1, 2, 3)
-  - [ ] Create `POSOpen.Tests/Unit/Checkout/CartUseCaseTests.cs` with tests: `AddCartLineItem_with_valid_item_adds_item_to_cart_and_returns_success`, `AddCartLineItem_with_quantity_zero_returns_invalid_quantity_error`, `AddCartLineItem_when_cart_not_found_returns_cart_not_found_error`, `RemoveCartLineItem_removes_item_and_returns_updated_cart`, `RemoveCartLineItem_when_item_not_in_cart_returns_not_found_error`, `UpdateCartLineItemQuantity_updates_quantity_and_recalculates_total`, `UpdateCartLineItemQuantity_with_quantity_zero_returns_invalid_quantity_error`.
-  - [ ] Create `POSOpen.Tests/Unit/Checkout/CartViewModelTests.cs` with tests: `Initialize_creates_new_cart_and_populates_item_groups`, `RemoveItem_removes_item_from_groups_and_updates_grand_total`, `UpdateQuantity_recalculates_subtotals_and_grand_total_correctly`, `Items_grouped_in_canonical_order_Admission_Retail_PartyDeposit_CateringAddon`, `Grand_total_is_sum_of_all_line_item_totals`.
-  - [ ] Create `POSOpen.Tests/Integration/CartSessionRepositoryTests.cs` with tests: `GetOrCreateOpenCart_creates_new_cart_when_none_exists`, `AddLineItem_persists_and_loads_with_correct_context`, `UpdateLineItemQuantity_persists_change_and_updates_timestamps`, `RemoveLineItem_removes_from_persistence`, `GetOpenCartForStaff_returns_open_cart_not_completed`.
+- [x] Tests: Unit and integration tests covering all ACs. (AC: 1, 2, 3)
+  - [x] Create `POSOpen.Tests/Unit/Checkout/CartUseCaseTests.cs` with tests: `AddCartLineItem_with_valid_item_adds_item_to_cart_and_returns_success`, `AddCartLineItem_with_quantity_zero_returns_invalid_quantity_error`, `AddCartLineItem_when_cart_not_found_returns_cart_not_found_error`, `RemoveCartLineItem_removes_item_and_returns_updated_cart`, `RemoveCartLineItem_when_item_not_in_cart_returns_not_found_error`, `UpdateCartLineItemQuantity_updates_quantity_and_recalculates_total`, `UpdateCartLineItemQuantity_with_quantity_zero_returns_invalid_quantity_error`.
+  - [x] Create `POSOpen.Tests/Unit/Checkout/CartViewModelTests.cs` with tests: `Initialize_creates_new_cart_and_populates_item_groups`, `RemoveItem_removes_item_from_groups_and_updates_grand_total`, `UpdateQuantity_recalculates_subtotals_and_grand_total_correctly`, `Items_grouped_in_canonical_order_Admission_Retail_PartyDeposit_CateringAddon`, `Grand_total_is_sum_of_all_line_item_totals`.
+  - [x] Create `POSOpen.Tests/Integration/CartSessionRepositoryTests.cs` with tests: `GetOrCreateOpenCart_creates_new_cart_when_none_exists`, `AddLineItem_persists_and_loads_with_correct_context`, `UpdateLineItemQuantity_persists_change_and_updates_timestamps`, `RemoveLineItem_removes_from_persistence`, `GetOpenCartForStaff_returns_open_cart_not_completed`.
+
+### Review Findings
+
+- [x] [Review][Patch] One open cart per staff is not enforced [POSOpen/Application/UseCases/Checkout/GetOrCreateCartSessionUseCase.cs:34] — fixed by adding a unique filtered open-cart index and handling concurrent cart creation by re-querying after `DbUpdateException`.
+- [x] [Review][Patch] Cart mutation use cases can null-dereference after the write call [POSOpen/Application/UseCases/Checkout/AddCartLineItemUseCase.cs:57] — fixed by validating null write results and returning `CART_NOT_FOUND` failures before DTO mapping.
+- [x] [Review][Patch] CartViewModel preserves stale UI state across failure and recovery [POSOpen/Features/Checkout/ViewModels/CartViewModel.cs:58] — fixed by resetting cart state during initialize and clearing stale error messages on successful remove/increment/decrement actions.
+- [x] [Review][Patch] Cart page is missing the required Proceed to Payment placeholder [POSOpen/Features/Checkout/Views/CartPage.xaml:130] — fixed by adding a disabled `Proceed to Payment` button placeholder to the footer.
 
 ## Dev Notes
 

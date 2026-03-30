@@ -73,6 +73,9 @@
 
 			<Button Text="Open Manager Operations"
 			        Command="{Binding OpenManagerOperationsCommand}" />
+			<Button Text="New Checkout"
+			        Command="{Binding OpenCheckoutCommand}"
+			        AutomationId="new-checkout-button" />
 		</VerticalStackLayout>
 
 		<Border Grid.Row="3"

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Features.Admissions;
+using POSOpen.Features.Checkout;
 using POSOpen.Features.Authentication;
 using POSOpen.Features.Security;
 using POSOpen.Features.StaffManagement;
@@ -28,6 +29,7 @@ public static class MauiProgram
 		builder.Services.AddPosOpenPersistence();
 		builder.Services.AddAuthenticationFeature();
 		builder.Services.AddAdmissionsFeature();
+				builder.Services.AddCheckoutFeature();
 		builder.Services.AddSecurityFeature();
 		builder.Services.AddStaffManagement();
 		builder.Services.AddSingleton<IAppStateService, AppStateService>();
@@ -35,6 +37,7 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ICheckInLatencyMonitor, LoggingCheckInLatencyMonitor>();
 		builder.Services.AddTransient<IAdmissionSettlementService, DefaultAdmissionSettlementService>();
 		builder.Services.AddTransient<IAdmissionPricingService, FlatAdmissionPricingService>();
+		builder.Services.AddTransient<ICheckoutUiService, CheckoutUiService>();
 		builder.Services.AddTransient<IFastPathCheckInUiService, FastPathCheckInUiService>();
 		builder.Services.AddTransient<IProfileAdmissionUiService, ProfileAdmissionUiService>();
 		builder.Services.AddSingleton<AppShell>();

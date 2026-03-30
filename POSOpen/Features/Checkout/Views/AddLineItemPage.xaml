@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:POSOpen.Features.Checkout.ViewModels"
+             x:Class="POSOpen.Features.Checkout.Views.AddLineItemPage"
+             x:DataType="viewModels:AddLineItemViewModel"
+             Title="Add Item">
+
+	<ScrollView>
+		<VerticalStackLayout Padding="16" Spacing="16">
+
+			<Border Background="#FEF2F2"
+			        IsVisible="{Binding HasError}"
+			        Padding="12">
+				<Label Text="{Binding ErrorMessage}" TextColor="#DC2626" />
+			</Border>
+
+			<VerticalStackLayout Spacing="6">
+				<Label Text="Category"
+				       FontAttributes="Bold" />
+				<Picker ItemsSource="{Binding FulfillmentContextOptions}"
+				        SelectedIndex="{Binding SelectedFulfillmentContextIndex}"
+				        AutomationId="fulfillment-context-picker" />
+			</VerticalStackLayout>
+
+			<VerticalStackLayout Spacing="6">
+				<Label Text="Description"
+				       FontAttributes="Bold" />
+				<Entry Text="{Binding Description}"
+				       Placeholder="e.g. General Admission"
+				       AutomationId="description-entry"
+				       MaxLength="200" />
+			</VerticalStackLayout>
+
+			<VerticalStackLayout Spacing="6">
+				<Label Text="Quantity"
+				       FontAttributes="Bold" />
+				<Entry Text="{Binding QuantityText}"
+				       Keyboard="Numeric"
+				       Placeholder="1"
+				       AutomationId="quantity-entry" />
+			</VerticalStackLayout>
+
+			<VerticalStackLayout Spacing="6">
+				<Label Text="Unit Price ($)"
+				       FontAttributes="Bold" />
+				<Entry Text="{Binding UnitPriceText}"
+				       Keyboard="Numeric"
+				       Placeholder="0.00"
+				       AutomationId="unit-price-entry" />
+			</VerticalStackLayout>
+
+			<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+				<Button Grid.Column="0"
+				        Text="Cancel"
+				        Command="{Binding CancelCommand}"
+				        Background="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+				        TextColor="{AppThemeBinding Light=#111827, Dark=#F9FAFB}"
+				        AutomationId="add-item-cancel-button" />
+				<Button Grid.Column="1"
+				        Text="Add to Cart"
+				        Command="{Binding ConfirmAddCommand}"
+				        AutomationId="add-item-confirm-button" />
+			</Grid>
+
+		</VerticalStackLayout>
+	</ScrollView>
+</ContentPage>

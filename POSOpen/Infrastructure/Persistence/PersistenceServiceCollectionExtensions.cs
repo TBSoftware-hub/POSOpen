@@ -38,6 +38,7 @@ public static class PersistenceServiceCollectionExtensions
 		services.AddTransient<IOutboxRepository, OutboxRepository>();
 		services.AddTransient<IAdmissionCheckInRepository, AdmissionCheckInRepository>();
 		services.AddTransient<IFamilyProfileRepository, FamilyProfileRepository>();
+		services.AddTransient<ICartSessionRepository, CartSessionRepository>();
 		services.AddTransient<IStaffAccountRepository, StaffAccountRepository>();
 		services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
 

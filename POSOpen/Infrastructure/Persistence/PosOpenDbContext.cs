@@ -20,6 +20,10 @@ public sealed class PosOpenDbContext : DbContext
 
 	public DbSet<StaffAccount> StaffAccounts => Set<StaffAccount>();
 
+	public DbSet<CartSession> CartSessions => Set<CartSession>();
+
+	public DbSet<CartLineItem> CartLineItems => Set<CartLineItem>();
+
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);
