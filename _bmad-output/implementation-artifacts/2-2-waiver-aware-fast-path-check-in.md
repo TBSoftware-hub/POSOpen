@@ -1,6 +1,6 @@
 # Story 2.2: Waiver-Aware Fast-Path Check-In
 
-Status: review
+Status: done
 
 ## Story
 

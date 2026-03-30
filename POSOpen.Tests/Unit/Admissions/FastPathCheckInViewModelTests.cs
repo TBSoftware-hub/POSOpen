@@ -21,11 +21,13 @@ public sealed class FastPathCheckInViewModelTests
 		repository
 			.SetupSequence(x => x.GetByIdAsync(familyId, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(CreateProfile(familyId, WaiverStatus.Valid))
+			.ReturnsAsync(CreateProfile(familyId, WaiverStatus.Valid))
 			.ReturnsAsync(CreateProfile(familyId, WaiverStatus.Expired));
 
 		var useCase = CreateUseCase(repository.Object);
+		var profileAdmissionUseCase = CreateProfileAdmissionUseCase(repository.Object);
 		var uiService = new Mock<IFastPathCheckInUiService>();
-		var viewModel = new FastPathCheckInViewModel(useCase, uiService.Object);
+		var viewModel = new FastPathCheckInViewModel(useCase, profileAdmissionUseCase, uiService.Object);
 		viewModel.Initialize(familyId);
 
 		await viewModel.LoadAsync();
@@ -48,7 +50,8 @@ public sealed class FastPathCheckInViewModelTests
 			.ThrowsAsync(new InvalidOperationException("simulated failure"));
 
 		var useCase = CreateUseCase(repository.Object);
-		var viewModel = new FastPathCheckInViewModel(useCase, Mock.Of<IFastPathCheckInUiService>());
+		var profileAdmissionUseCase = CreateProfileAdmissionUseCase(repository.Object);
+		var viewModel = new FastPathCheckInViewModel(useCase, profileAdmissionUseCase, Mock.Of<IFastPathCheckInUiService>());
 		viewModel.Initialize(familyId);
 
 		await viewModel.RefreshWaiverStatusCommand.ExecuteAsync(null);
@@ -66,12 +69,67 @@ public sealed class FastPathCheckInViewModelTests
 			.Setup(x => x.NavigateToWaiverRecoveryAsync(familyId))
 			.ThrowsAsync(new InvalidOperationException("navigation unavailable"));
 
-		var viewModel = new FastPathCheckInViewModel(CreateUseCase(Mock.Of<IFamilyProfileRepository>()), uiService.Object);
+		var repository = new Mock<IFamilyProfileRepository>();
+		repository
+			.Setup(x => x.GetByIdAsync(familyId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(CreateProfile(familyId, WaiverStatus.Pending));
+		var viewModel = new FastPathCheckInViewModel(
+			CreateUseCase(repository.Object),
+			CreateProfileAdmissionUseCase(repository.Object),
+			uiService.Object);
 		viewModel.Initialize(familyId);
 
 		await viewModel.StartWaiverRecoveryCommand.ExecuteAsync(null);
 
 		viewModel.ErrorMessage.Should().Be("Waiver recovery is not available on this terminal yet.");
+	}
+
+	[Fact]
+	public async Task StartProfileCompletionCommand_when_navigation_fails_sets_route_unavailable_message()
+	{
+		var familyId = Guid.NewGuid();
+		var repository = new Mock<IFamilyProfileRepository>();
+		repository
+			.Setup(x => x.GetByIdAsync(familyId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(CreateProfile(familyId, WaiverStatus.Valid));
+
+		var uiService = new Mock<IFastPathCheckInUiService>();
+		uiService
+			.Setup(x => x.NavigateToProfileCompletionAsync(familyId))
+			.ThrowsAsync(new InvalidOperationException("route unavailable"));
+
+		var viewModel = new FastPathCheckInViewModel(
+			CreateUseCase(repository.Object),
+			CreateProfileAdmissionUseCase(repository.Object),
+			uiService.Object);
+		viewModel.Initialize(familyId);
+
+		await viewModel.LoadAsync();
+		await viewModel.StartProfileCompletionCommand.ExecuteAsync(null);
+
+		viewModel.ErrorMessage.Should().Be(ProfileAdmissionConstants.SafeAdmissionRouteUnavailableMessage);
+	}
+
+	[Fact]
+	public async Task LoadAsync_when_profile_completeness_check_fails_blocks_eligibility_with_safe_error()
+	{
+		var familyId = Guid.NewGuid();
+		var repository = new Mock<IFamilyProfileRepository>();
+		repository
+			.SetupSequence(x => x.GetByIdAsync(familyId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(CreateProfile(familyId, WaiverStatus.Valid))
+			.ThrowsAsync(new InvalidOperationException("persistence error"));
+
+		var viewModel = new FastPathCheckInViewModel(
+			CreateUseCase(repository.Object),
+			CreateProfileAdmissionUseCase(repository.Object),
+			Mock.Of<IFastPathCheckInUiService>());
+		viewModel.Initialize(familyId);
+
+		await viewModel.LoadAsync();
+
+		viewModel.IsEligible.Should().BeFalse();
+		viewModel.ErrorMessage.Should().Be(ProfileAdmissionConstants.SafeProfileSaveFailedMessage);
 	}
 
 	private static EvaluateFastPathCheckInUseCase CreateUseCase(IFamilyProfileRepository repository)
@@ -98,5 +156,24 @@ public sealed class FastPathCheckInViewModelTests
 		var profile = FamilyProfile.Create(id, "Ava", "Stone", "5551000", null, null, DateTime.UtcNow);
 		profile.WaiverStatus = waiverStatus;
 		return profile;
+	}
+
+	private static ProfileAdmissionUseCase CreateProfileAdmissionUseCase(IFamilyProfileRepository repository)
+	{
+		var currentSession = new Mock<ICurrentSessionService>();
+		currentSession
+			.Setup(x => x.GetCurrent())
+			.Returns(new CurrentSession(Guid.NewGuid(), StaffRole.Cashier, 1, 1));
+
+		var authorization = new Mock<IAuthorizationPolicyService>();
+		authorization
+			.Setup(x => x.HasPermission(It.IsAny<StaffRole>(), RolePermissions.AdmissionsLookup))
+			.Returns(true);
+
+		return new ProfileAdmissionUseCase(
+			repository,
+			currentSession.Object,
+			authorization.Object,
+			Microsoft.Extensions.Logging.Abstractions.NullLogger<ProfileAdmissionUseCase>.Instance);
 	}
 }

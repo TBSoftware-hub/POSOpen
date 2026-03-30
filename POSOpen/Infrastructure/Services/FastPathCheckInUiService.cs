@@ -11,6 +11,12 @@ public sealed class FastPathCheckInUiService : IFastPathCheckInUiService
 			$"{AdmissionsRoutes.WaiverRecovery}?familyId={familyId}");
 	}
 
+	public Task NavigateToProfileCompletionAsync(Guid familyId)
+	{
+		return global::Microsoft.Maui.Controls.Shell.Current.GoToAsync(
+			$"{AdmissionsRoutes.NewProfile}?familyId={familyId}");
+	}
+
 	public Task ShowFastPathReadyAsync()
 	{
 		return global::Microsoft.Maui.Controls.Shell.Current.DisplayAlertAsync(

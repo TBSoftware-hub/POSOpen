@@ -9,13 +9,16 @@ namespace POSOpen.Features.Admissions.ViewModels;
 public partial class FastPathCheckInViewModel : ObservableObject
 {
 	private readonly EvaluateFastPathCheckInUseCase _evaluateFastPathCheckInUseCase;
+	private readonly ProfileAdmissionUseCase _profileAdmissionUseCase;
 	private readonly IFastPathCheckInUiService _uiService;
 
 	public FastPathCheckInViewModel(
 		EvaluateFastPathCheckInUseCase evaluateFastPathCheckInUseCase,
+		ProfileAdmissionUseCase profileAdmissionUseCase,
 		IFastPathCheckInUiService uiService)
 	{
 		_evaluateFastPathCheckInUseCase = evaluateFastPathCheckInUseCase;
+		_profileAdmissionUseCase = profileAdmissionUseCase;
 		_uiService = uiService;
 	}
 
@@ -41,6 +44,9 @@ public partial class FastPathCheckInViewModel : ObservableObject
 
 	[ObservableProperty]
 	private bool _showRefreshAction;
+
+	[ObservableProperty]
+	private bool _showProfileCompletionAction;
 
 	[ObservableProperty]
 	private bool _isLoading;
@@ -113,6 +119,26 @@ public partial class FastPathCheckInViewModel : ObservableObject
 		}
 	}
 
+	[RelayCommand]
+	private async Task StartProfileCompletionAsync()
+	{
+		if (FamilyId is null)
+		{
+			ErrorMessage = "Select a family before completing profile details.";
+			return;
+		}
+
+		ErrorMessage = null;
+		try
+		{
+			await _uiService.NavigateToProfileCompletionAsync(FamilyId.Value);
+		}
+		catch
+		{
+			ErrorMessage = ProfileAdmissionConstants.SafeAdmissionRouteUnavailableMessage;
+		}
+	}
+
 	private async Task EvaluateAsync(bool isRefreshRequested, CancellationToken ct)
 	{
 		if (FamilyId is null)
@@ -142,6 +168,31 @@ public partial class FastPathCheckInViewModel : ObservableObject
 			IsEligible = payload.IsEligible;
 			ShowRecoveryAction = payload.ShowRecoveryAction;
 			ShowRefreshAction = payload.ShowRefreshAction;
+			ShowProfileCompletionAction = false;
+
+			if (IsEligible && FamilyId is not null)
+			{
+				var draftResult = await _profileAdmissionUseCase.InitializeAsync(
+					new InitializeProfileAdmissionDraftQuery(FamilyId.Value, null),
+					ct);
+
+				if (!draftResult.IsSuccess)
+				{
+					IsEligible = false;
+					ShowProfileCompletionAction = false;
+					ErrorMessage = draftResult.UserMessage;
+					GuidanceMessage = "Profile completeness could not be verified. Refresh and try again.";
+					return;
+				}
+
+				if (draftResult.IsSuccess && draftResult.Payload is not null && draftResult.Payload.MissingRequiredFields.Count > 0)
+				{
+					IsEligible = false;
+					ShowProfileCompletionAction = true;
+					GuidanceMessage = "Profile is incomplete. Complete required fields to continue fast-path check-in.";
+				}
+			}
+
 			ErrorMessage = null;
 		}
 		catch

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:admissionsViewModels="clr-namespace:POSOpen.Features.Admissions.ViewModels"
+             x:Class="POSOpen.Features.Admissions.Views.NewProfileAdmissionPage"
+             x:DataType="admissionsViewModels:NewProfileAdmissionViewModel"
+             Title="Profile Admission">
+
+    <Grid RowDefinitions="Auto,*,Auto"
+          Padding="16"
+          RowSpacing="10">
+
+        <Border Grid.Row="0"
+                Background="#ECFEFF"
+                Stroke="#67E8F9"
+                StrokeShape="RoundRectangle 8"
+                Padding="10">
+            <Label Text="{Binding NextBestAction}"
+                   TextColor="#155E75" />
+        </Border>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="10">
+                <Border Background="#FEF2F2"
+                        StrokeThickness="0"
+                        IsVisible="{Binding HasSummaryError}">
+                    <Label Text="{Binding SummaryError}"
+                           Padding="10"
+                           TextColor="#B91C1C" />
+                </Border>
+
+                <Label Text="First Name"
+                       IsVisible="{Binding ShowFirstNameField}" />
+                <Entry Text="{Binding FirstName}"
+                       IsVisible="{Binding ShowFirstNameField}" />
+                <Label Text="{Binding FirstNameError}"
+                       IsVisible="{Binding ShowFirstNameField}"
+                       TextColor="#B91C1C" />
+
+                <Label Text="Last Name"
+                       IsVisible="{Binding ShowLastNameField}" />
+                <Entry Text="{Binding LastName}"
+                       IsVisible="{Binding ShowLastNameField}" />
+                <Label Text="{Binding LastNameError}"
+                       IsVisible="{Binding ShowLastNameField}"
+                       TextColor="#B91C1C" />
+
+                <Label Text="Phone"
+                       IsVisible="{Binding ShowPhoneField}" />
+                <Entry Text="{Binding Phone}"
+                       IsVisible="{Binding ShowPhoneField}"
+                       Keyboard="Telephone" />
+                <Label Text="{Binding PhoneError}"
+                       IsVisible="{Binding ShowPhoneField}"
+                       TextColor="#B91C1C" />
+
+                <Label Text="Email (Optional)" />
+                <Entry Text="{Binding Email}"
+                       Keyboard="Email" />
+                <Label Text="{Binding EmailError}"
+                       TextColor="#B91C1C" />
+
+                <ActivityIndicator IsVisible="{Binding IsLoading}"
+                                   IsRunning="{Binding IsLoading}" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Button Grid.Row="2"
+                Text="Continue Admission"
+                Command="{Binding SubmitCommand}" />
+    </Grid>
+</ContentPage>
