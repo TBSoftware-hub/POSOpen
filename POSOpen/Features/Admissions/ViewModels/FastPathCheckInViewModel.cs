@@ -9,24 +9,35 @@ namespace POSOpen.Features.Admissions.ViewModels;
 
 public partial class FastPathCheckInViewModel : ObservableObject
 {
+	private const double FeedbackLatencyThresholdMilliseconds = 2000;
+	private const string EvaluateInteractionName = "EvaluateFastPathCheckIn";
+
 	private readonly EvaluateFastPathCheckInUseCase _evaluateFastPathCheckInUseCase;
 	private readonly ProfileAdmissionUseCase _profileAdmissionUseCase;
 	private readonly CompleteAdmissionCheckInUseCase _completeAdmissionCheckInUseCase;
 	private readonly IAdmissionPricingService _admissionPricingService;
 	private readonly IFastPathCheckInUiService _uiService;
+	private readonly ICheckInLatencyTimer _checkInLatencyTimer;
+	private readonly ICheckInLatencyMonitor _checkInLatencyMonitor;
+	private AdmissionTotal? _cachedAdmissionTotal;
+	private Guid? _cachedAdmissionTotalFamilyId;
 
 	public FastPathCheckInViewModel(
 		EvaluateFastPathCheckInUseCase evaluateFastPathCheckInUseCase,
 		ProfileAdmissionUseCase profileAdmissionUseCase,
 		CompleteAdmissionCheckInUseCase completeAdmissionCheckInUseCase,
 		IAdmissionPricingService admissionPricingService,
-		IFastPathCheckInUiService uiService)
+		IFastPathCheckInUiService uiService,
+		ICheckInLatencyTimer checkInLatencyTimer,
+		ICheckInLatencyMonitor checkInLatencyMonitor)
 	{
 		_evaluateFastPathCheckInUseCase = evaluateFastPathCheckInUseCase;
 		_profileAdmissionUseCase = profileAdmissionUseCase;
 		_completeAdmissionCheckInUseCase = completeAdmissionCheckInUseCase;
 		_admissionPricingService = admissionPricingService;
 		_uiService = uiService;
+		_checkInLatencyTimer = checkInLatencyTimer;
+		_checkInLatencyMonitor = checkInLatencyMonitor;
 	}
 
 	public Guid? FamilyId { get; private set; }
@@ -91,6 +102,7 @@ public partial class FastPathCheckInViewModel : ObservableObject
 	public void Initialize(Guid familyId)
 	{
 		FamilyId = familyId;
+		ResetAdmissionTotalCache();
 		ResetCompletionState();
 	}
 
@@ -125,7 +137,10 @@ public partial class FastPathCheckInViewModel : ObservableObject
 			ErrorMessage = null;
 			IsLoading = true;
 
-			var total = await _admissionPricingService.GetAdmissionTotalAsync(FamilyId!.Value, ct);
+			var total = ResolveAdmissionTotalForCompletion(FamilyId!.Value)
+				?? await _admissionPricingService.GetAdmissionTotalAsync(FamilyId.Value, ct);
+
+			CacheAdmissionTotal(FamilyId.Value, total);
 			var result = await _completeAdmissionCheckInUseCase.ExecuteAsync(
 				new CompleteAdmissionCheckInCommand(FamilyId.Value, total.AmountCents, total.CurrencyCode),
 				ct);
@@ -191,14 +206,37 @@ public partial class FastPathCheckInViewModel : ObservableObject
 
 	private async Task EvaluateAsync(bool isRefreshRequested, CancellationToken ct)
 	{
+		var startTimestamp = _checkInLatencyTimer.GetTimestamp();
+		var latencyCaptured = false;
+
+		void CaptureLatency()
+		{
+			if (latencyCaptured)
+			{
+				return;
+			}
+
+			var elapsedMilliseconds = _checkInLatencyTimer.GetElapsedMilliseconds(
+				startTimestamp,
+				_checkInLatencyTimer.GetTimestamp());
+
+			_checkInLatencyMonitor.Record(
+				EvaluateInteractionName,
+				FamilyId,
+				elapsedMilliseconds,
+				elapsedMilliseconds > FeedbackLatencyThresholdMilliseconds);
+
+			latencyCaptured = true;
+		}
+
 		if (FamilyId is null)
 		{
+			CaptureLatency();
 			ErrorMessage = "Select a family before starting fast-path check-in.";
 			return;
 		}
 
 		IsLoading = true;
-		ResetCompletionState();
 		try
 		{
 			var result = await _evaluateFastPathCheckInUseCase.ExecuteAsync(
@@ -207,11 +245,14 @@ public partial class FastPathCheckInViewModel : ObservableObject
 
 			if (!result.IsSuccess || result.Payload is null)
 			{
+				CaptureLatency();
+				ResetAdmissionTotalCache();
 				ErrorMessage = result.UserMessage;
 				return;
 			}
 
 			var payload = result.Payload;
+			CaptureLatency();
 			FamilyDisplayName = payload.FamilyDisplayName;
 			WaiverStatus = payload.WaiverStatus;
 			WaiverStatusLabel = payload.WaiverStatusLabel;
@@ -223,16 +264,22 @@ public partial class FastPathCheckInViewModel : ObservableObject
 
 			if (IsEligible && FamilyId is not null)
 			{
-				var total = await _admissionPricingService.GetAdmissionTotalAsync(FamilyId.Value, ct);
-				AdmissionTotalLabel = FormatTotal(total.AmountCents, total.CurrencyCode);
-
-				var draftResult = await _profileAdmissionUseCase.InitializeAsync(
+				var pricingTask = _admissionPricingService.GetAdmissionTotalAsync(FamilyId.Value, ct);
+				var draftTask = _profileAdmissionUseCase.InitializeAsync(
 					new InitializeProfileAdmissionDraftQuery(FamilyId.Value, null),
 					ct);
+
+				await Task.WhenAll(pricingTask, draftTask);
+
+				var total = await pricingTask;
+				CacheAdmissionTotal(FamilyId.Value, total);
+				AdmissionTotalLabel = FormatTotal(total.AmountCents, total.CurrencyCode);
+				var draftResult = await draftTask;
 
 				if (!draftResult.IsSuccess)
 				{
 					IsEligible = false;
+					ResetAdmissionTotalCache();
 					ShowProfileCompletionAction = false;
 					ErrorMessage = draftResult.UserMessage;
 					GuidanceMessage = "Profile completeness could not be verified. Refresh and try again.";
@@ -242,15 +289,21 @@ public partial class FastPathCheckInViewModel : ObservableObject
 				if (draftResult.IsSuccess && draftResult.Payload is not null && draftResult.Payload.MissingRequiredFields.Count > 0)
 				{
 					IsEligible = false;
+					ResetAdmissionTotalCache();
 					ShowProfileCompletionAction = true;
 					GuidanceMessage = "Profile is incomplete. Complete required fields to continue fast-path check-in.";
 				}
+			}
+			else
+			{
+				ResetAdmissionTotalCache();
 			}
 
 			ErrorMessage = null;
 		}
 		catch
 		{
+			CaptureLatency();
 			ErrorMessage = EvaluateFastPathCheckInConstants.SafeFastPathUnavailableMessage;
 		}
 		finally
@@ -291,5 +344,27 @@ public partial class FastPathCheckInViewModel : ObservableObject
 		ConfirmationCode = string.Empty;
 		ReceiptReference = string.Empty;
 		OperationIdText = string.Empty;
+	}
+
+	private void CacheAdmissionTotal(Guid familyId, AdmissionTotal total)
+	{
+		_cachedAdmissionTotalFamilyId = familyId;
+		_cachedAdmissionTotal = total;
+	}
+
+	private AdmissionTotal? ResolveAdmissionTotalForCompletion(Guid familyId)
+	{
+		if (_cachedAdmissionTotalFamilyId != familyId)
+		{
+			return null;
+		}
+
+		return _cachedAdmissionTotal;
+	}
+
+	private void ResetAdmissionTotalCache()
+	{
+		_cachedAdmissionTotalFamilyId = null;
+		_cachedAdmissionTotal = null;
 	}
 }
