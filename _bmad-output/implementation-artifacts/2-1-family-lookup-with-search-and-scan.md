@@ -1,6 +1,6 @@
 ﻿# Story 2.1: Family Lookup with Search and Scan
 
-Status: in-progress
+Status: done
 
 ## Story
 

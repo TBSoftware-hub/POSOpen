@@ -11,15 +11,19 @@ public static class AdmissionsServiceCollectionExtensions
 	{
 		services.AddTransient<SearchFamiliesUseCase>();
 		services.AddTransient<EvaluateFastPathCheckInUseCase>();
+		services.AddTransient<ProfileAdmissionUseCase>();
 		services.AddTransient<FamilyLookupViewModel>();
 		services.AddTransient<FastPathCheckInViewModel>();
+		services.AddTransient<NewProfileAdmissionViewModel>();
 		services.AddTransient<FamilyLookupPage>();
 		services.AddTransient<FamilyProfilePage>();
 		services.AddTransient<FastPathCheckInPage>();
+		services.AddTransient<NewProfileAdmissionPage>();
 
 		Routing.RegisterRoute(AdmissionsRoutes.FamilyLookup, typeof(FamilyLookupPage));
 		Routing.RegisterRoute(AdmissionsRoutes.FamilyProfile, typeof(FamilyProfilePage));
 		Routing.RegisterRoute(AdmissionsRoutes.FastPathCheckIn, typeof(FastPathCheckInPage));
+		Routing.RegisterRoute(AdmissionsRoutes.NewProfile, typeof(NewProfileAdmissionPage));
 		return services;
 	}
 }

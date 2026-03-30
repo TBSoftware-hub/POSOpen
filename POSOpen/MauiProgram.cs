@@ -32,6 +32,7 @@ public static class MauiProgram
 		builder.Services.AddStaffManagement();
 		builder.Services.AddSingleton<IAppStateService, AppStateService>();
 		builder.Services.AddTransient<IFastPathCheckInUiService, FastPathCheckInUiService>();
+		builder.Services.AddTransient<IProfileAdmissionUiService, ProfileAdmissionUiService>();
 		builder.Services.AddSingleton<AppShell>();
 		builder.Services.AddSingleton<HomePage>();
 		builder.Services.AddSingleton<ManagerOperationsPage>();

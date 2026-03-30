@@ -40,8 +40,8 @@
             </VerticalStackLayout>
         </Border>
 
-        <Grid Grid.Row="1"
-              RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+         <Grid Grid.Row="1"
+                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
               RowSpacing="10">
             <Label Grid.Row="0"
                    Text="Selected Family"
@@ -70,7 +70,12 @@
                     IsVisible="{Binding ShowRecoveryAction}"
                     Command="{Binding StartWaiverRecoveryCommand}" />
 
-            <ActivityIndicator Grid.Row="5"
+           <Button Grid.Row="5"
+                  Text="Complete Profile"
+                  IsVisible="{Binding ShowProfileCompletionAction}"
+                  Command="{Binding StartProfileCompletionCommand}" />
+
+           <ActivityIndicator Grid.Row="6"
                                IsVisible="{Binding IsLoading}"
                                IsRunning="{Binding IsLoading}" />
         </Grid>

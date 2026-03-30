@@ -38,12 +38,13 @@
     <Compile Include="..\POSOpen\Application\UseCases\Security\*.cs" Link="Source\Application\UseCases\Security\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\Admissions\*.cs" Link="Source\Application\UseCases\Admissions\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Features\Admissions\ViewModels\FastPathCheckInViewModel.cs" Link="Source\Features\Admissions\ViewModels\FastPathCheckInViewModel.cs" />
+    <Compile Include="..\POSOpen\Features\Admissions\ViewModels\NewProfileAdmissionViewModel.cs" Link="Source\Features\Admissions\ViewModels\NewProfileAdmissionViewModel.cs" />
     <Compile Include="..\POSOpen\Domain\Entities\*.cs" Link="Source\Domain\Entities\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Domain\Enums\*.cs" Link="Source\Domain\Enums\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Infrastructure\Persistence\**\*.cs" Exclude="..\POSOpen\Infrastructure\Persistence\DesignTime\**\*.cs;..\POSOpen\Infrastructure\Persistence\PersistenceServiceCollectionExtensions.cs" Link="Source\Infrastructure\Persistence\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Infrastructure\Security\Pbkdf2PasswordHasher.cs" Link="Source\Infrastructure\Security\Pbkdf2PasswordHasher.cs" />
     <Compile Include="..\POSOpen\Infrastructure\Security\AuthorizationPolicyService.cs" Link="Source\Infrastructure\Security\AuthorizationPolicyService.cs" />
-    <Compile Include="..\POSOpen\Infrastructure\Services\*.cs" Exclude="..\POSOpen\Infrastructure\Services\FastPathCheckInUiService.cs" Link="Source\Infrastructure\Services\%(Filename)%(Extension)" />
+    <Compile Include="..\POSOpen\Infrastructure\Services\*.cs" Exclude="..\POSOpen\Infrastructure\Services\FastPathCheckInUiService.cs;..\POSOpen\Infrastructure\Services\ProfileAdmissionUiService.cs" Link="Source\Infrastructure\Services\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Shared\**\*.cs" Exclude="..\POSOpen\Shared\Converters\**\*.cs" Link="Source\Shared\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 

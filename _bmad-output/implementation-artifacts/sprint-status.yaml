@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-28T15:07:27-07:00
-last_updated: 2026-03-30T12:20:00-07:00
+last_updated: 2026-03-30T15:10:00-07:00
 project: POSOpen
 project_key: NOKEY
 tracking_system: file-system
@@ -52,9 +52,9 @@ development_status:
   1-5-immutable-audit-trail-for-security-critical-actions: done
   epic-1-retrospective: optional
   epic-2: in-progress
-  2-1-family-lookup-with-search-and-scan: in-progress
-  2-2-waiver-aware-fast-path-check-in: review
-  2-3-new-or-incomplete-profile-admission: backlog
+  2-1-family-lookup-with-search-and-scan: done
+  2-2-waiver-aware-fast-path-check-in: done
+  2-3-new-or-incomplete-profile-admission: review
   2-4-admission-completion-with-deferred-payment-continuity: backlog
   2-5-check-in-performance-and-ux-compliance: backlog
   epic-2-retrospective: optional
