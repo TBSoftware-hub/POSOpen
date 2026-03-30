@@ -45,6 +45,7 @@ public partial class AppShell : Shell
 		{
 			SignInShellContent.IsVisible = true;
 			HomeShellContent.IsVisible = false;
+			AdmissionsShellContent.IsVisible = false;
 			StaffShellContent.IsVisible = false;
 			ManagerShellContent.IsVisible = false;
 			SecurityAuditShellContent.IsVisible = false;
@@ -53,6 +54,7 @@ public partial class AppShell : Shell
 
 		SignInShellContent.IsVisible = false;
 		HomeShellContent.IsVisible = true;
+		AdmissionsShellContent.IsVisible = _authorizationPolicyService.HasPermission(session.Role, RolePermissions.AdmissionsLookup);
 		StaffShellContent.IsVisible = _authorizationPolicyService.HasPermission(session.Role, RolePermissions.StaffManagementView);
 		ManagerShellContent.IsVisible = _authorizationPolicyService.HasPermission(session.Role, RolePermissions.ManagerOperationsView);
 		SecurityAuditShellContent.IsVisible = _authorizationPolicyService.HasPermission(session.Role, RolePermissions.SecurityAuditRead);
