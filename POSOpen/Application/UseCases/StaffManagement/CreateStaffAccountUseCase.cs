@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using POSOpen.Application.Abstractions.Repositories;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.Results;
+using POSOpen.Application.Security;
 using POSOpen.Domain.Entities;
 using POSOpen.Domain.Enums;
 
@@ -70,7 +71,7 @@ public sealed class CreateStaffAccountUseCase
 			{
 				actorStaffId = command.CreatedByStaffId,
 				targetReference = account.Id.ToString(),
-				actionType = "StaffAccountCreated",
+				actionType = SecurityAuditEventTypes.StaffAccountCreated,
 				account.Email,
 				account.Role,
 				operationId = command.Context.OperationId,

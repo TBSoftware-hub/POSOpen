@@ -63,14 +63,14 @@ public sealed class AssignStaffRoleUseCase
 		var sessionVersion = _currentSessionService.IncrementSessionVersion();
 
 		await _operationLogRepository.AppendAsync(
-			"StaffRoleAssigned",
+			SecurityAuditEventTypes.StaffRoleAssigned,
 			account.Id.ToString(),
 			new
 			{
-				staffAccountId = account.Id,
+				targetReference = account.Id.ToString(),
+				actorStaffId = session.StaffId,
 				previousRole,
 				newRole = account.Role,
-				changedByStaffId = session.StaffId,
 				operationId = command.Context.OperationId,
 				occurredUtc = command.Context.OccurredUtc,
 				sessionVersion

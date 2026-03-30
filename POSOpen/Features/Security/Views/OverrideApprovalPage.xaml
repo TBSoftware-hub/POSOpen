@@ -4,7 +4,7 @@
              x:Class="POSOpen.Features.Security.Views.OverrideApprovalPage"
              Title="Governed Override">
 
-    <Grid Padding="20" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="15">
+    <Grid Padding="20" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="15">
         <!-- Action Context Display -->
         <Label Grid.Row="0"
             Text="Action Context" 

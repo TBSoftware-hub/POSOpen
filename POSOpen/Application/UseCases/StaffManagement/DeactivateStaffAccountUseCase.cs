@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using POSOpen.Application.Abstractions.Repositories;
 using POSOpen.Application.Results;
+using POSOpen.Application.Security;
 using POSOpen.Domain.Enums;
 
 namespace POSOpen.Application.UseCases.StaffManagement;
@@ -47,7 +48,7 @@ public sealed class DeactivateStaffAccountUseCase
 			{
 				actorStaffId = command.UpdatedByStaffId,
 				targetReference = account.Id.ToString(),
-				actionType = "StaffAccountDeactivated",
+				actionType = SecurityAuditEventTypes.StaffAccountDeactivated,
 				account.Email,
 				operationId = command.Context.OperationId,
 				occurredUtc = command.Context.OccurredUtc
