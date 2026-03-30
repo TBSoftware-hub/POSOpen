@@ -204,8 +204,17 @@ public partial class EditStaffAccountViewModel : ObservableObject
 		PageState = ViewModelState.Loading;
 		OnPropertyChanged(nameof(IsBusy));
 
+		var session = _currentSessionService.GetCurrent();
+		if (session is null)
+		{
+			PageState = ViewModelState.Error;
+			SummaryError = "You do not have access to this action.";
+			OnPropertyChanged(nameof(IsBusy));
+			return;
+		}
+
 		var context = _operationContextFactory.CreateRoot();
-		var command = new DeactivateStaffAccountCommand(StaffAccountId, context, Guid.Empty);
+		var command = new DeactivateStaffAccountCommand(StaffAccountId, context, session.StaffId);
 		var result = await _deactivateStaffAccountUseCase.ExecuteAsync(command);
 		if (!result.IsSuccess)
 		{
