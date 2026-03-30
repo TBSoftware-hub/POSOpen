@@ -1,6 +1,6 @@
 # Story 2.5: Check-In Performance and UX Compliance
 
-Status: review
+Status: done
 
 ## Story
 
