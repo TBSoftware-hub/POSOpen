@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
     <PackageReference Include="FluentAssertions" Version="8.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
@@ -36,12 +37,13 @@
     <Compile Include="..\POSOpen\Application\UseCases\Authentication\*.cs" Link="Source\Application\UseCases\Authentication\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\Security\*.cs" Link="Source\Application\UseCases\Security\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\Admissions\*.cs" Link="Source\Application\UseCases\Admissions\%(Filename)%(Extension)" />
+    <Compile Include="..\POSOpen\Features\Admissions\ViewModels\FastPathCheckInViewModel.cs" Link="Source\Features\Admissions\ViewModels\FastPathCheckInViewModel.cs" />
     <Compile Include="..\POSOpen\Domain\Entities\*.cs" Link="Source\Domain\Entities\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Domain\Enums\*.cs" Link="Source\Domain\Enums\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Infrastructure\Persistence\**\*.cs" Exclude="..\POSOpen\Infrastructure\Persistence\DesignTime\**\*.cs;..\POSOpen\Infrastructure\Persistence\PersistenceServiceCollectionExtensions.cs" Link="Source\Infrastructure\Persistence\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Infrastructure\Security\Pbkdf2PasswordHasher.cs" Link="Source\Infrastructure\Security\Pbkdf2PasswordHasher.cs" />
     <Compile Include="..\POSOpen\Infrastructure\Security\AuthorizationPolicyService.cs" Link="Source\Infrastructure\Security\AuthorizationPolicyService.cs" />
-    <Compile Include="..\POSOpen\Infrastructure\Services\*.cs" Link="Source\Infrastructure\Services\%(Filename)%(Extension)" />
+    <Compile Include="..\POSOpen\Infrastructure\Services\*.cs" Exclude="..\POSOpen\Infrastructure\Services\FastPathCheckInUiService.cs" Link="Source\Infrastructure\Services\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Shared\**\*.cs" Exclude="..\POSOpen\Shared\Converters\**\*.cs" Link="Source\Shared\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 

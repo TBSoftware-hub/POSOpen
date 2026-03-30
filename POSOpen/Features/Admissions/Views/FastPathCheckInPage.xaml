@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:admissionsViewModels="clr-namespace:POSOpen.Features.Admissions.ViewModels"
+             x:Class="POSOpen.Features.Admissions.Views.FastPathCheckInPage"
+             x:DataType="admissionsViewModels:FastPathCheckInViewModel"
+             Title="Fast-Path Check-In">
+
+    <Grid RowDefinitions="Auto,*,Auto"
+          Padding="16"
+          RowSpacing="12">
+
+              <Border Grid.Row="0"
+                            Background="#DC2626"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 12"
+                Padding="12">
+                     <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                                  Binding="{Binding WaiverStatus}"
+                                                  Value="Valid">
+                                   <Setter Property="Background" Value="#16A34A" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border"
+                                                  Binding="{Binding WaiverStatus}"
+                                                  Value="Pending">
+                                   <Setter Property="Background" Value="#D97706" />
+                            </DataTrigger>
+                     </Border.Triggers>
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Waiver Status"
+                       TextColor="White"
+                       FontSize="12" />
+                <Label Text="{Binding WaiverStatusLabel}"
+                       TextColor="White"
+                       FontSize="18"
+                       FontAttributes="Bold" />
+                <Label Text="{Binding GuidanceMessage}"
+                       TextColor="White" />
+            </VerticalStackLayout>
+        </Border>
+
+        <Grid Grid.Row="1"
+              RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+              RowSpacing="10">
+            <Label Grid.Row="0"
+                   Text="Selected Family"
+                   FontAttributes="Bold" />
+            <Label Grid.Row="1"
+                   Text="{Binding FamilyDisplayName}"
+                   AutomationId="fast-path-family-display" />
+
+            <Border Grid.Row="2"
+                    Background="#FEF2F2"
+                    StrokeThickness="0"
+                    IsVisible="{Binding HasError}"
+                    StrokeShape="RoundRectangle 8">
+                <Label Text="{Binding ErrorMessage}"
+                       TextColor="#B91C1C"
+                       Padding="10" />
+            </Border>
+
+            <Button Grid.Row="3"
+                    Text="Refresh Waiver Status"
+                    IsVisible="{Binding ShowRefreshAction}"
+                    Command="{Binding RefreshWaiverStatusCommand}" />
+
+            <Button Grid.Row="4"
+                    Text="Start Waiver Recovery"
+                    IsVisible="{Binding ShowRecoveryAction}"
+                    Command="{Binding StartWaiverRecoveryCommand}" />
+
+            <ActivityIndicator Grid.Row="5"
+                               IsVisible="{Binding IsLoading}"
+                               IsRunning="{Binding IsLoading}" />
+        </Grid>
+
+        <Button Grid.Row="2"
+                Text="Complete Check-In"
+                Command="{Binding CompleteCheckInCommand}" />
+    </Grid>
+</ContentPage>
