@@ -117,12 +117,8 @@ public partial class FamilyLookupViewModel : ObservableObject
 			return Task.CompletedTask;
 		}
 
-		_logger.LogWarning(
-			"Fast path route '{Route}' is not implemented yet. Ignoring select action for family {FamilyId}.",
-			AdmissionsRoutes.FastPathCheckIn,
-			family.Id);
-
-		return Task.CompletedTask;
+		return global::Microsoft.Maui.Controls.Shell.Current.GoToAsync(
+			$"{AdmissionsRoutes.FastPathCheckIn}?familyId={family.Id}");
 	}
 
 	[RelayCommand]
