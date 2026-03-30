@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.UseCases.Admissions;
 using POSOpen.Domain.Enums;
+using System.Globalization;
 
 namespace POSOpen.Features.Admissions.ViewModels;
 
@@ -90,6 +91,7 @@ public partial class FastPathCheckInViewModel : ObservableObject
 	public void Initialize(Guid familyId)
 	{
 		FamilyId = familyId;
+		ResetCompletionState();
 	}
 
 	public async Task LoadAsync(CancellationToken ct = default)
@@ -104,9 +106,9 @@ public partial class FastPathCheckInViewModel : ObservableObject
 	}
 
 	[RelayCommand]
-	private async Task CompleteCheckInAsync()
+	private async Task CompleteCheckInAsync(CancellationToken ct = default)
 	{
-		await EvaluateAsync(isRefreshRequested: true, CancellationToken.None);
+		await EvaluateAsync(isRefreshRequested: true, ct);
 		if (HasError)
 		{
 			return;
@@ -123,10 +125,10 @@ public partial class FastPathCheckInViewModel : ObservableObject
 			ErrorMessage = null;
 			IsLoading = true;
 
-			var total = await _admissionPricingService.GetAdmissionTotalAsync(FamilyId!.Value, CancellationToken.None);
+			var total = await _admissionPricingService.GetAdmissionTotalAsync(FamilyId!.Value, ct);
 			var result = await _completeAdmissionCheckInUseCase.ExecuteAsync(
 				new CompleteAdmissionCheckInCommand(FamilyId.Value, total.AmountCents, total.CurrencyCode),
-				CancellationToken.None);
+				ct);
 
 			if (!result.IsSuccess || result.Payload is null)
 			{
@@ -196,6 +198,7 @@ public partial class FastPathCheckInViewModel : ObservableObject
 		}
 
 		IsLoading = true;
+		ResetCompletionState();
 		try
 		{
 			var result = await _evaluateFastPathCheckInUseCase.ExecuteAsync(
@@ -272,6 +275,21 @@ public partial class FastPathCheckInViewModel : ObservableObject
 	private static string FormatTotal(long amountCents, string currencyCode)
 	{
 		var amount = amountCents / 100m;
-		return $"{amount:C2} {currencyCode.Trim().ToUpperInvariant()}";
+		return string.Format(
+			CultureInfo.InvariantCulture,
+			"{0:0.00} {1}",
+			amount,
+			currencyCode.Trim().ToUpperInvariant());
+	}
+
+	private void ResetCompletionState()
+	{
+		ShowCompletionResult = false;
+		IsDeferredQueued = false;
+		CompletionStatusLabel = string.Empty;
+		CompletionGuidance = string.Empty;
+		ConfirmationCode = string.Empty;
+		ReceiptReference = string.Empty;
+		OperationIdText = string.Empty;
 	}
 }

@@ -100,6 +100,31 @@ public sealed class CompleteAdmissionCheckInUseCaseTests
 		result.ErrorCode.Should().Be(CompleteAdmissionCheckInConstants.ErrorAuthForbidden);
 	}
 
+	[Fact]
+	public async Task ExecuteAsync_when_settlement_is_non_eligible_failure_returns_completion_failed_and_does_not_persist()
+	{
+		var familyId = Guid.NewGuid();
+		var familyRepository = CreateFamilyRepository(familyId, WaiverStatus.Valid);
+		var admissionRepository = new Mock<IAdmissionCheckInRepository>();
+
+		var useCase = CreateUseCase(
+			familyRepository.Object,
+			admissionRepository.Object,
+			new AdmissionSettlementDecision(
+				AdmissionSettlementDecisionType.NonEligibleFailure,
+				null,
+				"PROCESSOR_DECLINED",
+				"Unable to authorize payment right now."));
+
+		var result = await useCase.ExecuteAsync(new CompleteAdmissionCheckInCommand(familyId, 2500, "USD"));
+
+		result.IsSuccess.Should().BeFalse();
+		result.ErrorCode.Should().Be(CompleteAdmissionCheckInConstants.ErrorCompletionFailed);
+		admissionRepository.Verify(
+			x => x.SaveCompletionAsync(It.IsAny<AdmissionCheckInPersistenceRequest>(), It.IsAny<CancellationToken>()),
+			Times.Never);
+	}
+
 	private static Mock<IFamilyProfileRepository> CreateFamilyRepository(Guid familyId, WaiverStatus waiverStatus)
 	{
 		var profile = FamilyProfile.Create(familyId, "Ava", "Stone", "5551000", null, null, DateTime.UtcNow);

@@ -4,7 +4,6 @@ public static class CompleteAdmissionCheckInConstants
 {
 	public const string ErrorAuthForbidden = "AUTH_FORBIDDEN";
 	public const string ErrorFastPathBlocked = "ADMISSION_FAST_PATH_BLOCKED";
-	public const string ErrorPaymentDeferred = "ADMISSION_PAYMENT_DEFERRED";
 	public const string ErrorCompletionFailed = "ADMISSION_COMPLETION_FAILED";
 	public const string ErrorQueuePersistenceFailed = "ADMISSION_QUEUE_PERSISTENCE_FAILED";
 	public const string ErrorAmountRequired = "ADMISSION_AMOUNT_REQUIRED";
