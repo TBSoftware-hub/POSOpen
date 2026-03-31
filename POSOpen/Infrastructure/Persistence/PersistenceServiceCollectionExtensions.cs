@@ -40,6 +40,8 @@ public static class PersistenceServiceCollectionExtensions
 		services.AddTransient<IFamilyProfileRepository, FamilyProfileRepository>();
 		services.AddTransient<ICartSessionRepository, CartSessionRepository>();
 		services.AddTransient<ICheckoutPaymentAttemptRepository, CheckoutPaymentAttemptRepository>();
+		services.AddTransient<IReceiptMetadataRepository, ReceiptMetadataRepository>();
+		services.AddTransient<ITransactionOperationRepository, TransactionOperationRepository>();
 		services.AddTransient<IStaffAccountRepository, StaffAccountRepository>();
 		services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
 

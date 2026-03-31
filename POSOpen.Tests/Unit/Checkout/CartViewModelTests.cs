@@ -9,7 +9,6 @@ using POSOpen.Domain.Entities;
 using POSOpen.Domain.Enums;
 using POSOpen.Domain.Policies;
 using POSOpen.Features.Checkout.ViewModels;
-
 namespace POSOpen.Tests.Unit.Checkout;
 
 public sealed class CartViewModelTests
@@ -156,7 +155,9 @@ public sealed class CartViewModelTests
 		var update = new UpdateCartLineItemQuantityUseCase(repo.Object, mockClock.Object);
 		var validate = new ValidateCartCompatibilityUseCase(repo.Object, []);
 
-		return new CartViewModel(getOrCreate, capture, remove, update, validate, mockUiService.Object);
+		var printReceipt = BuildPrintReceiptUseCase(repo, mockClock);
+
+		return new CartViewModel(getOrCreate, capture, remove, update, validate, printReceipt, mockUiService.Object);
 	}
 
 	private CartViewModel CreateViewModelWithRules(
@@ -183,8 +184,9 @@ public sealed class CartViewModelTests
 		var remove = new RemoveCartLineItemUseCase(repo.Object, mockClock.Object);
 		var update = new UpdateCartLineItemQuantityUseCase(repo.Object, mockClock.Object);
 		var validate = new ValidateCartCompatibilityUseCase(repo.Object, rules);
+		var printReceipt = BuildPrintReceiptUseCase(repo, mockClock);
 
-		return new CartViewModel(getOrCreate, capture, remove, update, validate, mockUiService.Object);
+		return new CartViewModel(getOrCreate, capture, remove, update, validate, printReceipt, mockUiService.Object);
 	}
 
 	private CartViewModel CreateViewModel(
@@ -213,7 +215,9 @@ public sealed class CartViewModelTests
 		var update = new UpdateCartLineItemQuantityUseCase(repo.Object, mockClock.Object);
 		var validate = new ValidateCartCompatibilityUseCase(repo.Object, []);
 
-		return new CartViewModel(getOrCreate, capture, remove, update, validate, uiService.Object);
+		var printReceipt = BuildPrintReceiptUseCase(repo, mockClock);
+
+		return new CartViewModel(getOrCreate, capture, remove, update, validate, printReceipt, uiService.Object);
 	}
 
 	[Fact]
@@ -336,7 +340,7 @@ public sealed class CartViewModelTests
 			.ReturnsAsync(AppResult<ScannerCaptureDto>.Success(new ScannerCaptureDto(ScannerCaptureStatus.Captured, "scan-ava", null), "Captured"));
 		var pricing = new Mock<IAdmissionPricingService>();
 		pricing.Setup(x => x.GetAdmissionTotalAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AdmissionTotal(2500, "USD"));
-		var capture = new CaptureScannerInputUseCase(repo.Object, familyRepo.Object, scanner.Object, pricing.Object, new AddCartLineItemUseCase(repo.Object, MockClock(, new Mock<ILogger<CaptureScannerInputUseCase>>().Object).Object));
+		var capture = new CaptureScannerInputUseCase(repo.Object, familyRepo.Object, scanner.Object, pricing.Object, new AddCartLineItemUseCase(repo.Object, MockClock().Object), new Mock<ILogger<CaptureScannerInputUseCase>>().Object);
 
 		var vm = CreateViewModel(repo, new Mock<ICheckoutUiService>(), capture);
 		await vm.InitializeCommand.ExecuteAsync(null);
@@ -359,6 +363,27 @@ public sealed class CartViewModelTests
 		var mock = new Mock<IUtcClock>();
 		mock.Setup(x => x.UtcNow).Returns(FixedNow);
 		return mock;
+	}
+
+	private static PrintReceiptUseCase BuildPrintReceiptUseCase(
+		Mock<ICartSessionRepository> repo,
+		Mock<IUtcClock> clock)
+	{
+		var printerService = new Mock<IPrinterDeviceService>();
+		printerService.Setup(x => x.PrintReceiptAsync(It.IsAny<ReceiptData>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(AppResult<PrinterResultDto>.Success(
+				new PrinterResultDto(PrintStatus.Success, null, "Printed."), "Printed."));
+		var opIdService = new Mock<IOperationIdService>();
+		opIdService.Setup(x => x.GenerateOperationId()).Returns(Guid.NewGuid());
+		opIdService.Setup(x => x.SaveOperationAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+			.Returns(Task.CompletedTask);
+		var receiptMetaRepo = new Mock<IReceiptMetadataRepository>();
+		receiptMetaRepo.Setup(x => x.AddAsync(It.IsAny<ReceiptMetadata>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync((ReceiptMetadata m, CancellationToken _) => m);
+		return new PrintReceiptUseCase(
+			repo.Object, opIdService.Object, printerService.Object,
+			receiptMetaRepo.Object, clock.Object,
+			new Mock<ILogger<PrintReceiptUseCase>>().Object);
 	}
 
 	private CartSession BuildCartWithItems(

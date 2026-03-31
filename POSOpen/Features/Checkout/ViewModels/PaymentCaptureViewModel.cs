@@ -113,6 +113,9 @@ public partial class PaymentCaptureViewModel : ObservableObject
 			ProcessorReference = attempt.ProcessorReference;
 			IsAuthorized = result.Payload.IsAuthorized;
 			StatusMessage = result.UserMessage;
+
+			if (result.Payload.IsAuthorized && _cartSessionId.HasValue)
+				await _checkoutUiService.NavigateToCheckoutCompletionAsync(_cartSessionId.Value);
 		}
 		finally
 		{

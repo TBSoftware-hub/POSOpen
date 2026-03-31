@@ -23,6 +23,7 @@ public partial class CartViewModel : ObservableObject
 	private readonly RemoveCartLineItemUseCase _removeCartLineItem;
 	private readonly UpdateCartLineItemQuantityUseCase _updateCartLineItemQuantity;
 	private readonly ValidateCartCompatibilityUseCase _validateCartCompatibility;
+	private readonly PrintReceiptUseCase _printReceiptUseCase;
 	private readonly ICheckoutUiService _uiService;
 
 	private Guid? _cartSessionId;
@@ -34,6 +35,7 @@ public partial class CartViewModel : ObservableObject
 		RemoveCartLineItemUseCase removeCartLineItem,
 		UpdateCartLineItemQuantityUseCase updateCartLineItemQuantity,
 		ValidateCartCompatibilityUseCase validateCartCompatibility,
+		PrintReceiptUseCase printReceiptUseCase,
 		ICheckoutUiService uiService)
 	{
 		_getOrCreateCartSession = getOrCreateCartSession;
@@ -41,6 +43,7 @@ public partial class CartViewModel : ObservableObject
 		_removeCartLineItem = removeCartLineItem;
 		_updateCartLineItemQuantity = updateCartLineItemQuantity;
 		_validateCartCompatibility = validateCartCompatibility;
+		_printReceiptUseCase = printReceiptUseCase;
 		_uiService = uiService;
 	}
 
@@ -56,6 +59,16 @@ public partial class CartViewModel : ObservableObject
 
 	[ObservableProperty]
 	private bool _isCartValid;
+
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasOfflineStatus))]
+	private PrintStatus? _lastPrintStatus;
+
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasOfflineStatus))]
+	private string? _offlineStatusMessage;
+
+	public bool HasOfflineStatus => !string.IsNullOrWhiteSpace(OfflineStatusMessage);
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(HasScannerStatus))]
@@ -302,6 +315,34 @@ public partial class CartViewModel : ObservableObject
 		}
 
 		await _uiService.NavigateToPaymentCaptureAsync(cartId);
+	}
+
+	[RelayCommand]
+	private async Task PrintReceiptAsync()
+	{
+		if (_cartSessionId is not { } cartId)
+		{
+			return;
+		}
+
+		IsLoading = true;
+		try
+		{
+			var result = await _printReceiptUseCase.ExecuteAsync(cartId);
+			if (!result.IsSuccess || result.Payload is null)
+			{
+				OfflineStatusMessage = result.UserMessage;
+				LastPrintStatus = null;
+				return;
+			}
+
+			LastPrintStatus = result.Payload.PrintStatus;
+			OfflineStatusMessage = result.Payload.UserMessage;
+		}
+		finally
+		{
+			IsLoading = false;
+		}
 	}
 
 	private void RefreshGroupsFromDto(CartSessionDto dto, Guid? highlightedLineItemId)

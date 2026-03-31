@@ -21,4 +21,16 @@ public sealed class CheckoutUiService : ICheckoutUiService
 	{
 		return global::Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
 	}
+
+	public Task NavigateToCheckoutCompletionAsync(Guid cartSessionId)
+	{
+		return global::Microsoft.Maui.Controls.Shell.Current.GoToAsync(
+			$"{CheckoutRoutes.CheckoutCompletion}?cartSessionId={cartSessionId}");
+	}
+
+	public Task StartNewTransactionAsync()
+	{
+		return global::Microsoft.Maui.Controls.Shell.Current.GoToAsync(
+			$"///{CheckoutRoutes.Cart}");
+	}
 }

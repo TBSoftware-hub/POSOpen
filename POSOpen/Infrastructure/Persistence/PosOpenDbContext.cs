@@ -26,6 +26,10 @@ public sealed class PosOpenDbContext : DbContext
 
 	public DbSet<CheckoutPaymentAttempt> CheckoutPaymentAttempts => Set<CheckoutPaymentAttempt>();
 
+	public DbSet<ReceiptMetadata> ReceiptMetadata => Set<ReceiptMetadata>();
+
+	public DbSet<TransactionOperation> TransactionOperations => Set<TransactionOperation>();
+
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);
