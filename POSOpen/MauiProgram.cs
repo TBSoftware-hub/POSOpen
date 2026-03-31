@@ -2,6 +2,7 @@
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Features.Admissions;
 using POSOpen.Features.Checkout;
+using POSOpen.Features.Party;
 using POSOpen.Features.Authentication;
 using POSOpen.Features.Security;
 using POSOpen.Features.StaffManagement;
@@ -30,6 +31,7 @@ public static class MauiProgram
 		builder.Services.AddAuthenticationFeature();
 		builder.Services.AddAdmissionsFeature();
 		builder.Services.AddCheckoutFeature();
+		builder.Services.AddPartyFeature();
 		builder.Services.AddSecurityFeature();
 		builder.Services.AddStaffManagement();
 		builder.Services.AddSingleton<IAppStateService, AppStateService>();

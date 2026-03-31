@@ -28,6 +28,8 @@ public sealed class PosOpenDbContext : DbContext
 
     public DbSet<RefundRecord> RefundRecords => Set<RefundRecord>();
 
+    public DbSet<PartyBooking> PartyBookings => Set<PartyBooking>();
+
     public DbSet<ReceiptMetadata> ReceiptMetadata => Set<ReceiptMetadata>();
 
     public DbSet<TransactionOperation> TransactionOperations => Set<TransactionOperation>();

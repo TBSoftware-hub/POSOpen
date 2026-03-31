@@ -38,6 +38,7 @@
     <Compile Include="..\POSOpen\Application\UseCases\Security\*.cs" Link="Source\Application\UseCases\Security\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\Admissions\*.cs" Link="Source\Application\UseCases\Admissions\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\Checkout\*.cs" Link="Source\Application\UseCases\Checkout\%(Filename)%(Extension)" />
+    <Compile Include="..\POSOpen\Application\UseCases\Party\*.cs" Link="Source\Application\UseCases\Party\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Features\Admissions\ViewModels\FastPathCheckInViewModel.cs" Link="Source\Features\Admissions\ViewModels\FastPathCheckInViewModel.cs" />
     <Compile Include="..\POSOpen\Features\Admissions\ViewModels\NewProfileAdmissionViewModel.cs" Link="Source\Features\Admissions\ViewModels\NewProfileAdmissionViewModel.cs" />
     <Compile Include="..\POSOpen\Features\Checkout\CheckoutRoutes.cs" Link="Source\Features\Checkout\CheckoutRoutes.cs" />
@@ -48,6 +49,7 @@
     <Compile Include="..\POSOpen\Features\Checkout\ViewModels\CheckoutCompletionViewModel.cs" Link="Source\Features\Checkout\ViewModels\CheckoutCompletionViewModel.cs" />
     <Compile Include="..\POSOpen\Features\Checkout\ViewModels\RefundWorkflowViewModel.cs" Link="Source\Features\Checkout\ViewModels\RefundWorkflowViewModel.cs" />
     <Compile Include="..\POSOpen\Features\Checkout\ViewModels\ValidationIssueViewModel.cs" Link="Source\Features\Checkout\ViewModels\ValidationIssueViewModel.cs" />
+    <Compile Include="..\POSOpen\Features\Party\ViewModels\PartyBookingWizardViewModel.cs" Link="Source\Features\Party\ViewModels\PartyBookingWizardViewModel.cs" />
     <Compile Include="..\POSOpen\Domain\Entities\*.cs" Link="Source\Domain\Entities\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Domain\Enums\*.cs" Link="Source\Domain\Enums\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Domain\Policies\*.cs" Link="Source\Domain\Policies\%(Filename)%(Extension)" />

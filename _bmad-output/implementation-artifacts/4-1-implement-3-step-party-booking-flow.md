@@ -7,7 +7,7 @@
 | Epic | 4 - Party Booking Lifecycle and Inventory Coordination |
 | Story | 4.1 |
 | Key | `4-1-implement-3-step-party-booking-flow` |
-| Status | ready-for-dev |
+| Status | review |
 | Author | Timbe (via BMAD Story Creator) |
 | Created | 2026-03-31 |
 | Target Sprint | Current |
@@ -31,6 +31,24 @@
 > **Then** a draft booking is created with required booking metadata  
 > **And** unavailable slots are prevented from selection.
 
+Required booking metadata for draft creation:
+
+- `bookingId` (GUID string generated at command boundary).
+- `partyDateUtc` (ISO-8601 UTC date-time string).
+- `slotId` (selected schedule slot identifier).
+- `packageId` (selected package identifier).
+- `createdUtc` (ISO-8601 UTC timestamp).
+- `lastUpdatedUtc` (ISO-8601 UTC timestamp).
+- `lifecycleStatus` (must be `Draft` for draft records).
+- `operationId` (GUID write-operation identifier).
+- `correlationId` (trace identifier for related operations).
+
+Unavailable slot enforcement rules:
+
+- A slot is unavailable when an existing booking has the same `partyDateUtc` and `slotId` with lifecycle status not equal to `Cancelled`.
+- Slot conflicts are evaluated in UTC.
+- On conflict, progression to the confirmation step is blocked and an actionable validation prompt is displayed.
+
 ### AC-2 - Block progression on incomplete required fields
 
 > **Given** required booking fields are incomplete  
@@ -38,12 +56,34 @@
 > **Then** progression is blocked  
 > **And** actionable validation prompts are shown.
 
+Validation matrix:
+
+- Date step: `partyDateUtc` is required and must not be in the past.
+- Time step: `slotId` is required and must be available at validation time.
+- Package step: `packageId` is required and must resolve to a selectable package.
+- Review step: all required fields must be present before save is enabled.
+
+Validation response contract:
+
+- Use canonical error code + user-safe message pairs from `PartyBookingConstants`.
+- Include user-safe messages in UI; keep diagnostic detail in diagnostic field only.
+
 ### AC-3 - Persist confirmed booking with lifecycle status
 
 > **Given** I confirm booking details  
 > **When** booking is saved  
 > **Then** a persistent booking record is created with unique booking ID  
 > **And** initial lifecycle status is set.
+
+Initial lifecycle status requirements:
+
+- Draft creation sets `lifecycleStatus = Draft`.
+- Successful confirmation sets `lifecycleStatus = Booked`.
+
+Write-path traceability requirements:
+
+- Confirmation writes must persist `operationId` and `correlationId`.
+- All write operations must return the standard result envelope (`isSuccess`, `errorCode`, `userMessage`, `diagnosticMessage`, `payload`).
 
 ---
 
@@ -70,7 +110,10 @@ This story must optimize for frontline execution and clarity:
 - Draft booking state and confirmed booking persistence.
 - Unique booking identifier generation at save.
 - Initial lifecycle status assignment for new bookings.
+- Standard result envelope usage for all booking use-case responses.
+- Operation and correlation ID capture on all draft/confirm write paths.
 - Unit tests for flow/state validation and persistence behavior.
+- Integration tests for availability conflict and write-path integrity.
 
 ### Out of Scope
 
@@ -90,6 +133,10 @@ This story must optimize for frontline execution and clarity:
 - Use UTC timestamps and operation-safe identifiers.
 - Preserve ViewModel-driven state transitions; do not put business rules in page code-behind.
 - Reuse existing naming and testing conventions from Epic 3.
+- Enforce canonical result envelope fields for use-case responses.
+- Emit and persist `operationId` and `correlationId` on write paths.
+- Use explicit ViewModel processing states (`Idle -> Loading -> Success|Error|Deferred`) in addition to wizard step state.
+- Apply validation at three layers: ViewModel (field), Application (business), Infrastructure (constraints).
 
 ---
 
@@ -130,6 +177,11 @@ This story must optimize for frontline execution and clarity:
 11. `POSOpen/Infrastructure/Persistence/Migrations/<timestamp>_AddPartyBookings.cs`
 12. `POSOpen/Infrastructure/Persistence/PosOpenDbContext.cs` (add DbSet)
 
+Migration naming convention:
+
+- Use timestamped EF migration name format `yyyyMMddHHmmss_AddPartyBookings`.
+- Migration must add table, unique booking ID constraint, and unique index covering date+slot for active bookings.
+
 ### Create / Modify - Features (UI)
 
 13. `POSOpen/Features/Party/ViewModels/PartyBookingWizardViewModel.cs`
@@ -164,24 +216,32 @@ This story must optimize for frontline execution and clarity:
 ## Tasks / Subtasks
 
 ### Task 1 - Domain and Persistence Foundation
-- [ ] Add `PartyBooking` domain entity and lifecycle enum.
-- [ ] Add repository abstraction and EF configuration.
-- [ ] Add migration and DbContext registration.
+- [x] Add `PartyBooking` domain entity and lifecycle enum.
+- [x] Add repository abstraction and EF configuration.
+- [x] Add migration and DbContext registration.
+- [x] Add unique constraints/indexes for booking identity and slot conflict prevention.
+- [x] Persist operation/correlation IDs for write records.
 
 ### Task 2 - Booking Flow Application Logic
-- [ ] Implement availability use case for date/time step.
-- [ ] Implement draft-step progression use case.
-- [ ] Implement confirmation use case with final validation and persistence.
+- [x] Implement availability use case for date/time step.
+- [x] Implement draft-step progression use case.
+- [x] Implement confirmation use case with final validation and persistence.
+- [x] Return canonical result envelope + canonical error codes for all outcomes.
+- [x] Enforce lifecycle transitions `Draft -> Booked` only through use-case flow.
 
 ### Task 3 - Party Booking UI Flow
-- [ ] Add wizard ViewModel with step state machine (`Date`, `Time`, `Package`, `Review`).
-- [ ] Add page and route integration.
-- [ ] Surface validation prompts and unavailable-slot UX.
+- [x] Add wizard ViewModel with step state machine (`Date`, `Time`, `Package`, `Review`).
+- [x] Add page and route integration.
+- [x] Surface validation prompts and unavailable-slot UX.
+- [x] Implement processing state model (`Idle`, `Loading`, `Success`, `Error`, `Deferred`) without hidden side effects.
 
 ### Task 4 - Test Coverage
-- [ ] Add unit tests for step validation and availability outcomes.
-- [ ] Add unit tests for confirmation behavior and lifecycle status assignment.
-- [ ] Add integration test coverage for booking persistence.
+- [x] Add unit tests for step validation and availability outcomes.
+- [x] Add unit tests for confirmation behavior and lifecycle status assignment.
+- [x] Add integration test coverage for booking persistence.
+- [x] Add integration test for concurrent slot contention (single winner, deterministic loser error).
+- [x] Add integration test asserting operation/correlation ID persistence on write paths.
+- [x] Add contract tests for result envelope shape and canonical error code mapping.
 
 ---
 
@@ -201,9 +261,58 @@ From Epic 3 closure:
 
 GPT-5.3-Codex
 
+### Implementation Plan
+
+1. Finalize domain model and persistence constraints for booking ID + slot conflict rules.
+2. Implement availability and draft/confirm use cases using canonical result envelope and IDs.
+3. Implement wizard + processing state behavior in ViewModel/UI.
+4. Add unit, integration, and contract tests for validation, concurrency, and envelope consistency.
+
 ### Completion Notes List
 
-- Ultimate context engine analysis completed - comprehensive developer guide created.
+- Implemented party booking domain model, EF configuration, repository, and migration scaffolding with active-slot uniqueness constraints.
+- Added booking use cases for availability, draft persistence, and confirmation with canonical AppResult envelope semantics.
+- Added Party feature route, DI registration, and MAUI wizard page/viewmodel with explicit processing and step states.
+- Added unit and integration tests for draft validation, confirmation behavior, slot contention handling, and traceability field persistence.
+- Updated app startup and persistence DI to register Party feature and repository dependencies.
+- Ran full regression suite successfully (231 passed, 0 failed).
+
+### Debug Log
+
+- 2026-03-31: `dotnet test POSOpen.Tests/POSOpen.Tests.csproj --filter "FullyQualifiedName~Party"` (pass: 15/15).
+- 2026-03-31: `dotnet test POSOpen.Tests/POSOpen.Tests.csproj` (pass: 231/231).
+
+---
+
+## File List
+
+- POSOpen/Domain/Enums/PartyBookingStatus.cs
+- POSOpen/Domain/Entities/PartyBooking.cs
+- POSOpen/Application/Abstractions/Repositories/IPartyBookingRepository.cs
+- POSOpen/Application/UseCases/Party/PartyBookingConstants.cs
+- POSOpen/Application/UseCases/Party/PartyBookingDtos.cs
+- POSOpen/Application/UseCases/Party/CreateDraftPartyBookingCommand.cs
+- POSOpen/Application/UseCases/Party/ConfirmPartyBookingCommand.cs
+- POSOpen/Application/UseCases/Party/GetBookingAvailabilityUseCase.cs
+- POSOpen/Application/UseCases/Party/CreateDraftPartyBookingUseCase.cs
+- POSOpen/Application/UseCases/Party/ConfirmPartyBookingUseCase.cs
+- POSOpen/Infrastructure/Persistence/Configurations/PartyBookingConfiguration.cs
+- POSOpen/Infrastructure/Persistence/Repositories/PartyBookingRepository.cs
+- POSOpen/Infrastructure/Persistence/Migrations/20260402090000_AddPartyBookings.cs
+- POSOpen/Infrastructure/Persistence/PosOpenDbContext.cs
+- POSOpen/Infrastructure/Persistence/PersistenceServiceCollectionExtensions.cs
+- POSOpen/Features/Party/PartyRoutes.cs
+- POSOpen/Features/Party/PartyServiceCollectionExtensions.cs
+- POSOpen/Features/Party/ViewModels/PartyBookingWizardViewModel.cs
+- POSOpen/Features/Party/Views/PartyBookingWizardPage.xaml
+- POSOpen/Features/Party/Views/PartyBookingWizardPage.xaml.cs
+- POSOpen/MauiProgram.cs
+- POSOpen.Tests/POSOpen.Tests.csproj
+- POSOpen.Tests/Unit/Party/CreateDraftPartyBookingUseCaseTests.cs
+- POSOpen.Tests/Unit/Party/ConfirmPartyBookingUseCaseTests.cs
+- POSOpen.Tests/Unit/Party/PartyBookingWizardViewModelTests.cs
+- POSOpen.Tests/Integration/Party/PartyBookingRepositoryTests.cs
+- POSOpen.Tests/TestDoubles/TestDbContextFactory.cs
 
 ---
 
@@ -212,3 +321,6 @@ GPT-5.3-Codex
 | Date | Change |
 |---|---|
 | 2026-03-31 | Story created and set to ready-for-dev from Epic 4 backlog. |
+| 2026-03-31 | DS started: moved story and sprint status to in-progress. |
+| 2026-03-31 | Story review fixes applied: clarified metadata contract, validation matrix, lifecycle rules, IDs, and test requirements. |
+| 2026-03-31 | Implemented Story 4.1 code, UI wizard flow, persistence, and tests; moved story to review after full regression pass. |
