@@ -21,6 +21,7 @@ public partial class CartViewModel : ObservableObject
 	private readonly GetOrCreateCartSessionUseCase _getOrCreateCartSession;
 	private readonly RemoveCartLineItemUseCase _removeCartLineItem;
 	private readonly UpdateCartLineItemQuantityUseCase _updateCartLineItemQuantity;
+	private readonly ValidateCartCompatibilityUseCase _validateCartCompatibility;
 	private readonly ICheckoutUiService _uiService;
 
 	private Guid? _cartSessionId;
@@ -29,11 +30,13 @@ public partial class CartViewModel : ObservableObject
 		GetOrCreateCartSessionUseCase getOrCreateCartSession,
 		RemoveCartLineItemUseCase removeCartLineItem,
 		UpdateCartLineItemQuantityUseCase updateCartLineItemQuantity,
+		ValidateCartCompatibilityUseCase validateCartCompatibility,
 		ICheckoutUiService uiService)
 	{
 		_getOrCreateCartSession = getOrCreateCartSession;
 		_removeCartLineItem = removeCartLineItem;
 		_updateCartLineItemQuantity = updateCartLineItemQuantity;
+		_validateCartCompatibility = validateCartCompatibility;
 		_uiService = uiService;
 	}
 
@@ -47,9 +50,16 @@ public partial class CartViewModel : ObservableObject
 	[ObservableProperty]
 	private string _grandTotalLabel = "$0.00";
 
+	[ObservableProperty]
+	private bool _isCartValid;
+
 	public ObservableCollection<CartLineItemGroupViewModel> ItemGroups { get; } = new();
 
+	public ObservableCollection<ValidationIssueViewModel> ValidationIssues { get; } = [];
+
 	public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
+
+	public bool HasValidationIssues => ValidationIssues.Count > 0;
 
 	[RelayCommand]
 	private async Task InitializeAsync()
@@ -69,6 +79,7 @@ public partial class CartViewModel : ObservableObject
 			}
 			_cartSessionId = result.Payload!.Id;
 			RefreshGroupsFromDto(result.Payload!);
+			await RunValidationAsync();
 		}
 		finally
 		{
@@ -88,6 +99,7 @@ public partial class CartViewModel : ObservableObject
 		{
 			ErrorMessage = null;
 			RefreshGroupsFromDto(result.Payload!);
+			await RunValidationAsync();
 		}
 		else
 			ErrorMessage = result.UserMessage;
@@ -108,6 +120,7 @@ public partial class CartViewModel : ObservableObject
 		{
 			ErrorMessage = null;
 			RefreshGroupsFromDto(result.Payload!);
+			await RunValidationAsync();
 		}
 		else
 			ErrorMessage = result.UserMessage;
@@ -134,6 +147,7 @@ public partial class CartViewModel : ObservableObject
 		{
 			ErrorMessage = null;
 			RefreshGroupsFromDto(result.Payload!);
+			await RunValidationAsync();
 		}
 		else
 			ErrorMessage = result.UserMessage;
@@ -144,6 +158,110 @@ public partial class CartViewModel : ObservableObject
 	{
 		if (_cartSessionId is null) return;
 		await _uiService.NavigateToAddLineItemAsync(_cartSessionId.Value);
+	}
+
+	private async Task RunValidationAsync()
+	{
+		if (_cartSessionId is not { } cartId)
+		{
+			IsCartValid = false;
+			ValidationIssues.Clear();
+			OnPropertyChanged(nameof(HasValidationIssues));
+			return;
+		}
+
+		var result = await _validateCartCompatibility.ExecuteAsync(cartId);
+
+		if (!result.IsSuccess)
+		{
+			// Validation infrastructure failure — treat cart as invalid but don't
+			// surface internal error codes to cashier.
+			IsCartValid = false;
+			ValidationIssues.Clear();
+			OnPropertyChanged(nameof(HasValidationIssues));
+			return;
+		}
+
+		ValidationIssues.Clear();
+		foreach (var issue in result.Payload!.Issues)
+		{
+			ValidationIssues.Add(new ValidationIssueViewModel
+			{
+				Message   = issue.Message,
+				FixLabel  = issue.FixLabel,
+				FixAction = issue.FixAction,
+			});
+		}
+
+		IsCartValid = result.Payload.IsValid;
+		OnPropertyChanged(nameof(HasValidationIssues));
+	}
+
+	[RelayCommand]
+	private async Task ApplyFixAsync(CartValidationFixAction action)
+	{
+		if (_cartSessionId is not { } cartId) return;
+
+		switch (action)
+		{
+			case CartValidationFixAction.RemoveCateringItems:
+				var cateringIds = ItemGroups
+					.SelectMany(g => g)
+					.Where(i => i.FulfillmentContext == FulfillmentContext.CateringAddon)
+					.Select(i => i.Id)
+					.ToList();
+				foreach (var id in cateringIds)
+				{
+					var removeResult = await _removeCartLineItem.ExecuteAsync(
+						new RemoveCartLineItemCommand(cartId, id));
+					if (!removeResult.IsSuccess)
+					{
+						ErrorMessage = removeResult.UserMessage;
+						break;
+					}
+				}
+				await RefreshAndValidateAsync();
+				break;
+
+			case CartValidationFixAction.KeepOldestPartyDeposit:
+				var extraDepositIds = ItemGroups
+					.SelectMany(g => g)
+					.Where(i => i.FulfillmentContext == FulfillmentContext.PartyDeposit)
+					.Skip(1)
+					.Select(i => i.Id)
+					.ToList();
+				foreach (var id in extraDepositIds)
+				{
+					var removeResult = await _removeCartLineItem.ExecuteAsync(
+						new RemoveCartLineItemCommand(cartId, id));
+					if (!removeResult.IsSuccess)
+					{
+						ErrorMessage = removeResult.UserMessage;
+						break;
+					}
+				}
+				await RefreshAndValidateAsync();
+				break;
+
+			case CartValidationFixAction.None:
+			default:
+				break;
+		}
+	}
+
+	private async Task RefreshAndValidateAsync()
+	{
+		var refreshResult = await _getOrCreateCartSession.ExecuteAsync();
+		if (refreshResult.IsSuccess)
+			RefreshGroupsFromDto(refreshResult.Payload!);
+		await RunValidationAsync();
+	}
+
+	[RelayCommand]
+	private async Task ProceedToPaymentAsync()
+	{
+		// TODO Story 3.3: navigate to payment capture page
+		await Task.CompletedTask;
 	}
 
 	private void RefreshGroupsFromDto(CartSessionDto dto)
