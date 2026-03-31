@@ -60,7 +60,7 @@ development_status:
   epic-2-retrospective: optional
   epic-3: in-progress
   3-1-build-mixed-cart-composition-by-fulfillment-context: done
-  3-2-enforce-compatibility-rules-and-guided-resolution: review
+  3-2-enforce-compatibility-rules-and-guided-resolution: done
   3-3-integrate-scanner-and-card-reader-for-checkout: backlog
   3-4-print-receipts-and-preserve-offline-continuity: backlog
   3-5-policy-bound-refund-workflow: backlog
