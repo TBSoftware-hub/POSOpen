@@ -41,6 +41,7 @@ public static class PersistenceServiceCollectionExtensions
 		services.AddTransient<ICartSessionRepository, CartSessionRepository>();
 		services.AddTransient<ICheckoutPaymentAttemptRepository, CheckoutPaymentAttemptRepository>();
 		services.AddTransient<IRefundRepository, RefundRepository>();
+		services.AddTransient<IPartyBookingRepository, PartyBookingRepository>();
 		services.AddTransient<IReceiptMetadataRepository, ReceiptMetadataRepository>();
 		services.AddTransient<ITransactionOperationRepository, TransactionOperationRepository>();
 		services.AddTransient<IStaffAccountRepository, StaffAccountRepository>();

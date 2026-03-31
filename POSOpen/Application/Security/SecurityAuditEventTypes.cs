@@ -17,6 +17,8 @@ public static class SecurityAuditEventTypes
 	public const string RefundDenied = "RefundDenied";
 	public const string RefundApprovalRequested = "RefundApprovalRequested";
 	public const string RefundApprovalDenied = "RefundApprovalDenied";
+	public const string PartyBookingConfirmed = "PartyBookingConfirmed";
+	public const string PartyBookingConfirmationDenied = "PartyBookingConfirmationDenied";
 
 	/// <summary>All event types that constitute the security-critical audit scope.</summary>
 	public static readonly IReadOnlyList<string> SecurityCriticalScope =
@@ -32,5 +34,7 @@ public static class SecurityAuditEventTypes
 		RefundDenied,
 		RefundApprovalRequested,
 		RefundApprovalDenied,
+		PartyBookingConfirmed,
+		PartyBookingConfirmationDenied,
 	];
 }

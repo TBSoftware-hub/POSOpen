@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using POSOpen.Infrastructure.Persistence;
 
 namespace POSOpen.Tests;
@@ -20,6 +21,7 @@ public sealed class TestDbContextFactory : IDbContextFactory<PosOpenDbContext>, 
 			{
 				sqlite.MigrationsAssembly(typeof(PosOpenDbContext).Assembly.FullName);
 			})
+			.ConfigureWarnings(x => x.Ignore(RelationalEventId.PendingModelChangesWarning))
 			.Options;
 
 		return new PosOpenDbContext(options);
