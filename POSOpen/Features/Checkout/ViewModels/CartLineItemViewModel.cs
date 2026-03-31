@@ -14,6 +14,7 @@ public sealed class CartLineItemViewModel
 	public long UnitAmountCents { get; init; }
 	public long LineTotalCents { get; init; }
 	public string CurrencyCode { get; init; } = "USD";
+	public bool IsHighlighted { get; init; }
 
 	public string UnitPriceLabel => FormatCents(UnitAmountCents);
 	public string LineTotalLabel => FormatCents(LineTotalCents);

@@ -24,6 +24,8 @@ public sealed class PosOpenDbContext : DbContext
 
 	public DbSet<CartLineItem> CartLineItems => Set<CartLineItem>();
 
+	public DbSet<CheckoutPaymentAttempt> CheckoutPaymentAttempts => Set<CheckoutPaymentAttempt>();
+
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);

@@ -7,7 +7,7 @@
 | Epic             | 3 — Mixed-Cart Composition & Checkout                    |
 | Story            | 3.2                                                      |
 | Key              | `3-2-enforce-compatibility-rules-and-guided-resolution`  |
-| Status           | in-progress                                              |
+| Status           | done                                                     |
 | Author           | Timbe (via BMAD Story Creator)                           |
 | Created          | 2026-03-31                                               |
 | Target Sprint    | Current                                                  |
@@ -965,7 +965,7 @@ public async Task ApplyFix_RemoveCatering_ClearsIssueAndEnablesCheckout()
 - [x] No regressions in existing `CartUseCaseTests` or `CartViewModelTests`
 - [x] `ValidationIssues` is empty and `IsCartValid` is true for a cart with one Admission item
 - [ ] AC-4 verified manually: validation of a full 4-context cart completes in under 2 seconds
-- [ ] Story marked `done` in sprint status after PR merge
+- [x] Story marked `done` in sprint status after PR merge
 
 
 ---
