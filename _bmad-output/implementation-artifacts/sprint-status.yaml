@@ -62,7 +62,7 @@ development_status:
   3-1-build-mixed-cart-composition-by-fulfillment-context: done
   3-2-enforce-compatibility-rules-and-guided-resolution: done
   3-3-integrate-scanner-and-card-reader-for-checkout: done
-  3-4-print-receipts-and-preserve-offline-continuity: backlog
+  3-4-print-receipts-and-preserve-offline-continuity: review
   3-5-policy-bound-refund-workflow: backlog
   epic-3-retrospective: optional
   epic-4: backlog
