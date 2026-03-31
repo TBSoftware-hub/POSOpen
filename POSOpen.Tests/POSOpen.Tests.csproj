@@ -44,6 +44,7 @@
     <Compile Include="..\POSOpen\Features\Checkout\ViewModels\CartLineItemViewModel.cs" Link="Source\Features\Checkout\ViewModels\CartLineItemViewModel.cs" />
     <Compile Include="..\POSOpen\Features\Checkout\ViewModels\CartLineItemGroupViewModel.cs" Link="Source\Features\Checkout\ViewModels\CartLineItemGroupViewModel.cs" />
     <Compile Include="..\POSOpen\Features\Checkout\ViewModels\CartViewModel.cs" Link="Source\Features\Checkout\ViewModels\CartViewModel.cs" />
+    <Compile Include="..\POSOpen\Features\Checkout\ViewModels\PaymentCaptureViewModel.cs" Link="Source\Features\Checkout\ViewModels\PaymentCaptureViewModel.cs" />
     <Compile Include="..\POSOpen\Features\Checkout\ViewModels\ValidationIssueViewModel.cs" Link="Source\Features\Checkout\ViewModels\ValidationIssueViewModel.cs" />
     <Compile Include="..\POSOpen\Domain\Entities\*.cs" Link="Source\Domain\Entities\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Domain\Enums\*.cs" Link="Source\Domain\Enums\%(Filename)%(Extension)" />

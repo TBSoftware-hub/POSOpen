@@ -1,7 +1,9 @@
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using POSOpen.Application.Abstractions.Repositories;
 using POSOpen.Application.Abstractions.Services;
+using POSOpen.Application.Results;
 using POSOpen.Application.UseCases.Checkout;
 using POSOpen.Domain.Entities;
 using POSOpen.Domain.Enums;
@@ -136,14 +138,25 @@ public sealed class CartViewModelTests
 		var mockAppState = appState ?? BuildAuthenticatedAppState();
 		var mockClock = new Mock<IUtcClock>();
 		var mockUiService = new Mock<ICheckoutUiService>();
+		var mockFamilyRepo = new Mock<IFamilyProfileRepository>();
+		var mockScanner = new Mock<IScannerDeviceService>();
+		var mockPricing = new Mock<IAdmissionPricingService>();
 		mockClock.Setup(x => x.UtcNow).Returns(FixedNow);
+		mockScanner.Setup(x => x.CaptureAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(AppResult<ScannerCaptureDto>.Success(
+				new ScannerCaptureDto(ScannerCaptureStatus.Unavailable, null, DeviceDiagnosticCode.ScannerUnavailable),
+				CartCheckoutConstants.SafeScannerUnavailableMessage));
+		mockPricing.Setup(x => x.GetAdmissionTotalAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(new AdmissionTotal(2500, "USD"));
 
 		var getOrCreate = new GetOrCreateCartSessionUseCase(repo.Object, mockAppState.Object, mockClock.Object);
+		var add = new AddCartLineItemUseCase(repo.Object, mockClock.Object);
+		var capture = new CaptureScannerInputUseCase(repo.Object, mockFamilyRepo.Object, mockScanner.Object, mockPricing.Object, add, new Mock<ILogger<CaptureScannerInputUseCase>>().Object);
 		var remove = new RemoveCartLineItemUseCase(repo.Object, mockClock.Object);
 		var update = new UpdateCartLineItemQuantityUseCase(repo.Object, mockClock.Object);
 		var validate = new ValidateCartCompatibilityUseCase(repo.Object, []);
 
-		return new CartViewModel(getOrCreate, remove, update, validate, mockUiService.Object);
+		return new CartViewModel(getOrCreate, capture, remove, update, validate, mockUiService.Object);
 	}
 
 	private CartViewModel CreateViewModelWithRules(
@@ -153,14 +166,54 @@ public sealed class CartViewModelTests
 		var mockAppState = BuildAuthenticatedAppState();
 		var mockClock = new Mock<IUtcClock>();
 		var mockUiService = new Mock<ICheckoutUiService>();
+		var mockFamilyRepo = new Mock<IFamilyProfileRepository>();
+		var mockScanner = new Mock<IScannerDeviceService>();
+		var mockPricing = new Mock<IAdmissionPricingService>();
 		mockClock.Setup(x => x.UtcNow).Returns(FixedNow);
+		mockScanner.Setup(x => x.CaptureAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(AppResult<ScannerCaptureDto>.Success(
+				new ScannerCaptureDto(ScannerCaptureStatus.Unavailable, null, DeviceDiagnosticCode.ScannerUnavailable),
+				CartCheckoutConstants.SafeScannerUnavailableMessage));
+		mockPricing.Setup(x => x.GetAdmissionTotalAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(new AdmissionTotal(2500, "USD"));
 
 		var getOrCreate = new GetOrCreateCartSessionUseCase(repo.Object, mockAppState.Object, mockClock.Object);
+		var add = new AddCartLineItemUseCase(repo.Object, mockClock.Object);
+		var capture = new CaptureScannerInputUseCase(repo.Object, mockFamilyRepo.Object, mockScanner.Object, mockPricing.Object, add, new Mock<ILogger<CaptureScannerInputUseCase>>().Object);
 		var remove = new RemoveCartLineItemUseCase(repo.Object, mockClock.Object);
 		var update = new UpdateCartLineItemQuantityUseCase(repo.Object, mockClock.Object);
 		var validate = new ValidateCartCompatibilityUseCase(repo.Object, rules);
 
-		return new CartViewModel(getOrCreate, remove, update, validate, mockUiService.Object);
+		return new CartViewModel(getOrCreate, capture, remove, update, validate, mockUiService.Object);
+	}
+
+	private CartViewModel CreateViewModel(
+		Mock<ICartSessionRepository> repo,
+		Mock<ICheckoutUiService> uiService,
+		CaptureScannerInputUseCase? captureScannerInputUseCase = null,
+		Mock<IAppStateService>? appState = null)
+	{
+		var mockAppState = appState ?? BuildAuthenticatedAppState();
+		var mockClock = new Mock<IUtcClock>();
+		var mockFamilyRepo = new Mock<IFamilyProfileRepository>();
+		var mockScanner = new Mock<IScannerDeviceService>();
+		var mockPricing = new Mock<IAdmissionPricingService>();
+		mockClock.Setup(x => x.UtcNow).Returns(FixedNow);
+		mockScanner.Setup(x => x.CaptureAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(AppResult<ScannerCaptureDto>.Success(
+				new ScannerCaptureDto(ScannerCaptureStatus.Unavailable, null, DeviceDiagnosticCode.ScannerUnavailable),
+				CartCheckoutConstants.SafeScannerUnavailableMessage));
+		mockPricing.Setup(x => x.GetAdmissionTotalAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(new AdmissionTotal(2500, "USD"));
+
+		var getOrCreate = new GetOrCreateCartSessionUseCase(repo.Object, mockAppState.Object, mockClock.Object);
+		var add = new AddCartLineItemUseCase(repo.Object, mockClock.Object);
+		var capture = captureScannerInputUseCase ?? new CaptureScannerInputUseCase(repo.Object, mockFamilyRepo.Object, mockScanner.Object, mockPricing.Object, add, new Mock<ILogger<CaptureScannerInputUseCase>>().Object);
+		var remove = new RemoveCartLineItemUseCase(repo.Object, mockClock.Object);
+		var update = new UpdateCartLineItemQuantityUseCase(repo.Object, mockClock.Object);
+		var validate = new ValidateCartCompatibilityUseCase(repo.Object, []);
+
+		return new CartViewModel(getOrCreate, capture, remove, update, validate, uiService.Object);
 	}
 
 	[Fact]
@@ -243,10 +296,68 @@ public sealed class CartViewModelTests
 		vm.HasValidationIssues.Should().BeFalse();
 	}
 
+	[Fact]
+	public async Task ProceedToPayment_WhenCartIsValid_NavigatesToPaymentCapture()
+	{
+		var cartId = Guid.NewGuid();
+		var cart = CartSession.Create(cartId, null, StaffId, FixedNow);
+		cart.LineItems.Add(CartLineItem.Create(Guid.NewGuid(), cartId, "Admission", FulfillmentContext.Admission, null, 1, 1500, "USD", FixedNow));
+		var repo = new Mock<ICartSessionRepository>();
+		repo.Setup(x => x.GetOpenCartForStaffAsync(StaffId, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+		repo.Setup(x => x.GetByIdAsync(cartId, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+		var uiService = new Mock<ICheckoutUiService>();
+
+		var vm = CreateViewModel(repo, uiService);
+		await vm.InitializeCommand.ExecuteAsync(null);
+
+		await vm.ProceedToPaymentCommand.ExecuteAsync(null);
+
+		uiService.Verify(x => x.NavigateToPaymentCaptureAsync(cartId), Times.Once);
+	}
+
+	[Fact]
+	public async Task CaptureScan_WhenFamilyAlreadyInCart_HighlightsExistingItem()
+	{
+		var cartId = Guid.NewGuid();
+		var familyId = Guid.NewGuid();
+		var itemId = Guid.NewGuid();
+		var cart = CartSession.Create(cartId, familyId, StaffId, FixedNow);
+		cart.LineItems.Add(CartLineItem.Create(itemId, cartId, "Admission", FulfillmentContext.Admission, familyId, 1, 1500, "USD", FixedNow));
+		var repo = new Mock<ICartSessionRepository>();
+		repo.Setup(x => x.GetOpenCartForStaffAsync(StaffId, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+		repo.Setup(x => x.GetByIdAsync(cartId, It.IsAny<CancellationToken>())).ReturnsAsync(cart);
+
+		var family = FamilyProfile.Create(familyId, "Ava", "Stone", "5551112222", null, StaffId, FixedNow);
+		family.ScanToken = "scan-ava";
+		var familyRepo = new Mock<IFamilyProfileRepository>();
+		familyRepo.Setup(x => x.GetByScanTokenAsync("scan-ava", It.IsAny<CancellationToken>())).ReturnsAsync(family);
+		var scanner = new Mock<IScannerDeviceService>();
+		scanner.Setup(x => x.CaptureAsync(It.IsAny<CancellationToken>()))
+			.ReturnsAsync(AppResult<ScannerCaptureDto>.Success(new ScannerCaptureDto(ScannerCaptureStatus.Captured, "scan-ava", null), "Captured"));
+		var pricing = new Mock<IAdmissionPricingService>();
+		pricing.Setup(x => x.GetAdmissionTotalAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AdmissionTotal(2500, "USD"));
+		var capture = new CaptureScannerInputUseCase(repo.Object, familyRepo.Object, scanner.Object, pricing.Object, new AddCartLineItemUseCase(repo.Object, MockClock(, new Mock<ILogger<CaptureScannerInputUseCase>>().Object).Object));
+
+		var vm = CreateViewModel(repo, new Mock<ICheckoutUiService>(), capture);
+		await vm.InitializeCommand.ExecuteAsync(null);
+
+		await vm.CaptureScanCommand.ExecuteAsync(null);
+
+		vm.HasScannerStatus.Should().BeTrue();
+		vm.ItemGroups.SelectMany(x => x).Single(x => x.Id == itemId).IsHighlighted.Should().BeTrue();
+	}
+
 	private Mock<IAppStateService> BuildAuthenticatedAppState()
 	{
 		var mock = new Mock<IAppStateService>();
 		mock.Setup(x => x.CurrentStaffId).Returns(StaffId);
+		return mock;
+	}
+
+	private Mock<IUtcClock> MockClock()
+	{
+		var mock = new Mock<IUtcClock>();
+		mock.Setup(x => x.UtcNow).Returns(FixedNow);
 		return mock;
 	}
 
@@ -265,3 +376,4 @@ public sealed class CartViewModelTests
 		return cart;
 	}
 }
+

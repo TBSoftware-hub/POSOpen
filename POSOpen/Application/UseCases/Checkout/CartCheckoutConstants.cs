@@ -23,6 +23,22 @@ public static class CartCheckoutConstants
         "Catering add-ons require a party deposit in the cart.";
 
     public const string ErrorMultipleDeposits = "MULTIPLE_PARTY_DEPOSITS";
+    public const string ErrorScannerUnavailable = "SCANNER_UNAVAILABLE";
+    public const string ErrorScannerUnresolved = "SCANNER_UNRESOLVED";
+    public const string ErrorCardReaderUnavailable = "CARD_READER_UNAVAILABLE";
+
     public const string SafeMultipleDepositsMessage =
         "Only one party deposit is allowed per cart.";
+    public const string SafeScannerUnavailableMessage =
+        "Scanner is unavailable. Add the item manually or retry the device.";
+    public const string SafeScannerUnresolvedMessage =
+        "No matching checkout reference was found for that scan.";
+    public const string SafeCardReaderUnavailableMessage =
+        "Card reader is unavailable. Try another tender or resolve the hardware issue.";
+    public const string SafeCardReaderFaultedMessage =
+        "Card authorization failed due to a device fault. Retry or use another tender.";
+    public const string SafeCardAuthorizationDeclinedMessage =
+        "Card was declined. Ask for another payment method or retry with the customer.";
+    public const string SafeCardAuthorizationCancelledMessage =
+        "Card authorization was cancelled before completion.";
 }

@@ -47,11 +47,20 @@
 				</DataTemplate>
 			</CollectionView.GroupHeaderTemplate>
 			<CollectionView.ItemTemplate>
-				<DataTemplate>
+				<DataTemplate x:DataType="viewModels:CartLineItemViewModel">
 					<Border Margin="0,4"
 					        Padding="12"
 					        Stroke="#D1D5DB"
 					        StrokeShape="RoundRectangle 8">
+						<Border.Triggers>
+							<DataTrigger TargetType="Border"
+							             Binding="{Binding IsHighlighted}"
+							             Value="True">
+								<Setter Property="Stroke" Value="#2563EB" />
+								<Setter Property="StrokeThickness" Value="2" />
+								<Setter Property="Background" Value="#EFF6FF" />
+							</DataTrigger>
+						</Border.Triggers>
 						<Grid RowDefinitions="Auto,Auto"
 						      ColumnDefinitions="*,Auto"
 						      RowSpacing="8"
@@ -110,7 +119,7 @@
 		</CollectionView>
 
 		<Grid Grid.Row="2"
-		      RowDefinitions="Auto,Auto,Auto,Auto"
+		      RowDefinitions="Auto,Auto,Auto,Auto,Auto"
 		      RowSpacing="10">
 			<Grid Grid.Row="0"
 			      ColumnDefinitions="*,Auto">
@@ -126,8 +135,14 @@
 				       HorizontalTextAlignment="End"
 				       VerticalOptions="Center" />
 			</Grid>
+			<Border Grid.Row="1"
+			        Background="#EFF6FF"
+			        IsVisible="{Binding HasScannerStatus}"
+			        Padding="10">
+				<Label Text="{Binding ScannerStatusMessage}" TextColor="#1D4ED8" />
+			</Border>
 			<StackLayout
-			    Grid.Row="1"
+			    Grid.Row="2"
 			    IsVisible="{Binding HasValidationIssues}"
 			    Margin="0,8,0,0"
 			    Spacing="6"
@@ -148,7 +163,9 @@
 								    TextColor="#92400E"
 								    FontSize="13"
 								    VerticalOptions="Center" />
-								<Button							    x:DataType="{x:Null}"								    Grid.Column="1"
+								<Button
+								    x:DataType="{x:Null}"
+								    Grid.Column="1"
 								    Text="{Binding FixLabel}"
 								    IsVisible="{Binding HasFix}"
 								    Command="{Binding Source={x:Reference cartPage}, Path=BindingContext.ApplyFixCommand}"
@@ -164,11 +181,17 @@
 					</DataTemplate>
 				</BindableLayout.ItemTemplate>
 			</StackLayout>
-			<Button Grid.Row="2"
-			        Text="+ Add Item"
-			        Command="{Binding NavigateToAddLineItemCommand}"
-			        AutomationId="add-line-item-button" />
-			<Button Grid.Row="3"
+			<Grid Grid.Row="3" ColumnDefinitions="*,*" ColumnSpacing="12">
+				<Button Grid.Column="0"
+				        Text="Scan"
+				        Command="{Binding CaptureScanCommand}"
+				        AutomationId="capture-scan-button" />
+				<Button Grid.Column="1"
+				        Text="+ Add Item"
+				        Command="{Binding NavigateToAddLineItemCommand}"
+				        AutomationId="add-line-item-button" />
+			</Grid>
+			<Button Grid.Row="4"
 			        Text="Proceed to Payment"
 			        IsEnabled="{Binding IsCartValid}"
 			        Command="{Binding ProceedToPaymentCommand}"

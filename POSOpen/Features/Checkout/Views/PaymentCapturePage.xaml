@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:POSOpen.Features.Checkout.ViewModels"
+             x:Class="POSOpen.Features.Checkout.Views.PaymentCapturePage"
+             x:DataType="viewModels:PaymentCaptureViewModel"
+             Title="Take Payment">
+
+	<Grid RowDefinitions="Auto,*,Auto"
+	      Padding="16"
+	      RowSpacing="16">
+
+		<VerticalStackLayout Grid.Row="0" Spacing="8">
+			<Label Text="Card Payment"
+			       FontSize="24"
+			       FontAttributes="Bold" />
+			<Label Text="{Binding AmountLabel}"
+			       FontSize="32"
+			       FontAttributes="Bold" />
+		</VerticalStackLayout>
+
+		<VerticalStackLayout Grid.Row="1" Spacing="12">
+			<ActivityIndicator IsRunning="{Binding IsLoading}"
+			                   IsVisible="{Binding IsLoading}"
+			                   HorizontalOptions="Center" />
+
+			<Border Background="#FEF2F2"
+			        IsVisible="{Binding HasError}"
+			        Padding="12">
+				<Label Text="{Binding ErrorMessage}" TextColor="#DC2626" />
+			</Border>
+
+			<Border Background="#EFF6FF"
+			        Padding="12">
+				<VerticalStackLayout Spacing="6">
+					<Label Text="Status"
+					       FontAttributes="Bold" />
+					<Label Text="{Binding StatusMessage}" />
+					<Label Text="{Binding ProcessorReference, StringFormat='Processor Reference: {0}'}"
+					       IsVisible="{Binding HasProcessorReference}" />
+					<Label Text="{Binding DiagnosticCode, StringFormat='Diagnostic Code: {0}'}"
+					       IsVisible="{Binding HasDiagnosticCode}" />
+				</VerticalStackLayout>
+			</Border>
+
+			<Border Background="#ECFDF5"
+			        IsVisible="{Binding IsAuthorized}"
+			        Padding="12">
+				<Label Text="Payment authorized."
+				       TextColor="#065F46"
+				       FontAttributes="Bold" />
+			</Border>
+		</VerticalStackLayout>
+
+		<Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12">
+			<Button Grid.Column="0"
+			        Text="Back to Cart"
+			        Command="{Binding CancelCommand}"
+			        Background="{AppThemeBinding Light=#E5E7EB, Dark=#374151}"
+			        TextColor="{AppThemeBinding Light=#111827, Dark=#F9FAFB}" />
+			<Button Grid.Column="1"
+			        Text="Authorize Card"
+			        Command="{Binding AuthorizeCommand}" />
+		</Grid>
+	</Grid>
+</ContentPage>

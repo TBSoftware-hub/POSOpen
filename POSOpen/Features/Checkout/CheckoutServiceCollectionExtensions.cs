@@ -1,8 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
+using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.UseCases.Checkout;
 using POSOpen.Domain.Policies;
 using POSOpen.Features.Checkout.ViewModels;
 using POSOpen.Features.Checkout.Views;
+using POSOpen.Infrastructure.Devices.CardReader;
+using POSOpen.Infrastructure.Devices.Scanner;
 
 namespace POSOpen.Features.Checkout;
 
@@ -14,18 +17,26 @@ public static class CheckoutServiceCollectionExtensions
 		services.AddTransient<AddCartLineItemUseCase>();
 		services.AddTransient<RemoveCartLineItemUseCase>();
 		services.AddTransient<UpdateCartLineItemQuantityUseCase>();
+		services.AddTransient<GetCartPaymentSummaryUseCase>();
+		services.AddTransient<CaptureScannerInputUseCase>();
+		services.AddTransient<ProcessCardPaymentUseCase>();
 		// Compatibility rules — each concrete type registers as ICartCompatibilityRule
 		services.AddTransient<ICartCompatibilityRule, CartMustHaveItemsRule>();
 		services.AddTransient<ICartCompatibilityRule, CateringRequiresPartyDepositRule>();
 		services.AddTransient<ICartCompatibilityRule, SinglePartyDepositRule>();
+		services.AddTransient<IScannerDeviceService, PlatformScannerDeviceService>();
+		services.AddTransient<ICardReaderDeviceService, PlatformCardReaderDeviceService>();
 		services.AddTransient<ValidateCartCompatibilityUseCase>();
 		services.AddTransient<CartViewModel>();
 		services.AddTransient<AddLineItemViewModel>();
+		services.AddTransient<PaymentCaptureViewModel>();
 		services.AddTransient<CartPage>();
 		services.AddTransient<AddLineItemPage>();
+		services.AddTransient<PaymentCapturePage>();
 
 		Routing.RegisterRoute(CheckoutRoutes.Cart, typeof(CartPage));
 		Routing.RegisterRoute(CheckoutRoutes.AddLineItem, typeof(AddLineItemPage));
+		Routing.RegisterRoute(CheckoutRoutes.PaymentCapture, typeof(PaymentCapturePage));
 		return services;
 	}
 }

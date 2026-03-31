@@ -10,4 +10,15 @@ public sealed class CheckoutUiService : ICheckoutUiService
 		return global::Microsoft.Maui.Controls.Shell.Current.GoToAsync(
 			$"{CheckoutRoutes.AddLineItem}?cartId={cartId}");
 	}
+
+	public Task NavigateToPaymentCaptureAsync(Guid cartId)
+	{
+		return global::Microsoft.Maui.Controls.Shell.Current.GoToAsync(
+			$"{CheckoutRoutes.PaymentCapture}?cartId={cartId}");
+	}
+
+	public Task ClosePaymentCaptureAsync()
+	{
+		return global::Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+	}
 }

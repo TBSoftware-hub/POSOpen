@@ -19,21 +19,25 @@ public partial class CartViewModel : ObservableObject
 	];
 
 	private readonly GetOrCreateCartSessionUseCase _getOrCreateCartSession;
+	private readonly CaptureScannerInputUseCase _captureScannerInputUseCase;
 	private readonly RemoveCartLineItemUseCase _removeCartLineItem;
 	private readonly UpdateCartLineItemQuantityUseCase _updateCartLineItemQuantity;
 	private readonly ValidateCartCompatibilityUseCase _validateCartCompatibility;
 	private readonly ICheckoutUiService _uiService;
 
 	private Guid? _cartSessionId;
+	private Guid? _highlightedLineItemId;
 
 	public CartViewModel(
 		GetOrCreateCartSessionUseCase getOrCreateCartSession,
+		CaptureScannerInputUseCase captureScannerInputUseCase,
 		RemoveCartLineItemUseCase removeCartLineItem,
 		UpdateCartLineItemQuantityUseCase updateCartLineItemQuantity,
 		ValidateCartCompatibilityUseCase validateCartCompatibility,
 		ICheckoutUiService uiService)
 	{
 		_getOrCreateCartSession = getOrCreateCartSession;
+		_captureScannerInputUseCase = captureScannerInputUseCase;
 		_removeCartLineItem = removeCartLineItem;
 		_updateCartLineItemQuantity = updateCartLineItemQuantity;
 		_validateCartCompatibility = validateCartCompatibility;
@@ -53,6 +57,10 @@ public partial class CartViewModel : ObservableObject
 	[ObservableProperty]
 	private bool _isCartValid;
 
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasScannerStatus))]
+	private string? _scannerStatusMessage;
+
 	public ObservableCollection<CartLineItemGroupViewModel> ItemGroups { get; } = new();
 
 	public ObservableCollection<ValidationIssueViewModel> ValidationIssues { get; } = [];
@@ -60,6 +68,8 @@ public partial class CartViewModel : ObservableObject
 	public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
 
 	public bool HasValidationIssues => ValidationIssues.Count > 0;
+
+	public bool HasScannerStatus => !string.IsNullOrWhiteSpace(ScannerStatusMessage);
 
 	[RelayCommand]
 	private async Task InitializeAsync()
@@ -78,7 +88,9 @@ public partial class CartViewModel : ObservableObject
 				return;
 			}
 			_cartSessionId = result.Payload!.Id;
-			RefreshGroupsFromDto(result.Payload!);
+			_highlightedLineItemId = null;
+			ScannerStatusMessage = null;
+			RefreshGroupsFromDto(result.Payload!, null);
 			await RunValidationAsync();
 		}
 		finally
@@ -98,7 +110,8 @@ public partial class CartViewModel : ObservableObject
 		if (result.IsSuccess)
 		{
 			ErrorMessage = null;
-			RefreshGroupsFromDto(result.Payload!);
+			_highlightedLineItemId = null;
+			RefreshGroupsFromDto(result.Payload!, null);
 			await RunValidationAsync();
 		}
 		else
@@ -119,7 +132,8 @@ public partial class CartViewModel : ObservableObject
 		if (result.IsSuccess)
 		{
 			ErrorMessage = null;
-			RefreshGroupsFromDto(result.Payload!);
+			_highlightedLineItemId = null;
+			RefreshGroupsFromDto(result.Payload!, null);
 			await RunValidationAsync();
 		}
 		else
@@ -146,7 +160,8 @@ public partial class CartViewModel : ObservableObject
 		if (result.IsSuccess)
 		{
 			ErrorMessage = null;
-			RefreshGroupsFromDto(result.Payload!);
+			_highlightedLineItemId = null;
+			RefreshGroupsFromDto(result.Payload!, null);
 			await RunValidationAsync();
 		}
 		else
@@ -158,6 +173,27 @@ public partial class CartViewModel : ObservableObject
 	{
 		if (_cartSessionId is null) return;
 		await _uiService.NavigateToAddLineItemAsync(_cartSessionId.Value);
+	}
+
+	[RelayCommand]
+	private async Task CaptureScanAsync()
+	{
+		if (_cartSessionId is not { } cartId)
+		{
+			return;
+		}
+
+		var result = await _captureScannerInputUseCase.ExecuteAsync(cartId);
+		if (!result.IsSuccess || result.Payload is null)
+		{
+			ErrorMessage = result.UserMessage;
+			return;
+		}
+
+		ErrorMessage = null;
+		ScannerStatusMessage = result.Payload.UserMessage;
+		_highlightedLineItemId = result.Payload.SelectedLineItemId;
+		RefreshGroupsFromDto(result.Payload.Cart, _highlightedLineItemId);
 	}
 
 	private async Task RunValidationAsync()
@@ -253,18 +289,22 @@ public partial class CartViewModel : ObservableObject
 	{
 		var refreshResult = await _getOrCreateCartSession.ExecuteAsync();
 		if (refreshResult.IsSuccess)
-			RefreshGroupsFromDto(refreshResult.Payload!);
+			RefreshGroupsFromDto(refreshResult.Payload!, _highlightedLineItemId);
 		await RunValidationAsync();
 	}
 
 	[RelayCommand]
 	private async Task ProceedToPaymentAsync()
 	{
-		// TODO Story 3.3: navigate to payment capture page
-		await Task.CompletedTask;
+		if (_cartSessionId is not { } cartId || !IsCartValid)
+		{
+			return;
+		}
+
+		await _uiService.NavigateToPaymentCaptureAsync(cartId);
 	}
 
-	private void RefreshGroupsFromDto(CartSessionDto dto)
+	private void RefreshGroupsFromDto(CartSessionDto dto, Guid? highlightedLineItemId)
 	{
 		ItemGroups.Clear();
 
@@ -283,6 +323,7 @@ public partial class CartViewModel : ObservableObject
 					UnitAmountCents = li.UnitAmountCents,
 					LineTotalCents = li.LineTotalCents,
 					CurrencyCode = li.CurrencyCode,
+					IsHighlighted = li.Id == highlightedLineItemId,
 				})
 				.ToList();
 
