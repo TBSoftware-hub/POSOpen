@@ -13,4 +13,16 @@ public static class CartCheckoutConstants
     public const string SafeInvalidQuantityMessage = "Quantity must be at least 1.";
     public const string SafeLineItemNotFoundMessage = "The specified item was not found in the cart.";
     public const string SafeStaffNotAuthenticatedMessage = "You must be signed in to manage a cart.";
+
+    public const string ErrorCartEmpty = "CART_EMPTY";
+    public const string SafeCartEmptyMessage =
+        "The cart is empty. Add at least one item before proceeding to payment.";
+
+    public const string ErrorCateringWithoutDeposit = "CATERING_WITHOUT_PARTY_DEPOSIT";
+    public const string SafeCateringWithoutDepositMessage =
+        "Catering add-ons require a party deposit in the cart.";
+
+    public const string ErrorMultipleDeposits = "MULTIPLE_PARTY_DEPOSITS";
+    public const string SafeMultipleDepositsMessage =
+        "Only one party deposit is allowed per cart.";
 }

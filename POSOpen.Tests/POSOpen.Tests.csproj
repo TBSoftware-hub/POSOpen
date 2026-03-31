@@ -44,8 +44,10 @@
     <Compile Include="..\POSOpen\Features\Checkout\ViewModels\CartLineItemViewModel.cs" Link="Source\Features\Checkout\ViewModels\CartLineItemViewModel.cs" />
     <Compile Include="..\POSOpen\Features\Checkout\ViewModels\CartLineItemGroupViewModel.cs" Link="Source\Features\Checkout\ViewModels\CartLineItemGroupViewModel.cs" />
     <Compile Include="..\POSOpen\Features\Checkout\ViewModels\CartViewModel.cs" Link="Source\Features\Checkout\ViewModels\CartViewModel.cs" />
+    <Compile Include="..\POSOpen\Features\Checkout\ViewModels\ValidationIssueViewModel.cs" Link="Source\Features\Checkout\ViewModels\ValidationIssueViewModel.cs" />
     <Compile Include="..\POSOpen\Domain\Entities\*.cs" Link="Source\Domain\Entities\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Domain\Enums\*.cs" Link="Source\Domain\Enums\%(Filename)%(Extension)" />
+    <Compile Include="..\POSOpen\Domain\Policies\*.cs" Link="Source\Domain\Policies\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Infrastructure\Persistence\**\*.cs" Exclude="..\POSOpen\Infrastructure\Persistence\DesignTime\**\*.cs;..\POSOpen\Infrastructure\Persistence\PersistenceServiceCollectionExtensions.cs" Link="Source\Infrastructure\Persistence\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Infrastructure\Security\Pbkdf2PasswordHasher.cs" Link="Source\Infrastructure\Security\Pbkdf2PasswordHasher.cs" />
     <Compile Include="..\POSOpen\Infrastructure\Security\AuthorizationPolicyService.cs" Link="Source\Infrastructure\Security\AuthorizationPolicyService.cs" />

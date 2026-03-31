@@ -5,6 +5,7 @@ using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.UseCases.Checkout;
 using POSOpen.Domain.Entities;
 using POSOpen.Domain.Enums;
+using POSOpen.Domain.Policies;
 using POSOpen.Features.Checkout.ViewModels;
 
 namespace POSOpen.Tests.Unit.Checkout;
@@ -140,8 +141,106 @@ public sealed class CartViewModelTests
 		var getOrCreate = new GetOrCreateCartSessionUseCase(repo.Object, mockAppState.Object, mockClock.Object);
 		var remove = new RemoveCartLineItemUseCase(repo.Object, mockClock.Object);
 		var update = new UpdateCartLineItemQuantityUseCase(repo.Object, mockClock.Object);
+		var validate = new ValidateCartCompatibilityUseCase(repo.Object, []);
 
-		return new CartViewModel(getOrCreate, remove, update, mockUiService.Object);
+		return new CartViewModel(getOrCreate, remove, update, validate, mockUiService.Object);
+	}
+
+	private CartViewModel CreateViewModelWithRules(
+		Mock<ICartSessionRepository> repo,
+		params ICartCompatibilityRule[] rules)
+	{
+		var mockAppState = BuildAuthenticatedAppState();
+		var mockClock = new Mock<IUtcClock>();
+		var mockUiService = new Mock<ICheckoutUiService>();
+		mockClock.Setup(x => x.UtcNow).Returns(FixedNow);
+
+		var getOrCreate = new GetOrCreateCartSessionUseCase(repo.Object, mockAppState.Object, mockClock.Object);
+		var remove = new RemoveCartLineItemUseCase(repo.Object, mockClock.Object);
+		var update = new UpdateCartLineItemQuantityUseCase(repo.Object, mockClock.Object);
+		var validate = new ValidateCartCompatibilityUseCase(repo.Object, rules);
+
+		return new CartViewModel(getOrCreate, remove, update, validate, mockUiService.Object);
+	}
+
+	[Fact]
+	public async Task Initialize_EmptyCart_IsCartValidFalse()
+	{
+		var cartId = Guid.NewGuid();
+		var emptyCart = CartSession.Create(cartId, null, StaffId, FixedNow);
+		var repo = new Mock<ICartSessionRepository>();
+		repo.Setup(x => x.GetOpenCartForStaffAsync(StaffId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(emptyCart);
+		repo.Setup(x => x.GetByIdAsync(cartId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(emptyCart);
+
+		var vm = CreateViewModelWithRules(repo, new CartMustHaveItemsRule());
+		await vm.InitializeCommand.ExecuteAsync(null);
+
+		vm.IsCartValid.Should().BeFalse();
+		vm.HasValidationIssues.Should().BeTrue();
+	}
+
+	[Fact]
+	public async Task Initialize_CartWithAdmission_IsCartValidTrue()
+	{
+		var cartId = Guid.NewGuid();
+		var cart = CartSession.Create(cartId, null, StaffId, FixedNow);
+		cart.LineItems.Add(CartLineItem.Create(
+			Guid.NewGuid(), cartId, "Admission", FulfillmentContext.Admission, null, 1, 1500, "USD", FixedNow));
+		var repo = new Mock<ICartSessionRepository>();
+		repo.Setup(x => x.GetOpenCartForStaffAsync(StaffId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(cart);
+		repo.Setup(x => x.GetByIdAsync(cartId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(cart);
+
+		var vm = CreateViewModelWithRules(repo,
+			new CartMustHaveItemsRule(),
+			new CateringRequiresPartyDepositRule(),
+			new SinglePartyDepositRule());
+		await vm.InitializeCommand.ExecuteAsync(null);
+
+		vm.IsCartValid.Should().BeTrue();
+		vm.HasValidationIssues.Should().BeFalse();
+	}
+
+	[Fact]
+	public async Task ApplyFix_RemoveCatering_ClearsIssueAndEnablesCheckout()
+	{
+		var cartId = Guid.NewGuid();
+		var cateringId = Guid.NewGuid();
+
+		var cartBefore = CartSession.Create(cartId, null, StaffId, FixedNow);
+		cartBefore.LineItems.Add(CartLineItem.Create(
+			Guid.NewGuid(), cartId, "Admission", FulfillmentContext.Admission, null, 1, 1500, "USD", FixedNow));
+		cartBefore.LineItems.Add(CartLineItem.Create(
+			cateringId, cartId, "Catering", FulfillmentContext.CateringAddon, null, 1, 500, "USD", FixedNow));
+
+		var cartAfter = CartSession.Create(cartId, null, StaffId, FixedNow);
+		cartAfter.LineItems.Add(CartLineItem.Create(
+			Guid.NewGuid(), cartId, "Admission", FulfillmentContext.Admission, null, 1, 1500, "USD", FixedNow));
+
+		var repo = new Mock<ICartSessionRepository>();
+		repo.SetupSequence(x => x.GetOpenCartForStaffAsync(StaffId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(cartBefore)
+			.ReturnsAsync(cartAfter);
+		repo.SetupSequence(x => x.GetByIdAsync(cartId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(cartBefore)  // init → RunValidationAsync
+			.ReturnsAsync(cartBefore)  // ApplyFix → RemoveCartLineItemUseCase
+			.ReturnsAsync(cartAfter);  // after fix → RunValidationAsync
+		repo.Setup(x => x.RemoveLineItemAsync(cartId, cateringId, FixedNow, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(cartAfter);
+
+		var vm = CreateViewModelWithRules(repo, new CateringRequiresPartyDepositRule());
+		await vm.InitializeCommand.ExecuteAsync(null);
+
+		vm.IsCartValid.Should().BeFalse("catering without deposit violates the rule");
+		vm.HasValidationIssues.Should().BeTrue();
+
+		await vm.ApplyFixCommand.ExecuteAsync(CartValidationFixAction.RemoveCateringItems);
+
+		vm.IsCartValid.Should().BeTrue("catering was removed, no more violations");
+		vm.HasValidationIssues.Should().BeFalse();
 	}
 
 	private Mock<IAppStateService> BuildAuthenticatedAppState()
