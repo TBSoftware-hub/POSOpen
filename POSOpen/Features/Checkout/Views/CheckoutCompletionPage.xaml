@@ -64,9 +64,15 @@
 
 		</VerticalStackLayout>
 
-		<Button Grid.Row="2"
-		        Text="Start New Transaction"
-		        Command="{Binding NewTransactionCommand}" />
+		<Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12">
+			<Button Grid.Column="0"
+			        Text="Issue Refund"
+			        Command="{Binding StartRefundCommand}"
+			        IsEnabled="{Binding CanStartRefund}" />
+			<Button Grid.Column="1"
+			        Text="Start New Transaction"
+			        Command="{Binding NewTransactionCommand}" />
+		</Grid>
 
 	</Grid>
 </ContentPage>

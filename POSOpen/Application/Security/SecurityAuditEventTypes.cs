@@ -12,6 +12,11 @@ public static class SecurityAuditEventTypes
 	public const string StaffRoleAssigned = "StaffRoleAssigned";
 	public const string OverrideActionCommitted = "OverrideActionCommitted";
 	public const string SecurityAuditAccessDenied = "SecurityAuditAccessDenied";
+	public const string RefundInitiated = "RefundInitiated";
+	public const string RefundCompleted = "RefundCompleted";
+	public const string RefundDenied = "RefundDenied";
+	public const string RefundApprovalRequested = "RefundApprovalRequested";
+	public const string RefundApprovalDenied = "RefundApprovalDenied";
 
 	/// <summary>All event types that constitute the security-critical audit scope.</summary>
 	public static readonly IReadOnlyList<string> SecurityCriticalScope =
@@ -22,5 +27,10 @@ public static class SecurityAuditEventTypes
 		StaffRoleAssigned,
 		OverrideActionCommitted,
 		SecurityAuditAccessDenied,
+		RefundInitiated,
+		RefundCompleted,
+		RefundDenied,
+		RefundApprovalRequested,
+		RefundApprovalDenied,
 	];
 }

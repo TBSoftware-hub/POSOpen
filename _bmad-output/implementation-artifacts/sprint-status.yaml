@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-28T15:07:27-07:00
-last_updated: 2026-03-31T12:00:00-07:00
+last_updated: 2026-03-31T18:10:00-07:00
 project: POSOpen
 project_key: NOKEY
 tracking_system: file-system
@@ -58,12 +58,12 @@ development_status:
   2-4-admission-completion-with-deferred-payment-continuity: done
   2-5-check-in-performance-and-ux-compliance: done
   epic-2-retrospective: optional
-  epic-3: in-progress
+  epic-3: done
   3-1-build-mixed-cart-composition-by-fulfillment-context: done
   3-2-enforce-compatibility-rules-and-guided-resolution: done
   3-3-integrate-scanner-and-card-reader-for-checkout: done
-  3-4-print-receipts-and-preserve-offline-continuity: review
-  3-5-policy-bound-refund-workflow: backlog
+  3-4-print-receipts-and-preserve-offline-continuity: done
+  3-5-policy-bound-refund-workflow: done
   epic-3-retrospective: optional
   epic-4: backlog
   4-1-implement-3-step-party-booking-flow: backlog

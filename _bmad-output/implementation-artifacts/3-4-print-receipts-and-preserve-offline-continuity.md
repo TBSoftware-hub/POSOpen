@@ -7,7 +7,7 @@
 | Epic | 3 - Mixed-Cart Checkout, Payments, and Device Execution |
 | Story | 3.4 |
 | Key | `3-4-print-receipts-and-preserve-offline-continuity` |
-| Status | for-review |
+| Status | done |
 | Author | Timbe (via BMAD Story Creator) |
 | Created | 2026-03-31 |
 | Target Sprint | Current |
@@ -295,7 +295,7 @@ Log recipe operations with safe payloads:
 - [ ] New use-case tests pass (PrintReceipt, GetTransactionStatus, CheckoutCompletion).
 - [ ] Cart ViewModel tests updated with print and offline status scenarios.
 - [ ] No regressions in existing checkout tests.
-- [ ] Story status moved to `done` after merge.
+- [x] Story status moved to `done` after merge.
 
 ---
 
@@ -478,3 +478,4 @@ _(populated on completion)_
 | Date | Change |
 |---|---|
 | 2026-04-01 | Story implementation complete. All tasks done. 183 tests pass. Status → for-review. |
+| 2026-04-01 | PR merged. Story status updated to done. |

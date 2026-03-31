@@ -464,6 +464,75 @@ namespace POSOpen.Infrastructure.Persistence.Migrations
                     b.ToTable("receipt_metadata", (string)null);
                 });
 
+            modelBuilder.Entity("POSOpen.Domain.Entities.RefundRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("id");
+
+                    b.Property<long>("AmountCents")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("amount_cents");
+
+                    b.Property<Guid>("ActorStaffId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("actor_staff_id");
+
+                    b.Property<string>("ActorRole")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("actor_role");
+
+                    b.Property<Guid>("CartSessionId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("cart_session_id");
+
+                    b.Property<string>("CompletedAtUtc")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("completed_at_utc");
+
+                    b.Property<string>("CreatedAtUtc")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<string>("CurrencyCode")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("currency_code");
+
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("operation_id");
+
+                    b.Property<int>("Path")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("path");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("reason");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartSessionId")
+                        .HasDatabaseName("ix_refund_records_cart_session_id");
+
+                    b.HasIndex("OperationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_refund_records_operation_id");
+
+                    b.ToTable("refund_records", (string)null);
+                });
+
             modelBuilder.Entity("POSOpen.Domain.Entities.StaffAccount", b =>
                 {
                     b.Property<Guid>("Id")
@@ -607,6 +676,15 @@ namespace POSOpen.Infrastructure.Persistence.Migrations
                     });
 
                 modelBuilder.Entity("POSOpen.Domain.Entities.CheckoutPaymentAttempt", b =>
+                    {
+                        b.HasOne("POSOpen.Domain.Entities.CartSession", null)
+                            .WithMany()
+                            .HasForeignKey("CartSessionId")
+                            .OnDelete(DeleteBehavior.Cascade)
+                            .IsRequired();
+                    });
+
+                modelBuilder.Entity("POSOpen.Domain.Entities.RefundRecord", b =>
                     {
                         b.HasOne("POSOpen.Domain.Entities.CartSession", null)
                             .WithMany()

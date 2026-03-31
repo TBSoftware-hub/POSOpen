@@ -51,6 +51,8 @@ public partial class CheckoutCompletionViewModel : ObservableObject
 
 	public bool HasOperationReference => !string.IsNullOrWhiteSpace(OperationIdReference);
 
+	public bool CanStartRefund => _cartSessionId.HasValue;
+
 	[ObservableProperty]
 	private bool _isOnlineCompletion;
 
@@ -63,10 +65,23 @@ public partial class CheckoutCompletionViewModel : ObservableObject
 	private Task NewTransactionAsync() => _uiService.StartNewTransactionAsync();
 
 	[RelayCommand]
+	private Task StartRefundAsync()
+	{
+		if (_cartSessionId is not { } cartSessionId)
+		{
+			return Task.CompletedTask;
+		}
+
+		return _uiService.NavigateToRefundWorkflowAsync(cartSessionId);
+	}
+
+	[RelayCommand]
 	private async Task InitializeAsync()
 	{
 		IsLoading = true;
 		ErrorMessage = null;
+		_cartSessionId = null;
+		OnPropertyChanged(nameof(CanStartRefund));
 
 		try
 		{
@@ -77,6 +92,7 @@ public partial class CheckoutCompletionViewModel : ObservableObject
 			}
 
 			_cartSessionId = cartId;
+			OnPropertyChanged(nameof(CanStartRefund));
 
 			var statusResult = await _getTransactionStatusUseCase.ExecuteAsync(cartId);
 			if (!statusResult.IsSuccess || statusResult.Payload is null)

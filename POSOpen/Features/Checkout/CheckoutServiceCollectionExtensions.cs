@@ -24,6 +24,9 @@ public static class CheckoutServiceCollectionExtensions
 		services.AddTransient<ProcessCardPaymentUseCase>();
 		services.AddTransient<PrintReceiptUseCase>();
 		services.AddTransient<GetTransactionStatusUseCase>();
+		services.AddTransient<GetRefundEligibilityUseCase>();
+		services.AddTransient<SubmitRefundUseCase>();
+		services.AddTransient<DenyRefundApprovalUseCase>();
 		// Compatibility rules — each concrete type registers as ICartCompatibilityRule
 		services.AddTransient<ICartCompatibilityRule, CartMustHaveItemsRule>();
 		services.AddTransient<ICartCompatibilityRule, CateringRequiresPartyDepositRule>();
@@ -37,15 +40,18 @@ public static class CheckoutServiceCollectionExtensions
 		services.AddTransient<AddLineItemViewModel>();
 		services.AddTransient<PaymentCaptureViewModel>();
 		services.AddTransient<CheckoutCompletionViewModel>();
+		services.AddTransient<RefundWorkflowViewModel>();
 		services.AddTransient<CartPage>();
 		services.AddTransient<AddLineItemPage>();
 		services.AddTransient<PaymentCapturePage>();
 		services.AddTransient<CheckoutCompletionPage>();
+		services.AddTransient<RefundWorkflowPage>();
 
 		Routing.RegisterRoute(CheckoutRoutes.Cart, typeof(CartPage));
 		Routing.RegisterRoute(CheckoutRoutes.AddLineItem, typeof(AddLineItemPage));
 		Routing.RegisterRoute(CheckoutRoutes.PaymentCapture, typeof(PaymentCapturePage));
 		Routing.RegisterRoute(CheckoutRoutes.CheckoutCompletion, typeof(CheckoutCompletionPage));
+		Routing.RegisterRoute(CheckoutRoutes.RefundWorkflow, typeof(RefundWorkflowPage));
 		return services;
 	}
 }

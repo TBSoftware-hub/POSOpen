@@ -11,6 +11,8 @@ public static class RolePermissions
 	public const string StaffManagementView = "staff.management.view";
 	public const string SecurityOverrideExecute = "security.override.execute";
 	public const string SecurityAuditRead = "security.audit.read";
+	public const string CheckoutRefundInitiate = "checkout.refund.initiate";
+	public const string CheckoutRefundApprove = "checkout.refund.approve";
 
 	private static readonly IReadOnlyDictionary<StaffRole, HashSet<string>> PermissionsByRole =
 		new Dictionary<StaffRole, HashSet<string>>
@@ -23,7 +25,9 @@ public static class RolePermissions
 				ManagerOperationsExecute,
 				StaffManagementView,
 				SecurityOverrideExecute,
-				SecurityAuditRead
+				SecurityAuditRead,
+				CheckoutRefundInitiate,
+				CheckoutRefundApprove
 			},
 			[StaffRole.Admin] = new(StringComparer.Ordinal)
 			{
@@ -33,18 +37,23 @@ public static class RolePermissions
 				ManagerOperationsExecute,
 				StaffManagementView,
 				SecurityOverrideExecute,
-				SecurityAuditRead
+				SecurityAuditRead,
+				CheckoutRefundInitiate,
+				CheckoutRefundApprove
 			},
 			[StaffRole.Manager] = new(StringComparer.Ordinal)
 			{
 				AdmissionsLookup,
 				ManagerOperationsView,
 				ManagerOperationsExecute,
-				SecurityOverrideExecute
+				SecurityOverrideExecute,
+				CheckoutRefundInitiate,
+				CheckoutRefundApprove
 			},
 			[StaffRole.Cashier] = new(StringComparer.Ordinal)
 			{
-				AdmissionsLookup
+				AdmissionsLookup,
+				CheckoutRefundInitiate
 			}
 		};
 
