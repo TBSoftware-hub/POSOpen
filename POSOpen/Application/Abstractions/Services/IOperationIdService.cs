@@ -8,6 +8,7 @@ public interface IOperationIdService
 
 	Task SaveOperationAsync(
 		Guid operationId,
+		Guid transactionId,
 		string operationName,
 		string? operationData,
 		CancellationToken ct = default);

@@ -22,6 +22,7 @@ public sealed class OperationIdService : IOperationIdService
 
 	public async Task SaveOperationAsync(
 		Guid operationId,
+		Guid transactionId,
 		string operationName,
 		string? operationData,
 		CancellationToken ct = default)
@@ -29,9 +30,10 @@ public sealed class OperationIdService : IOperationIdService
 		var operation = TransactionOperation.Create(
 			Guid.NewGuid(),
 			operationId,
-			operationId.ToString(),
+			transactionId,
 			operationName,
 			operationData,
+			"Pending",
 			_clock.UtcNow);
 
 		await _transactionOperationRepository.AddAsync(operation, ct);

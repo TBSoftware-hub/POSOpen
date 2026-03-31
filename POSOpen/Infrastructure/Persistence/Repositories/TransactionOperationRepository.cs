@@ -28,7 +28,7 @@ public sealed class TransactionOperationRepository : ITransactionOperationReposi
 			.FirstOrDefaultAsync(x => x.OperationId == operationId, ct);
 	}
 
-	public async Task<IReadOnlyList<TransactionOperation>> ListByTransactionAsync(string transactionId, CancellationToken ct = default)
+	public async Task<IReadOnlyList<TransactionOperation>> ListByTransactionAsync(Guid transactionId, CancellationToken ct = default)
 	{
 		await using var dbContext = await _dbContextFactory.CreateDbContextAsync(ct);
 		return await dbContext.Set<TransactionOperation>()

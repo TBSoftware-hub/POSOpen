@@ -46,7 +46,7 @@ namespace POSOpen.Infrastructure.Persistence.Migrations
 				{
 					id = table.Column<Guid>(type: "TEXT", nullable: false),
 					operation_id = table.Column<Guid>(type: "TEXT", nullable: false),
-					transaction_id = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+					transaction_id = table.Column<Guid>(type: "TEXT", nullable: false),
 					operation_name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
 					operation_data = table.Column<string>(type: "TEXT", nullable: true),
 					status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),

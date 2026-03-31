@@ -34,7 +34,7 @@ public sealed class PaymentCaptureViewModelTests
 
                 await vm.InitializeCommand.ExecuteAsync(null);
 
-                vm.AmountLabel.Should().NotBe(\$"0.00\");
+                vm.AmountLabel.Should().NotBe("$0.00");
                 vm.HasError.Should().BeFalse();
         }
 

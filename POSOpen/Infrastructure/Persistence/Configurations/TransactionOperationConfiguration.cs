@@ -14,7 +14,7 @@ public sealed class TransactionOperationConfiguration : IEntityTypeConfiguration
 
 		builder.Property(x => x.Id).HasColumnName("id").ValueGeneratedNever();
 		builder.Property(x => x.OperationId).HasColumnName("operation_id").IsRequired();
-		builder.Property(x => x.TransactionId).HasColumnName("transaction_id").HasMaxLength(100).IsRequired();
+		builder.Property(x => x.TransactionId).HasColumnName("transaction_id").IsRequired();
 		builder.Property(x => x.OperationName).HasColumnName("operation_name").HasMaxLength(100).IsRequired();
 		builder.Property(x => x.OperationData).HasColumnName("operation_data");
 		builder.Property(x => x.Status).HasColumnName("status").HasMaxLength(50).IsRequired();

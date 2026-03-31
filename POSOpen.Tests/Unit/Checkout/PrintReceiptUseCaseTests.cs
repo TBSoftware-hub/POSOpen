@@ -126,7 +126,7 @@ public sealed class PrintReceiptUseCaseTests
 		var opIdService = new Mock<IOperationIdService>();
 		var capturedOpId = Guid.NewGuid();
 		opIdService.Setup(x => x.GenerateOperationId()).Returns(capturedOpId);
-		opIdService.Setup(x => x.SaveOperationAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+		opIdService.Setup(x => x.SaveOperationAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
 			.Returns(Task.CompletedTask);
 
 		var sut = BuildUseCase(cartRepo, opIdService: opIdService);
@@ -135,7 +135,7 @@ public sealed class PrintReceiptUseCaseTests
 
 		result.IsSuccess.Should().BeTrue();
 		result.Payload!.OperationId.Should().Be(capturedOpId);
-		opIdService.Verify(x => x.SaveOperationAsync(capturedOpId, "PrintReceipt", It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+		opIdService.Verify(x => x.SaveOperationAsync(capturedOpId, cartId, "PrintReceipt", It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
 	}
 
 	// ─── Helpers ─────────────────────────────────────────────────────────
@@ -161,7 +161,7 @@ public sealed class PrintReceiptUseCaseTests
 		if (opIdService is null)
 		{
 			opId.Setup(x => x.GenerateOperationId()).Returns(Guid.NewGuid());
-			opId.Setup(x => x.SaveOperationAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+			opId.Setup(x => x.SaveOperationAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
 				.Returns(Task.CompletedTask);
 		}
 

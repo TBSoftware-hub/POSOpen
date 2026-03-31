@@ -9,6 +9,6 @@ public interface ITransactionOperationRepository
 	Task<TransactionOperation?> GetByOperationIdAsync(Guid operationId, CancellationToken ct = default);
 
 	Task<IReadOnlyList<TransactionOperation>> ListByTransactionAsync(
-		string transactionId,
+		Guid transactionId,
 		CancellationToken ct = default);
 }

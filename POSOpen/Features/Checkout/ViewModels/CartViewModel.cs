@@ -317,33 +317,35 @@ public partial class CartViewModel : ObservableObject
 		await _uiService.NavigateToPaymentCaptureAsync(cartId);
 	}
 
-	private void RefreshGroupsFromDto(CartSessionDto dto, Guid? highlightedLineItemId)
-		[RelayCommand]
-		private async Task PrintReceiptAsync()
+	[RelayCommand]
+	private async Task PrintReceiptAsync()
+	{
+		if (_cartSessionId is not { } cartId)
 		{
-			if (_cartSessionId is not { } cartId) return;
-
-			IsLoading = true;
-			try
-			{
-				var result = await _printReceiptUseCase.ExecuteAsync(cartId);
-				if (!result.IsSuccess || result.Payload is null)
-				{
-					OfflineStatusMessage = result.UserMessage;
-					LastPrintStatus = null;
-					return;
-				}
-
-				LastPrintStatus = result.Payload.PrintStatus;
-				OfflineStatusMessage = result.Payload.UserMessage;
-			}
-			finally
-			{
-				IsLoading = false;
-			}
+			return;
 		}
 
-		private void RefreshGroupsFromDto(CartSessionDto dto, Guid? highlightedLineItemId)
+		IsLoading = true;
+		try
+		{
+			var result = await _printReceiptUseCase.ExecuteAsync(cartId);
+			if (!result.IsSuccess || result.Payload is null)
+			{
+				OfflineStatusMessage = result.UserMessage;
+				LastPrintStatus = null;
+				return;
+			}
+
+			LastPrintStatus = result.Payload.PrintStatus;
+			OfflineStatusMessage = result.Payload.UserMessage;
+		}
+		finally
+		{
+			IsLoading = false;
+		}
+	}
+
+	private void RefreshGroupsFromDto(CartSessionDto dto, Guid? highlightedLineItemId)
 	{
 		ItemGroups.Clear();
 

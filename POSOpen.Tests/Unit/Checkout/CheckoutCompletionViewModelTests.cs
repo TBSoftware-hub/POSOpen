@@ -190,7 +190,7 @@ public sealed class CheckoutCompletionViewModelTests
 
 		var opIdService = new Mock<IOperationIdService>();
 		opIdService.Setup(x => x.GenerateOperationId()).Returns(Guid.NewGuid());
-		opIdService.Setup(x => x.SaveOperationAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+		opIdService.Setup(x => x.SaveOperationAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
 			.Returns(Task.CompletedTask);
 
 		var printer = printerService ?? new Mock<IPrinterDeviceService>();

@@ -580,9 +580,7 @@ namespace POSOpen.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("status");
 
-                    b.Property<string>("TransactionId")
-                        .IsRequired()
-                        .HasMaxLength(100)
+                    b.Property<Guid>("TransactionId")
                         .HasColumnType("TEXT")
                         .HasColumnName("transaction_id");
 

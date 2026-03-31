@@ -8,7 +8,7 @@ public sealed class TransactionOperation
 	public Guid OperationId { get; init; }
 
 	/// <summary>Cart session ID — transaction identifier for V1.</summary>
-	public string TransactionId { get; init; } = string.Empty;
+	public Guid TransactionId { get; init; }
 
 	public string OperationName { get; init; } = string.Empty;
 
@@ -22,7 +22,7 @@ public sealed class TransactionOperation
 	public static TransactionOperation Create(
 		Guid id,
 		Guid operationId,
-		string transactionId,
+		Guid transactionId,
 		string operationName,
 		string? operationData,
 		string status,

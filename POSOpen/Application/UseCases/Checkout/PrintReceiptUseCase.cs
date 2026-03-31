@@ -47,6 +47,7 @@ public sealed class PrintReceiptUseCase
 
 		await _operationIdService.SaveOperationAsync(
 			operationId,
+			cart.Id,
 			"PrintReceipt",
 			$"{{\"cartSessionId\":\"{cartSessionId}\"}}",
 			ct);
@@ -66,7 +67,7 @@ public sealed class PrintReceiptUseCase
 			? printResult.Payload.PrintStatus
 			: PrintStatus.Failed;
 
-		var diagnosticCode = printResult.Payload?.DiagnosticCode;
+		var diagnosticCode = printResult.Payload?.DiagnosticCode ?? printResult.ErrorCode;
 		DateTime? printedAtUtc = printStatus == PrintStatus.Success ? _clock.UtcNow : null;
 
 		if (printStatus != PrintStatus.Success)

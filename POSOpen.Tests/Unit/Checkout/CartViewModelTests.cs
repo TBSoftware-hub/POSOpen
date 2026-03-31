@@ -340,7 +340,7 @@ public sealed class CartViewModelTests
 			.ReturnsAsync(AppResult<ScannerCaptureDto>.Success(new ScannerCaptureDto(ScannerCaptureStatus.Captured, "scan-ava", null), "Captured"));
 		var pricing = new Mock<IAdmissionPricingService>();
 		pricing.Setup(x => x.GetAdmissionTotalAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(new AdmissionTotal(2500, "USD"));
-		var capture = new CaptureScannerInputUseCase(repo.Object, familyRepo.Object, scanner.Object, pricing.Object, new AddCartLineItemUseCase(repo.Object, MockClock(, new Mock<ILogger<CaptureScannerInputUseCase>>().Object).Object));
+		var capture = new CaptureScannerInputUseCase(repo.Object, familyRepo.Object, scanner.Object, pricing.Object, new AddCartLineItemUseCase(repo.Object, MockClock().Object), new Mock<ILogger<CaptureScannerInputUseCase>>().Object);
 
 		var vm = CreateViewModel(repo, new Mock<ICheckoutUiService>(), capture);
 		await vm.InitializeCommand.ExecuteAsync(null);
@@ -375,7 +375,7 @@ public sealed class CartViewModelTests
 				new PrinterResultDto(PrintStatus.Success, null, "Printed."), "Printed."));
 		var opIdService = new Mock<IOperationIdService>();
 		opIdService.Setup(x => x.GenerateOperationId()).Returns(Guid.NewGuid());
-		opIdService.Setup(x => x.SaveOperationAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+		opIdService.Setup(x => x.SaveOperationAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
 			.Returns(Task.CompletedTask);
 		var receiptMetaRepo = new Mock<IReceiptMetadataRepository>();
 		receiptMetaRepo.Setup(x => x.AddAsync(It.IsAny<ReceiptMetadata>(), It.IsAny<CancellationToken>()))
