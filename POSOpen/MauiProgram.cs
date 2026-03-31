@@ -29,7 +29,7 @@ public static class MauiProgram
 		builder.Services.AddPosOpenPersistence();
 		builder.Services.AddAuthenticationFeature();
 		builder.Services.AddAdmissionsFeature();
-				builder.Services.AddCheckoutFeature();
+		builder.Services.AddCheckoutFeature();
 		builder.Services.AddSecurityFeature();
 		builder.Services.AddStaffManagement();
 		builder.Services.AddSingleton<IAppStateService, AppStateService>();
