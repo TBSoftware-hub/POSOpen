@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.UseCases.Shell;
+using POSOpen.Features.Checkout;
 using POSOpen.Features.Shell;
 
 namespace POSOpen.Features.Shell.ViewModels;
@@ -94,5 +95,11 @@ public sealed partial class HomeViewModel : ObservableObject
 
 		AuthorizationMessage = string.Empty;
 		await global::Microsoft.Maui.Controls.Shell.Current.GoToAsync(ShellRoutes.ManagerOperations);
+	}
+
+	[RelayCommand]
+	private async Task OpenCheckoutAsync()
+	{
+		await global::Microsoft.Maui.Controls.Shell.Current.GoToAsync(CheckoutRoutes.Cart);
 	}
 }
