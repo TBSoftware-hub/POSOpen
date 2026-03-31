@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-28T15:07:27-07:00
-last_updated: 2026-03-31T18:10:00-07:00
+last_updated: 2026-03-31T19:30:00-07:00
 project: POSOpen
 project_key: NOKEY
 tracking_system: file-system
@@ -64,9 +64,9 @@ development_status:
   3-3-integrate-scanner-and-card-reader-for-checkout: done
   3-4-print-receipts-and-preserve-offline-continuity: done
   3-5-policy-bound-refund-workflow: done
-  epic-3-retrospective: optional
-  epic-4: backlog
-  4-1-implement-3-step-party-booking-flow: backlog
+  epic-3-retrospective: done
+  epic-4: in-progress
+  4-1-implement-3-step-party-booking-flow: ready-for-dev
   4-2-capture-deposits-and-build-party-timeline: backlog
   4-3-manage-room-assignment-and-conflict-resolution: backlog
   4-4-manage-catering-decor-options-with-risk-indicators: backlog
