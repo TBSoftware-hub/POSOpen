@@ -28,6 +28,12 @@ public sealed class CheckoutUiService : ICheckoutUiService
 			$"{CheckoutRoutes.CheckoutCompletion}?cartSessionId={cartSessionId}");
 	}
 
+	public Task NavigateToRefundWorkflowAsync(Guid cartSessionId)
+	{
+		return global::Microsoft.Maui.Controls.Shell.Current.GoToAsync(
+			$"{CheckoutRoutes.RefundWorkflow}?cartSessionId={cartSessionId}");
+	}
+
 	public Task StartNewTransactionAsync()
 	{
 		return global::Microsoft.Maui.Controls.Shell.Current.GoToAsync(

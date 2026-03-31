@@ -5,34 +5,36 @@ namespace POSOpen.Infrastructure.Persistence;
 
 public sealed class PosOpenDbContext : DbContext
 {
-	public PosOpenDbContext(DbContextOptions<PosOpenDbContext> options)
-		: base(options)
-	{
-	}
+    public PosOpenDbContext(DbContextOptions<PosOpenDbContext> options)
+        : base(options)
+    {
+    }
 
-	public DbSet<OperationLogEntry> OperationLogEntries => Set<OperationLogEntry>();
+    public DbSet<OperationLogEntry> OperationLogEntries => Set<OperationLogEntry>();
 
-	public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
-	public DbSet<AdmissionCheckInRecord> AdmissionCheckInRecords => Set<AdmissionCheckInRecord>();
+    public DbSet<AdmissionCheckInRecord> AdmissionCheckInRecords => Set<AdmissionCheckInRecord>();
 
-	public DbSet<FamilyProfile> FamilyProfiles => Set<FamilyProfile>();
+    public DbSet<FamilyProfile> FamilyProfiles => Set<FamilyProfile>();
 
-	public DbSet<StaffAccount> StaffAccounts => Set<StaffAccount>();
+    public DbSet<StaffAccount> StaffAccounts => Set<StaffAccount>();
 
-	public DbSet<CartSession> CartSessions => Set<CartSession>();
+    public DbSet<CartSession> CartSessions => Set<CartSession>();
 
-	public DbSet<CartLineItem> CartLineItems => Set<CartLineItem>();
+    public DbSet<CartLineItem> CartLineItems => Set<CartLineItem>();
 
-	public DbSet<CheckoutPaymentAttempt> CheckoutPaymentAttempts => Set<CheckoutPaymentAttempt>();
+    public DbSet<CheckoutPaymentAttempt> CheckoutPaymentAttempts => Set<CheckoutPaymentAttempt>();
 
-	public DbSet<ReceiptMetadata> ReceiptMetadata => Set<ReceiptMetadata>();
+    public DbSet<RefundRecord> RefundRecords => Set<RefundRecord>();
 
-	public DbSet<TransactionOperation> TransactionOperations => Set<TransactionOperation>();
+    public DbSet<ReceiptMetadata> ReceiptMetadata => Set<ReceiptMetadata>();
 
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
-	{
-		base.OnModelCreating(modelBuilder);
-		modelBuilder.ApplyConfigurationsFromAssembly(typeof(PosOpenDbContext).Assembly);
-	}
+    public DbSet<TransactionOperation> TransactionOperations => Set<TransactionOperation>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(PosOpenDbContext).Assembly);
+    }
 }

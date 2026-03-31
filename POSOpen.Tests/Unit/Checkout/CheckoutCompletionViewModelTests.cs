@@ -160,6 +160,27 @@ public sealed class CheckoutCompletionViewModelTests
 		uiService.Verify(x => x.StartNewTransactionAsync(), Times.Once);
 	}
 
+	[Fact]
+	public async Task StartRefundCommand_WhenInitialized_NavigatesToRefundWorkflow()
+	{
+		var cartId = Guid.NewGuid();
+		var cart = BuildCart(cartId);
+		var cartRepo = new Mock<ICartSessionRepository>();
+		cartRepo.Setup(x => x.GetByIdAsync(cartId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(cart);
+
+		var uiService = new Mock<ICheckoutUiService>();
+		uiService.Setup(x => x.NavigateToRefundWorkflowAsync(cartId)).Returns(Task.CompletedTask);
+
+		var vm = BuildViewModel(cartRepo: cartRepo, uiService: uiService);
+		vm.CartSessionIdParam = cartId.ToString();
+		await vm.InitializeCommand.ExecuteAsync(null);
+
+		await vm.StartRefundCommand.ExecuteAsync(null);
+
+		uiService.Verify(x => x.NavigateToRefundWorkflowAsync(cartId), Times.Once);
+	}
+
 	// ─── Helpers ─────────────────────────────────────────────────────────
 
 	private static CartSession BuildCart(Guid cartId)

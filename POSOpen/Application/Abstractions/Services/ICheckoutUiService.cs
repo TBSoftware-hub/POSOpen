@@ -6,5 +6,6 @@ public interface ICheckoutUiService
 	Task NavigateToPaymentCaptureAsync(Guid cartId);
 	Task ClosePaymentCaptureAsync();
 	Task NavigateToCheckoutCompletionAsync(Guid cartSessionId);
+	Task NavigateToRefundWorkflowAsync(Guid cartSessionId);
 	Task StartNewTransactionAsync();
 }

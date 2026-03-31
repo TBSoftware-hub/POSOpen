@@ -1,0 +1,38 @@
+Test run for C:\Users\timbe\source\repos\POSOpen\POSOpen.Tests\bin\Debug\net10.0-windows10.0.19041.0\POSOpen.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:25.72]     POSOpen.Tests.Integration.Checkout.RefundWorkflowIntegrationTests.SubmitRefundUseCase_PersistsRefund_AndAppendsImmutableCompletedAudit_WithoutDuplicateOnRetry [FAIL]
+  Failed POSOpen.Tests.Integration.Checkout.RefundWorkflowIntegrationTests.SubmitRefundUseCase_PersistsRefund_AndAppendsImmutableCompletedAudit_WithoutDuplicateOnRetry [11 s]
+  Error Message:
+   Expected first.IsSuccess to be True, but found False.
+  Stack Trace:
+     at FluentAssertions.Execution.LateBoundTestFramework.Throw(String message)
+   at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
+   at FluentAssertions.Execution.AssertionScope.AddPreFormattedFailure(String formattedFailureMessage)
+   at FluentAssertions.Execution.AssertionChain.FailWith(Func`1 getFailureReason)
+   at FluentAssertions.Execution.AssertionChain.FailWith(Func`1 getFailureReason)
+   at FluentAssertions.Execution.AssertionChain.FailWith(String message, Object[] args)
+   at FluentAssertions.Primitives.BooleanAssertions`1.BeTrue(String because, Object[] becauseArgs)
+   at POSOpen.Tests.Integration.Checkout.RefundWorkflowIntegrationTests.SubmitRefundUseCase_PersistsRefund_AndAppendsImmutableCompletedAudit_WithoutDuplicateOnRetry() in C:\Users\timbe\source\repos\POSOpen\POSOpen.Tests\Integration\Checkout\RefundWorkflowIntegrationTests.cs:line 60
+   at POSOpen.Tests.Integration.Checkout.RefundWorkflowIntegrationTests.SubmitRefundUseCase_PersistsRefund_AndAppendsImmutableCompletedAudit_WithoutDuplicateOnRetry() in C:\Users\timbe\source\repos\POSOpen\POSOpen.Tests\Integration\Checkout\RefundWorkflowIntegrationTests.cs:line 72
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:35.15]     POSOpen.Tests.Integration.Checkout.RefundWorkflowIntegrationTests.SubmitRefundUseCase_WhenCashierDenied_PersistsImmutableDeniedAuditEvent [FAIL]
+  Failed POSOpen.Tests.Integration.Checkout.RefundWorkflowIntegrationTests.SubmitRefundUseCase_WhenCashierDenied_PersistsImmutableDeniedAuditEvent [9 s]
+  Error Message:
+   Expected result.ErrorCode to be the same string, but they differ at index 7:
+          Γåô (actual)
+  "REFUND_COMMIT_FAILED"
+  "REFUND_PATH_FORBIDDEΓÇª"
+          Γåæ (expected).
+  Stack Trace:
+     at FluentAssertions.Execution.LateBoundTestFramework.Throw(String message)
+   at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
+   at FluentAssertions.Execution.AssertionChain.FailWith(Func`1 getFailureReason)
+   at FluentAssertions.Execution.AssertionChain.FailWith(String message)
+   at FluentAssertions.Primitives.StringEqualityStrategy.AssertForEquality(AssertionChain assertionChain, String subject, String expected)
+   at FluentAssertions.Primitives.StringValidator.Validate(String subject, String expected)
+   at FluentAssertions.Primitives.StringAssertions`1.Be(String expected, String because, Object[] becauseArgs)
+   at POSOpen.Tests.Integration.Checkout.RefundWorkflowIntegrationTests.SubmitRefundUseCase_WhenCashierDenied_PersistsImmutableDeniedAuditEvent() in C:\Users\timbe\source\repos\POSOpen\POSOpen.Tests\Integration\Checkout\RefundWorkflowIntegrationTests.cs:line 121
+   at POSOpen.Tests.Integration.Checkout.RefundWorkflowIntegrationTests.SubmitRefundUseCase_WhenCashierDenied_PersistsImmutableDeniedAuditEvent() in C:\Users\timbe\source\repos\POSOpen\POSOpen.Tests\Integration\Checkout\RefundWorkflowIntegrationTests.cs:line 133
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     2, Passed:   212, Skipped:     0, Total:   214, Duration: 1 m 23 s - POSOpen.Tests.dll (net10.0)

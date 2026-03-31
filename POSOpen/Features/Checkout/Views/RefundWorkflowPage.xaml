@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:viewModels="clr-namespace:POSOpen.Features.Checkout.ViewModels"
+             x:Class="POSOpen.Features.Checkout.Views.RefundWorkflowPage"
+             x:DataType="viewModels:RefundWorkflowViewModel"
+             Title="Refund Workflow">
+
+	<Grid RowDefinitions="Auto,*,Auto"
+	      Padding="16"
+	      RowSpacing="12">
+
+		<VerticalStackLayout Grid.Row="0" Spacing="8">
+			<ActivityIndicator IsRunning="{Binding IsLoading}"
+			                   IsVisible="{Binding IsLoading}"
+			                   HorizontalOptions="Center" />
+
+			<Border Background="#FEF2F2"
+			        IsVisible="{Binding HasError}"
+			        Padding="12">
+				<Label Text="{Binding ErrorMessage}" TextColor="#DC2626" />
+			</Border>
+		</VerticalStackLayout>
+
+		<ScrollView Grid.Row="1">
+			<VerticalStackLayout Spacing="12">
+
+				<Border Background="#EFF6FF" Padding="12">
+					<VerticalStackLayout Spacing="6">
+						<Label Text="Refund Status" FontAttributes="Bold" />
+						<Label Text="{Binding StatusMessage}" />
+						<Label Text="{Binding EligibleAmountLabel, StringFormat='Eligible Amount: {0}'}" />
+					</VerticalStackLayout>
+				</Border>
+
+				<Border Background="#FFF7ED"
+				        IsVisible="{Binding IsBlocked}"
+				        Padding="12">
+					<Label Text="Refund is blocked for this transaction context."
+					       TextColor="#92400E"
+					       FontAttributes="Bold" />
+				</Border>
+
+				<Border Background="#F8FAFC"
+				        IsVisible="{Binding IsEligible}"
+				        Padding="12">
+					<VerticalStackLayout Spacing="10">
+						<Label Text="Amount (cents)" FontAttributes="Bold" />
+						<Entry Text="{Binding AmountCentsInput}"
+						       Keyboard="Numeric"
+						       Placeholder="Enter amount in cents" />
+
+						<Label Text="Refund Path" FontAttributes="Bold" />
+						<Picker Title="Select refund path"
+						        ItemsSource="{Binding AvailablePaths}"
+						        SelectedItem="{Binding SelectedPath}" />
+
+						<Label Text="Reason" FontAttributes="Bold" />
+						<Entry Text="{Binding Reason}"
+						       Placeholder="Required for approval path" />
+
+						<Border Background="#ECFDF5"
+						        IsVisible="{Binding IsCompleted}"
+						        Padding="10">
+							<Label Text="Refund completed and immutably logged."
+							       TextColor="#065F46"
+							       FontAttributes="Bold" />
+						</Border>
+
+						<Border Background="#FFFBEB"
+						        IsVisible="{Binding IsPendingApproval}"
+						        Padding="10">
+							<Label Text="Approval required. Request logged for manager/owner completion."
+							       TextColor="#92400E"
+							       FontAttributes="Bold" />
+						</Border>
+					</VerticalStackLayout>
+				</Border>
+
+			</VerticalStackLayout>
+		</ScrollView>
+
+		<Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="12">
+			<Button Grid.Column="0"
+			        Text="Back"
+			        Command="{Binding BackToCompletionCommand}" />
+			<Button Grid.Column="1"
+			        Text="Submit Refund"
+			        Command="{Binding SubmitCommand}" />
+		</Grid>
+
+	</Grid>
+</ContentPage>
