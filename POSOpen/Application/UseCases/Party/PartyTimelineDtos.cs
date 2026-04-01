@@ -15,4 +15,6 @@ public sealed record PartyBookingTimelineDto(
 	PartyBookingStatus BookingStatus,
 	bool IsDepositCommitted,
 	DateTime GeneratedAtUtc,
-	IReadOnlyList<PartyBookingTimelineMilestoneDto> Milestones);
+	IReadOnlyList<PartyBookingTimelineMilestoneDto> Milestones,
+	DateTime PartyDateUtc = default,
+	string SlotId = "");

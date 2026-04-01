@@ -3,6 +3,7 @@ namespace POSOpen.Application.UseCases.Party;
 public static class PartyBookingConstants
 {
 	public static readonly string[] KnownSlotIds = ["10:00", "13:00", "16:00"];
+	public static readonly string[] KnownRoomIds = ["room-a", "room-b", "room-c"];
 
 	public const string ErrorBookingNotFound = "BOOKING_NOT_FOUND";
 	public const string ErrorDateInvalid = "BOOKING_DATE_INVALID";
@@ -27,6 +28,12 @@ public static class PartyBookingConstants
 	public const string SafeDepositAmountInvalidMessage = "Enter a valid deposit amount to continue.";
 	public const string SafeDepositCurrencyInvalidMessage = "Enter a valid 3-letter currency code to continue.";
 	public const string SafeTimelineUnavailableMessage = "Timeline data is unavailable for this booking.";
+
+	public const string ErrorRoomConflict = "BOOKING_ROOM_CONFLICT";
+	public const string ErrorRoomInvalid = "BOOKING_ROOM_INVALID";
+	public const string SafeRoomConflictMessage = "That room is already booked. Choose an alternative below.";
+	public const string RoomAssignedMessage = "Room assignment saved.";
+	public const string SafeRoomAssignmentFailedMessage = "Room assignment failed. Please try again.";
 
 	public const string DraftSavedMessage = "Draft booking saved.";
 	public const string DraftAlreadySavedMessage = "Draft booking already saved for this operation.";

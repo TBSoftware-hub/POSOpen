@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using POSOpen.Application.Abstractions.Repositories;
+using POSOpen.Application.Exceptions;
 using POSOpen.Domain.Entities;
 using POSOpen.Domain.Enums;
 
@@ -216,5 +217,113 @@ public async Task<PartyBooking> MarkCompletedAsync(
 		await transaction.RollbackAsync(ct);
 		throw;
 	}
+}
+
+public async Task<bool> IsRoomUnavailableAsync(DateTime partyDateUtc, string slotId, string roomId, Guid? excludingBookingId = null, CancellationToken ct = default)
+{
+	var dateUtc = DateTime.SpecifyKind(partyDateUtc, DateTimeKind.Utc).Date;
+	var nextDateUtc = dateUtc.AddDays(1);
+
+	await using var dbContext = await _dbContextFactory.CreateDbContextAsync(ct);
+	var query = dbContext.Set<PartyBooking>()
+		.AsNoTracking()
+		.Where(x => x.PartyDateUtc >= dateUtc && x.PartyDateUtc < nextDateUtc)
+		.Where(x => x.SlotId == slotId)
+		.Where(x => x.AssignedRoomId == roomId)
+		.Where(x => x.Status != PartyBookingStatus.Cancelled);
+
+	if (excludingBookingId.HasValue)
+	{
+		query = query.Where(x => x.Id != excludingBookingId.Value);
+	}
+
+	return await query.AnyAsync(ct);
+}
+
+public async Task<PartyBooking> AssignRoomAsync(PartyBooking booking, string roomId, Guid operationId, Guid correlationId, DateTime assignedAtUtc, CancellationToken ct = default)
+{
+	await using var dbContext = await _dbContextFactory.CreateDbContextAsync(ct);
+	await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+	try
+	{
+		var existing = await dbContext.Set<PartyBooking>().FirstAsync(x => x.Id == booking.Id, ct);
+
+		if (existing.RoomAssignmentOperationId == operationId)
+		{
+			await transaction.CommitAsync(ct);
+			return existing;
+		}
+
+		var dateUtc = DateTime.SpecifyKind(existing.PartyDateUtc, DateTimeKind.Utc).Date;
+		var nextDateUtc = dateUtc.AddDays(1);
+		var roomConflict = await dbContext.Set<PartyBooking>()
+			.Where(x => x.PartyDateUtc >= dateUtc && x.PartyDateUtc < nextDateUtc
+				&& x.AssignedRoomId == roomId
+				&& x.SlotId == existing.SlotId
+				&& x.Status != PartyBookingStatus.Cancelled
+				&& x.Id != existing.Id)
+			.AnyAsync(ct);
+
+		if (roomConflict)
+		{
+			throw new RoomConflictException(
+				$"Room '{roomId}' is already assigned for slot '{existing.SlotId}' on this date.");
+		}
+
+		existing.AssignRoom(
+			roomId,
+			operationId,
+			correlationId,
+			DateTime.SpecifyKind(assignedAtUtc, DateTimeKind.Utc));
+
+		await dbContext.SaveChangesAsync(ct);
+		await transaction.CommitAsync(ct);
+		return existing;
+	}
+	catch
+	{
+		await transaction.RollbackAsync(ct);
+		throw;
+	}
+}
+
+public async Task<IReadOnlyList<string>> ListAlternativeRoomsAsync(DateTime partyDateUtc, string slotId, string excludingRoomId, CancellationToken ct = default)
+{
+	var alternatives = new List<string>();
+	foreach (var roomId in Application.UseCases.Party.PartyBookingConstants.KnownRoomIds)
+	{
+		if (roomId == excludingRoomId)
+		{
+			continue;
+		}
+
+		var unavailable = await IsRoomUnavailableAsync(partyDateUtc, slotId, roomId, null, ct);
+		if (!unavailable)
+		{
+			alternatives.Add(roomId);
+		}
+	}
+
+	return alternatives;
+}
+
+public async Task<IReadOnlyList<string>> ListAlternativeSlotsAsync(DateTime partyDateUtc, string roomId, string excludingSlotId, CancellationToken ct = default)
+{
+	var alternatives = new List<string>();
+	foreach (var slotId in Application.UseCases.Party.PartyBookingConstants.KnownSlotIds)
+	{
+		if (slotId == excludingSlotId)
+		{
+			continue;
+		}
+
+		var unavailable = await IsRoomUnavailableAsync(partyDateUtc, slotId, roomId, null, ct);
+		if (!unavailable)
+		{
+			alternatives.Add(slotId);
+		}
+	}
+
+	return alternatives;
 }
 }

@@ -7,7 +7,7 @@
 | Epic | 4 - Party Booking Lifecycle and Inventory Coordination |
 | Story | 4.2 |
 | Key | `4-2-capture-deposits-and-build-party-timeline` |
-| Status | review |
+| Status | done |
 | Author | Timbe (via BMAD Story Creator) |
 | Created | 2026-03-31 |
 | Target Sprint | Current |

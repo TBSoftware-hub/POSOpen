@@ -20,6 +20,9 @@ public sealed class PartyBooking
 	public PartyDepositCommitmentStatus DepositCommitmentStatus { get; set; }
 	public Guid? DepositCommitmentOperationId { get; set; }
 	public DateTime? CompletedAtUtc { get; set; }
+	public string? AssignedRoomId { get; set; }
+	public DateTime? RoomAssignedAtUtc { get; set; }
+	public Guid? RoomAssignmentOperationId { get; set; }
 
 	public static PartyBooking CreateDraft(
 		Guid id,
@@ -61,5 +64,15 @@ public sealed class PartyBooking
 		OperationId = operationId;
 		CorrelationId = correlationId;
 		UpdatedAtUtc = completedAtUtc;
+	}
+
+	public void AssignRoom(string roomId, Guid operationId, Guid correlationId, DateTime assignedAtUtc)
+	{
+		AssignedRoomId = roomId;
+		RoomAssignedAtUtc = assignedAtUtc;
+		RoomAssignmentOperationId = operationId;
+		OperationId = operationId;
+		CorrelationId = correlationId;
+		UpdatedAtUtc = assignedAtUtc;
 	}
 }

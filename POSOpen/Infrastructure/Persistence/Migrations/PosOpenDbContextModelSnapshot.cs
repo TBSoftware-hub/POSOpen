@@ -406,6 +406,122 @@ namespace POSOpen.Infrastructure.Persistence.Migrations
                     b.ToTable("OutboxMessages", (string)null);
                 });
 
+            modelBuilder.Entity("POSOpen.Domain.Entities.PartyBooking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("id");
+
+                    b.Property<string>("PartyDateUtc")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("party_date_utc");
+
+                    b.Property<string>("SlotId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("slot_id");
+
+                    b.Property<string>("PackageId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("package_id");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("operation_id");
+
+                    b.Property<Guid>("CorrelationId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("correlation_id");
+
+                    b.Property<string>("CreatedAtUtc")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<string>("UpdatedAtUtc")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("updated_at_utc");
+
+                    b.Property<string>("BookedAtUtc")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("booked_at_utc");
+
+                    b.Property<long?>("DepositAmountCents")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("deposit_amount_cents");
+
+                    b.Property<string>("DepositCurrency")
+                        .HasMaxLength(3)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("deposit_currency");
+
+                    b.Property<string>("DepositCommittedAtUtc")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("deposit_committed_at_utc");
+
+                    b.Property<int>("DepositCommitmentStatus")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("deposit_commitment_status");
+
+                    b.Property<Guid?>("DepositCommitmentOperationId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("deposit_commitment_operation_id");
+
+                    b.Property<string>("CompletedAtUtc")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("completed_at_utc");
+
+                    b.Property<string>("AssignedRoomId")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("assigned_room_id");
+
+                    b.Property<string>("RoomAssignedAtUtc")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("room_assigned_at_utc");
+
+                    b.Property<Guid?>("RoomAssignmentOperationId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("room_assignment_operation_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OperationId")
+                        .HasDatabaseName("ix_party_bookings_operation_id");
+
+                    b.HasIndex("DepositCommitmentOperationId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_party_bookings_deposit_commitment_operation_id")
+                        .HasFilter("deposit_commitment_operation_id IS NOT NULL");
+
+                    b.HasIndex("PartyDateUtc", "SlotId", "Status")
+                        .HasDatabaseName("ix_party_bookings_party_date_slot_status");
+
+                    b.HasIndex("Status", "PartyDateUtc")
+                        .HasDatabaseName("ix_party_bookings_status_party_date");
+
+                    b.HasIndex("PartyDateUtc", "SlotId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_party_bookings_active_slot")
+                        .HasFilter("status <> 2");
+
+b.HasIndex("AssignedRoomId", "PartyDateUtc", "SlotId")
+						.IsUnique()
+						.HasDatabaseName("ux_party_bookings_room_date_slot")
+						.HasFilter("assigned_room_id IS NOT NULL AND status <> 2");
+
+                    b.ToTable("party_bookings", (string)null);
+                });
+
             modelBuilder.Entity("POSOpen.Domain.Entities.ReceiptMetadata", b =>
                 {
                     b.Property<Guid>("Id")

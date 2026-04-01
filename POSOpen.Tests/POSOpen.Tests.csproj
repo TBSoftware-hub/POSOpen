@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <Compile Include="..\POSOpen\Application\Results\AppResult.cs" Link="Source\Application\Results\AppResult.cs" />
+    <Compile Include="..\POSOpen\Application\Exceptions\*.cs" Link="Source\Application\Exceptions\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\Abstractions\Persistence\*.cs" Link="Source\Application\Abstractions\Persistence\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\Abstractions\Repositories\*.cs" Link="Source\Application\Abstractions\Repositories\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\Abstractions\Security\*.cs" Link="Source\Application\Abstractions\Security\%(Filename)%(Extension)" />
