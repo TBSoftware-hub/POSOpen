@@ -29,6 +29,9 @@ public sealed class PartyBookingConfiguration : IEntityTypeConfiguration<PartyBo
 		builder.Property(x => x.DepositCommitmentStatus).HasColumnName("deposit_commitment_status").HasConversion<int>().IsRequired();
 		builder.Property(x => x.DepositCommitmentOperationId).HasColumnName("deposit_commitment_operation_id");
 		builder.Property(x => x.CompletedAtUtc).HasColumnName("completed_at_utc").HasConversion(NullableUtcDateTimeConverter.Instance);
+		builder.Property(x => x.AssignedRoomId).HasColumnName("assigned_room_id").HasMaxLength(64);
+		builder.Property(x => x.RoomAssignedAtUtc).HasColumnName("room_assigned_at_utc").HasConversion(NullableUtcDateTimeConverter.Instance);
+		builder.Property(x => x.RoomAssignmentOperationId).HasColumnName("room_assignment_operation_id");
 
 		builder.HasIndex(x => x.OperationId)
 			.HasDatabaseName("ix_party_bookings_operation_id");
@@ -48,5 +51,8 @@ public sealed class PartyBookingConfiguration : IEntityTypeConfiguration<PartyBo
 			.IsUnique()
 			.HasDatabaseName("ux_party_bookings_active_slot")
 			.HasFilter($"status <> {(int)PartyBookingStatus.Cancelled}");
+
+		builder.HasIndex(x => new { x.AssignedRoomId, x.PartyDateUtc, x.Status })
+			.HasDatabaseName("idx_party_bookings_room_date_status");
 	}
 }

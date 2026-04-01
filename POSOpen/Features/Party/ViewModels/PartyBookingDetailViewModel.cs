@@ -11,17 +11,23 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 	private readonly GetPartyBookingTimelineUseCase _getPartyBookingTimelineUseCase;
 	private readonly RecordPartyDepositCommitmentUseCase _recordPartyDepositCommitmentUseCase;
 	private readonly MarkPartyBookingCompletedUseCase _markPartyBookingCompletedUseCase;
+	private readonly GetRoomOptionsUseCase _getRoomOptionsUseCase;
+	private readonly AssignPartyRoomUseCase _assignPartyRoomUseCase;
 	private readonly IOperationContextFactory _operationContextFactory;
 
 	public PartyBookingDetailViewModel(
 		GetPartyBookingTimelineUseCase getPartyBookingTimelineUseCase,
 		RecordPartyDepositCommitmentUseCase recordPartyDepositCommitmentUseCase,
 		MarkPartyBookingCompletedUseCase markPartyBookingCompletedUseCase,
+		GetRoomOptionsUseCase getRoomOptionsUseCase,
+		AssignPartyRoomUseCase assignPartyRoomUseCase,
 		IOperationContextFactory operationContextFactory)
 	{
 		_getPartyBookingTimelineUseCase = getPartyBookingTimelineUseCase;
 		_recordPartyDepositCommitmentUseCase = recordPartyDepositCommitmentUseCase;
 		_markPartyBookingCompletedUseCase = markPartyBookingCompletedUseCase;
+		_getRoomOptionsUseCase = getRoomOptionsUseCase;
+		_assignPartyRoomUseCase = assignPartyRoomUseCase;
 		_operationContextFactory = operationContextFactory;
 	}
 
@@ -52,9 +58,30 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 	[NotifyPropertyChangedFor(nameof(CanSubmitDeposit))]
 	private bool _depositCommitted;
 
+	[ObservableProperty]
+	private ObservableCollection<RoomOptionItemDto> _roomOptions = [];
+
+	[ObservableProperty]
+	private RoomOptionItemDto? _selectedRoom;
+
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasConflict))]
+	private string? _conflictMessage;
+
+	[ObservableProperty]
+	private ObservableCollection<string> _alternativeRooms = [];
+
+	[ObservableProperty]
+	private ObservableCollection<string> _alternativeSlots = [];
+
+	[ObservableProperty]
+	private string? _assignedRoomId;
+
 	public ObservableCollection<PartyBookingTimelineMilestoneDto> Milestones { get; } = [];
 
 	public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
+
+	public bool HasConflict => !string.IsNullOrWhiteSpace(ConflictMessage);
 
 	public bool CanSubmitDeposit => !DepositCommitted && !IsBusy;
 
@@ -62,6 +89,7 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 	{
 		BookingId = bookingId;
 		await RefreshTimelineAsync();
+		await LoadRoomOptionsCommand.ExecuteAsync(null);
 	}
 
 	[RelayCommand]
@@ -158,6 +186,87 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 				return;
 			}
 
+			SetSuccessState(result.UserMessage);
+			await RefreshTimelineAsync();
+		}
+		finally
+		{
+			IsBusy = false;
+		}
+	}
+
+	[RelayCommand]
+	private async Task LoadRoomOptionsAsync()
+	{
+		if (BookingId == Guid.Empty)
+		{
+			return;
+		}
+
+		try
+		{
+			var query = new GetRoomOptionsQuery(DateTime.UtcNow, string.Empty);
+			var result = await _getRoomOptionsUseCase.ExecuteAsync(query);
+			RoomOptions.Clear();
+			ConflictMessage = null;
+			AlternativeRooms.Clear();
+			AlternativeSlots.Clear();
+			if (result.IsSuccess && result.Payload is not null)
+			{
+				foreach (var room in result.Payload.Rooms)
+				{
+					RoomOptions.Add(room);
+				}
+			}
+		}
+		catch (Exception)
+		{
+			// Non-critical — room options remain empty
+		}
+	}
+
+	[RelayCommand]
+	private async Task AssignRoomAsync()
+	{
+		if (SelectedRoom is null || BookingId == Guid.Empty)
+		{
+			return;
+		}
+
+		SetBusyState();
+		try
+		{
+			var operation = _operationContextFactory.CreateRoot();
+			var result = await _assignPartyRoomUseCase.ExecuteAsync(
+				new AssignPartyRoomCommand(BookingId, SelectedRoom.RoomId, operation));
+
+			if (!result.IsSuccess)
+			{
+				if (result.ErrorCode == PartyBookingConstants.ErrorRoomConflict && result.Payload is not null)
+				{
+					ConflictMessage = result.UserMessage;
+					AlternativeRooms.Clear();
+					foreach (var r in result.Payload.AlternativeRooms ?? [])
+					{
+						AlternativeRooms.Add(r);
+					}
+					AlternativeSlots.Clear();
+					foreach (var s in result.Payload.AlternativeSlots ?? [])
+					{
+						AlternativeSlots.Add(s);
+					}
+				}
+				else
+				{
+					SetErrorState(result.UserMessage);
+				}
+				return;
+			}
+
+			ConflictMessage = null;
+			AlternativeRooms.Clear();
+			AlternativeSlots.Clear();
+			AssignedRoomId = result.Payload?.AssignedRoomId;
 			SetSuccessState(result.UserMessage);
 			await RefreshTimelineAsync();
 		}
