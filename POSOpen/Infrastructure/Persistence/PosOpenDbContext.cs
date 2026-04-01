@@ -30,6 +30,8 @@ public sealed class PosOpenDbContext : DbContext
 
     public DbSet<PartyBooking> PartyBookings => Set<PartyBooking>();
 
+    public DbSet<PartyBookingAddOnSelection> PartyBookingAddOnSelections => Set<PartyBookingAddOnSelection>();
+
     public DbSet<ReceiptMetadata> ReceiptMetadata => Set<ReceiptMetadata>();
 
     public DbSet<TransactionOperation> TransactionOperations => Set<TransactionOperation>();

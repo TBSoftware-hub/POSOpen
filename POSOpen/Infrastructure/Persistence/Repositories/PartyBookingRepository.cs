@@ -23,6 +23,15 @@ return await dbContext.Set<PartyBooking>()
 .FirstOrDefaultAsync(x => x.Id == bookingId, ct);
 }
 
+public async Task<PartyBooking?> GetByIdWithSelectionsAsync(Guid bookingId, CancellationToken ct = default)
+{
+	await using var dbContext = await _dbContextFactory.CreateDbContextAsync(ct);
+	return await dbContext.Set<PartyBooking>()
+		.AsNoTracking()
+		.Include(x => x.AddOnSelections)
+		.FirstOrDefaultAsync(x => x.Id == bookingId, ct);
+}
+
 public async Task<PartyBooking?> GetByOperationIdAsync(Guid operationId, CancellationToken ct = default)
 {
 await using var dbContext = await _dbContextFactory.CreateDbContextAsync(ct);
@@ -279,6 +288,40 @@ public async Task<PartyBooking> AssignRoomAsync(PartyBooking booking, string roo
 		await dbContext.SaveChangesAsync(ct);
 		await transaction.CommitAsync(ct);
 		return existing;
+	}
+	catch
+	{
+		await transaction.RollbackAsync(ct);
+		throw;
+	}
+}
+
+public async Task ReplaceAddOnSelectionsAsync(
+	PartyBooking booking,
+	IReadOnlyList<PartyBookingAddOnSelection> newSelections,
+	Guid operationId,
+	Guid correlationId,
+	DateTime updatedAtUtc,
+	CancellationToken ct = default)
+{
+	await using var dbContext = await _dbContextFactory.CreateDbContextAsync(ct);
+	await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+	try
+	{
+		var existing = await dbContext.Set<PartyBooking>()
+			.Include(x => x.AddOnSelections)
+			.FirstAsync(x => x.Id == booking.Id, ct);
+
+		dbContext.Set<PartyBookingAddOnSelection>().RemoveRange(existing.AddOnSelections);
+		dbContext.Set<PartyBookingAddOnSelection>().AddRange(newSelections);
+
+		existing.UpdateAddOnSelections(
+			operationId,
+			correlationId,
+			DateTime.SpecifyKind(updatedAtUtc, DateTimeKind.Utc));
+
+		await dbContext.SaveChangesAsync(ct);
+		await transaction.CommitAsync(ct);
 	}
 	catch
 	{

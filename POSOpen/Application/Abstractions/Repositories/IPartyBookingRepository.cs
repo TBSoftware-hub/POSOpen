@@ -6,6 +6,8 @@ public interface IPartyBookingRepository
 {
 	Task<PartyBooking?> GetByIdAsync(Guid bookingId, CancellationToken ct = default);
 
+	Task<PartyBooking?> GetByIdWithSelectionsAsync(Guid bookingId, CancellationToken ct = default);
+
 	Task<PartyBooking?> GetByOperationIdAsync(Guid operationId, CancellationToken ct = default);
 
 	Task<IReadOnlyList<PartyBooking>> ListByPartyDateAsync(DateTime partyDateUtc, CancellationToken ct = default);
@@ -35,6 +37,14 @@ public interface IPartyBookingRepository
 	Task<bool> IsRoomUnavailableAsync(DateTime partyDateUtc, string slotId, string roomId, Guid? excludingBookingId = null, CancellationToken ct = default);
 
 	Task<PartyBooking> AssignRoomAsync(PartyBooking booking, string roomId, Guid operationId, Guid correlationId, DateTime assignedAtUtc, CancellationToken ct = default);
+
+	Task ReplaceAddOnSelectionsAsync(
+		PartyBooking booking,
+		IReadOnlyList<PartyBookingAddOnSelection> newSelections,
+		Guid operationId,
+		Guid correlationId,
+		DateTime updatedAtUtc,
+		CancellationToken ct = default);
 
 	Task<IReadOnlyList<string>> ListAlternativeRoomsAsync(DateTime partyDateUtc, string slotId, string excludingRoomId, CancellationToken ct = default);
 
