@@ -8,6 +8,8 @@ using POSOpen.Infrastructure.Persistence.Repositories;
 using POSOpen.Shared.Operational;
 using Microsoft.EntityFrameworkCore;
 using POSOpen.Domain.Enums;
+using POSOpen.Application.UseCases.Inventory;
+using Moq;
 
 namespace POSOpen.Tests.Integration.Party;
 
@@ -58,6 +60,12 @@ public sealed class PartyTimelineRepositoryTests
 			NullLogger<GetPartyBookingTimelineUseCase>.Instance);
 		var completionUseCase = new MarkPartyBookingCompletedUseCase(
 			fixture.Repository,
+			new ReserveBookingInventoryUseCase(
+				fixture.Repository,
+				new InventoryReservationRepository(fixture.DbContextFactory),
+				NullLogger<ReserveBookingInventoryUseCase>.Instance),
+			new GetAllowedSubstitutesUseCase(new Mock<POSOpen.Application.Abstractions.Services.IInventorySubstitutionPolicyProvider>().Object),
+			new Mock<POSOpen.Application.Abstractions.Security.ICurrentSessionService>().Object,
 			fixture.Clock,
 			NullLogger<MarkPartyBookingCompletedUseCase>.Instance);
 

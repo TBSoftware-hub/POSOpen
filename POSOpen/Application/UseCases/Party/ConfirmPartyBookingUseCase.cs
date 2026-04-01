@@ -3,6 +3,7 @@ using POSOpen.Application.Abstractions.Repositories;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.Results;
 using POSOpen.Application.Security;
+using POSOpen.Application.UseCases.Inventory;
 using POSOpen.Domain.Enums;
 
 namespace POSOpen.Application.UseCases.Party;
@@ -12,17 +13,20 @@ public sealed class ConfirmPartyBookingUseCase
 	private readonly IPartyBookingRepository _partyBookingRepository;
 	private readonly IOperationLogRepository _operationLogRepository;
 	private readonly IUtcClock _clock;
+	private readonly ReserveBookingInventoryUseCase _reserveBookingInventoryUseCase;
 	private readonly ILogger<ConfirmPartyBookingUseCase> _logger;
 
 	public ConfirmPartyBookingUseCase(
 		IPartyBookingRepository partyBookingRepository,
 		IOperationLogRepository operationLogRepository,
 		IUtcClock clock,
+		ReserveBookingInventoryUseCase reserveBookingInventoryUseCase,
 		ILogger<ConfirmPartyBookingUseCase> logger)
 	{
 		_partyBookingRepository = partyBookingRepository;
 		_operationLogRepository = operationLogRepository;
 		_clock = clock;
+		_reserveBookingInventoryUseCase = reserveBookingInventoryUseCase;
 		_logger = logger;
 	}
 
@@ -98,6 +102,10 @@ public sealed class ConfirmPartyBookingUseCase
 				bookedAtUtc,
 				ct);
 
+			var inventoryResult = await _reserveBookingInventoryUseCase.ExecuteAsync(
+				new ReserveBookingInventoryCommand(persisted.Id, command.Context),
+				ct);
+
 			await _operationLogRepository.AppendAsync(
 				SecurityAuditEventTypes.PartyBookingConfirmed,
 				persisted.Id.ToString(),
@@ -113,7 +121,9 @@ public sealed class ConfirmPartyBookingUseCase
 
 			return AppResult<ConfirmPartyBookingResultDto>.Success(
 				Map(persisted, bookedAtUtc),
-				PartyBookingConstants.BookingConfirmedMessage);
+				inventoryResult.IsSuccess
+					? PartyBookingConstants.BookingConfirmedMessage
+					: $"{PartyBookingConstants.BookingConfirmedMessage} {PartyBookingConstants.InventoryConstraintGuidanceMessage}");
 		}
 		catch (Exception ex)
 		{

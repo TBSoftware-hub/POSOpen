@@ -4,6 +4,7 @@ using Moq;
 using POSOpen.Application.Abstractions.Repositories;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.UseCases.Party;
+using POSOpen.Application.UseCases.Inventory;
 using POSOpen.Domain.Entities;
 using POSOpen.Domain.Enums;
 using POSOpen.Shared.Operational;
@@ -75,6 +76,7 @@ public sealed class ConfirmPartyBookingUseCaseTests
 	{
 		var clock = new Mock<IUtcClock>();
 		clock.Setup(x => x.UtcNow).Returns(DateTime.UtcNow);
+		var inventoryRepo = new Mock<POSOpen.Application.Abstractions.Repositories.IInventoryReservationRepository>();
 
 		var operationLogRepository = new Mock<IOperationLogRepository>();
 		operationLogRepository
@@ -91,6 +93,10 @@ public sealed class ConfirmPartyBookingUseCaseTests
 			repository.Object,
 			operationLogRepository.Object,
 			clock.Object,
+			new ReserveBookingInventoryUseCase(
+				repository.Object,
+				inventoryRepo.Object,
+				new Mock<ILogger<ReserveBookingInventoryUseCase>>().Object),
 			new Mock<ILogger<ConfirmPartyBookingUseCase>>().Object);
 	}
 }

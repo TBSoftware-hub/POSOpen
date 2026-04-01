@@ -1,8 +1,11 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using POSOpen.Application.Abstractions.Security;
 using POSOpen.Application.Abstractions.Services;
+using POSOpen.Application.UseCases.Inventory;
 using POSOpen.Application.UseCases.Party;
+using POSOpen.Domain.Enums;
 
 namespace POSOpen.Features.Party.ViewModels;
 
@@ -15,6 +18,9 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 	private readonly AssignPartyRoomUseCase _assignPartyRoomUseCase;
 	private readonly GetBookingAddOnOptionsUseCase _getBookingAddOnOptionsUseCase;
 	private readonly UpdateBookingAddOnSelectionsUseCase _updateBookingAddOnSelectionsUseCase;
+	private readonly ReserveBookingInventoryUseCase _reserveBookingInventoryUseCase;
+	private readonly GetAllowedSubstitutesUseCase _getAllowedSubstitutesUseCase;
+	private readonly ICurrentSessionService _currentSessionService;
 	private readonly IOperationContextFactory _operationContextFactory;
 
 	public PartyBookingDetailViewModel(
@@ -25,6 +31,9 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 		AssignPartyRoomUseCase assignPartyRoomUseCase,
 		GetBookingAddOnOptionsUseCase getBookingAddOnOptionsUseCase,
 		UpdateBookingAddOnSelectionsUseCase updateBookingAddOnSelectionsUseCase,
+		ReserveBookingInventoryUseCase reserveBookingInventoryUseCase,
+		GetAllowedSubstitutesUseCase getAllowedSubstitutesUseCase,
+		ICurrentSessionService currentSessionService,
 		IOperationContextFactory operationContextFactory)
 	{
 		_getPartyBookingTimelineUseCase = getPartyBookingTimelineUseCase;
@@ -34,6 +43,9 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 		_assignPartyRoomUseCase = assignPartyRoomUseCase;
 		_getBookingAddOnOptionsUseCase = getBookingAddOnOptionsUseCase;
 		_updateBookingAddOnSelectionsUseCase = updateBookingAddOnSelectionsUseCase;
+		_reserveBookingInventoryUseCase = reserveBookingInventoryUseCase;
+		_getAllowedSubstitutesUseCase = getAllowedSubstitutesUseCase;
+		_currentSessionService = currentSessionService;
 		_operationContextFactory = operationContextFactory;
 	}
 
@@ -102,6 +114,17 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 	[ObservableProperty]
 	private string? _addOnStatusMessage;
 
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasInventoryConstraints))]
+	private ObservableCollection<string> _inventoryConstraintLines = [];
+
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasAllowedSubstitutes))]
+	private ObservableCollection<string> _allowedSubstituteLines = [];
+
+	[ObservableProperty]
+	private string _inventoryStatusMessage = PartyBookingConstants.InventoryReservationSatisfiedMessage;
+
 	public ObservableCollection<PartyBookingTimelineMilestoneDto> Milestones { get; } = [];
 
 	private DateTime _partyDateUtc;
@@ -113,6 +136,10 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 
 	public bool HasRisks => RiskIndicators.Count > 0;
 
+	public bool HasInventoryConstraints => InventoryConstraintLines.Count > 0;
+
+	public bool HasAllowedSubstitutes => AllowedSubstituteLines.Count > 0;
+
 	public bool CanSubmitDeposit => !DepositCommitted && !IsBusy;
 
 	public async Task LoadAsync(Guid bookingId)
@@ -121,6 +148,7 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 		await RefreshTimelineAsync();
 		await LoadRoomOptionsCommand.ExecuteAsync(null);
 		await LoadAddOnOptionsCommand.ExecuteAsync(null);
+		await RefreshInventoryStatusAsync();
 	}
 
 	[RelayCommand]
@@ -185,6 +213,11 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 
 			if (!result.IsSuccess)
 			{
+				if (result.ErrorCode == PartyBookingConstants.ErrorInventoryFinalizationBlocked)
+				{
+					await RefreshInventoryStatusAsync();
+				}
+
 				SetErrorState(result.UserMessage);
 				return;
 			}
@@ -330,6 +363,7 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 
 			ApplyAddOnPayload(result.Payload, []);
 			AddOnStatusMessage = result.UserMessage;
+			await RefreshInventoryStatusAsync();
 		}
 		finally
 		{
@@ -401,6 +435,7 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 			}
 
 			AddOnStatusMessage = result.UserMessage;
+			await RefreshInventoryStatusAsync();
 		}
 		finally
 		{
@@ -457,6 +492,38 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 			selected
 				.Where(option => option.IsAtRisk && !string.IsNullOrWhiteSpace(option.RiskSeverity) && !string.IsNullOrWhiteSpace(option.RiskReason))
 				.Select(option => new BookingRiskIndicatorDto(option.OptionId, option.RiskSeverity!, option.RiskReason!)));
+	}
+
+	private async Task RefreshInventoryStatusAsync()
+	{
+		if (BookingId == Guid.Empty)
+		{
+			return;
+		}
+
+		var constraints = await _reserveBookingInventoryUseCase.EvaluateConstraintsAsync(BookingId);
+		InventoryConstraintLines = new ObservableCollection<string>(
+			constraints.Select(x => $"{x.OptionId}: required {x.RequiredQuantity}, reserved {x.ReservedQuantity}, short {x.DeficitQuantity}"));
+
+		if (constraints.Count == 0)
+		{
+			AllowedSubstituteLines.Clear();
+			InventoryStatusMessage = PartyBookingConstants.InventoryReservationSatisfiedMessage;
+			return;
+		}
+
+		var role = _currentSessionService.GetCurrent()?.Role ?? StaffRole.Manager;
+		var substitutes = await _getAllowedSubstitutesUseCase.ExecuteAsync(
+			new GetAllowedSubstitutesQuery(
+				BookingId,
+				role,
+				constraints.Select(x => x.OptionId).ToArray()));
+
+		AllowedSubstituteLines = new ObservableCollection<string>(
+			(substitutes.Payload ?? [])
+				.Select(x => $"{x.SourceOptionId} -> {x.DisplayName}"));
+
+		InventoryStatusMessage = PartyBookingConstants.InventoryConstraintGuidanceMessage;
 	}
 
 	private void SetBusyState()

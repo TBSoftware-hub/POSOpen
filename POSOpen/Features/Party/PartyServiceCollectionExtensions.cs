@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using POSOpen.Application.UseCases.Inventory;
 using POSOpen.Application.UseCases.Party;
 using POSOpen.Features.Party.ViewModels;
 using POSOpen.Features.Party.Views;
@@ -19,6 +20,9 @@ public static class PartyServiceCollectionExtensions
 		services.AddTransient<AssignPartyRoomUseCase>();
 		services.AddTransient<GetBookingAddOnOptionsUseCase>();
 		services.AddTransient<UpdateBookingAddOnSelectionsUseCase>();
+		services.AddTransient<ReserveBookingInventoryUseCase>();
+		services.AddTransient<ReleaseBookingInventoryUseCase>();
+		services.AddTransient<GetAllowedSubstitutesUseCase>();
 		services.AddTransient<PartyBookingWizardViewModel>();
 		services.AddTransient<PartyBookingDetailViewModel>();
 		services.AddTransient<PartyBookingWizardPage>();

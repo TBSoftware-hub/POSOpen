@@ -24,6 +24,8 @@ public sealed class PartyBooking
 	public DateTime? RoomAssignedAtUtc { get; set; }
 	public Guid? RoomAssignmentOperationId { get; set; }
 	public Guid? LastAddOnUpdateOperationId { get; set; }
+	public Guid? LastInventoryReserveOperationId { get; set; }
+	public Guid? LastInventoryReleaseOperationId { get; set; }
 	public ICollection<PartyBookingAddOnSelection> AddOnSelections { get; set; } = [];
 
 	public static PartyBooking CreateDraft(
@@ -81,6 +83,22 @@ public sealed class PartyBooking
 	public void UpdateAddOnSelections(Guid operationId, Guid correlationId, DateTime updatedAtUtc)
 	{
 		LastAddOnUpdateOperationId = operationId;
+		OperationId = operationId;
+		CorrelationId = correlationId;
+		UpdatedAtUtc = updatedAtUtc;
+	}
+
+	public void UpdateInventoryReservationOperation(Guid operationId, Guid correlationId, DateTime updatedAtUtc)
+	{
+		LastInventoryReserveOperationId = operationId;
+		OperationId = operationId;
+		CorrelationId = correlationId;
+		UpdatedAtUtc = updatedAtUtc;
+	}
+
+	public void UpdateInventoryReleaseOperation(Guid operationId, Guid correlationId, DateTime updatedAtUtc)
+	{
+		LastInventoryReleaseOperationId = operationId;
 		OperationId = operationId;
 		CorrelationId = correlationId;
 		UpdatedAtUtc = updatedAtUtc;

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using POSOpen.Application.Abstractions.Repositories;
 using POSOpen.Application.Abstractions.Services;
+using POSOpen.Application.UseCases.Inventory;
 using POSOpen.Application.UseCases.Party;
 using POSOpen.Domain.Entities;
 using POSOpen.Domain.Enums;
@@ -20,8 +21,19 @@ public sealed class UpdateBookingAddOnSelectionsUseCaseTests
 		IUtcClock? utcClock = null)
 	{
 		var clock = utcClock ?? Mock.Of<IUtcClock>(x => x.UtcNow == TestDateUtc);
+		var inventoryRepository = new Mock<POSOpen.Application.Abstractions.Repositories.IInventoryReservationRepository>();
+		inventoryRepository.Setup(x => x.GetActiveReservedTotalsByOptionAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(new Dictionary<string, int>());
+		inventoryRepository.Setup(x => x.PersistReservationPlanAsync(It.IsAny<Guid>(), It.IsAny<IReadOnlyDictionary<string, int>>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(Array.Empty<POSOpen.Domain.Entities.InventoryReservation>());
+		inventoryRepository.Setup(x => x.ReleaseByTriggerAsync(It.IsAny<Guid>(), It.IsAny<InventoryReleaseTrigger>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<IReadOnlyDictionary<string, int>>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(new InventoryReleasePersistenceResult(0, []));
+		inventoryRepository.Setup(x => x.ListActiveByBookingAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync(Array.Empty<POSOpen.Domain.Entities.InventoryReservation>());
+
+		var reserve = new ReserveBookingInventoryUseCase(repository, inventoryRepository.Object, NullLogger<ReserveBookingInventoryUseCase>.Instance);
+		var release = new ReleaseBookingInventoryUseCase(repository, inventoryRepository.Object, reserve, NullLogger<ReleaseBookingInventoryUseCase>.Instance);
 		var timeline = new GetPartyBookingTimelineUseCase(repository, clock, NullLogger<GetPartyBookingTimelineUseCase>.Instance);
-		return new UpdateBookingAddOnSelectionsUseCase(repository, timeline, NullLogger<UpdateBookingAddOnSelectionsUseCase>.Instance);
+		return new UpdateBookingAddOnSelectionsUseCase(repository, release, reserve, timeline, NullLogger<UpdateBookingAddOnSelectionsUseCase>.Instance);
 	}
 
 	private static PartyBooking CreateBooking(Guid? lastOperationId = null, PartyBookingStatus status = PartyBookingStatus.Booked) =>
@@ -101,7 +113,7 @@ public sealed class UpdateBookingAddOnSelectionsUseCaseTests
 	public async Task ExecuteAsync_TimelineFailure_ReturnsSuccessWithEmptyMilestones()
 	{
 		var operationId = Guid.NewGuid();
-		var booking = CreateBooking();
+		var booking = CreateBooking(status: PartyBookingStatus.Draft);
 		var refreshed = CreateBooking(operationId, PartyBookingStatus.Draft);
 		refreshed.AddOnSelections =
 		[
