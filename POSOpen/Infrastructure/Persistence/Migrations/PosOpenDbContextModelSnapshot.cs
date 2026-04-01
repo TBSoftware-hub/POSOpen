@@ -493,6 +493,10 @@ namespace POSOpen.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("room_assignment_operation_id");
 
+                    b.Property<Guid?>("LastAddOnUpdateOperationId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("last_add_on_update_operation_id");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OperationId")
@@ -520,6 +524,50 @@ b.HasIndex("AssignedRoomId", "PartyDateUtc", "SlotId")
 						.HasFilter("assigned_room_id IS NOT NULL AND status <> 2");
 
                     b.ToTable("party_bookings", (string)null);
+                });
+
+            modelBuilder.Entity("POSOpen.Domain.Entities.PartyBookingAddOnSelection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("booking_id");
+
+                    b.Property<int>("AddOnType")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("add_on_type");
+
+                    b.Property<string>("OptionId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("option_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("SelectedAtUtc")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("selected_at_utc");
+
+                    b.Property<Guid>("SelectionOperationId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("selection_operation_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId")
+                        .HasDatabaseName("ix_party_booking_add_on_sel_booking_id");
+
+                    b.HasIndex("SelectionOperationId")
+                        .HasDatabaseName("ix_party_booking_add_on_sel_operation_id");
+
+                    b.ToTable("party_booking_add_on_selections", (string)null);
                 });
 
             modelBuilder.Entity("POSOpen.Domain.Entities.ReceiptMetadata", b =>
@@ -809,9 +857,25 @@ b.HasIndex("AssignedRoomId", "PartyDateUtc", "SlotId")
                             .IsRequired();
                     });
 
+                modelBuilder.Entity("POSOpen.Domain.Entities.PartyBookingAddOnSelection", b =>
+                    {
+                        b.HasOne("POSOpen.Domain.Entities.PartyBooking", "Booking")
+                            .WithMany("AddOnSelections")
+                            .HasForeignKey("BookingId")
+                            .OnDelete(DeleteBehavior.Cascade)
+                            .IsRequired();
+
+                        b.Navigation("Booking");
+                    });
+
                 modelBuilder.Entity("POSOpen.Domain.Entities.CartSession", b =>
                     {
                         b.Navigation("LineItems");
+                    });
+
+                modelBuilder.Entity("POSOpen.Domain.Entities.PartyBooking", b =>
+                    {
+                        b.Navigation("AddOnSelections");
                     });
         }
     }

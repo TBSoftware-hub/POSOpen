@@ -17,6 +17,8 @@ public static class PartyServiceCollectionExtensions
 		services.AddTransient<MarkPartyBookingCompletedUseCase>();
 		services.AddTransient<GetRoomOptionsUseCase>();
 		services.AddTransient<AssignPartyRoomUseCase>();
+		services.AddTransient<GetBookingAddOnOptionsUseCase>();
+		services.AddTransient<UpdateBookingAddOnSelectionsUseCase>();
 		services.AddTransient<PartyBookingWizardViewModel>();
 		services.AddTransient<PartyBookingDetailViewModel>();
 		services.AddTransient<PartyBookingWizardPage>();

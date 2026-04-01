@@ -68,8 +68,8 @@ development_status:
   epic-4: in-progress
   4-1-implement-3-step-party-booking-flow: done
   4-2-capture-deposits-and-build-party-timeline: done
-  4-3-manage-room-assignment-and-conflict-resolution: review
-  4-4-manage-catering-decor-options-with-risk-indicators: backlog
+  4-3-manage-room-assignment-and-conflict-resolution: done
+  4-4-manage-catering-decor-options-with-risk-indicators: review
   4-5-reserve-and-release-inventory-by-booking-policy: backlog
   4-6-manager-substitution-policy-management: backlog
   epic-4-retrospective: optional

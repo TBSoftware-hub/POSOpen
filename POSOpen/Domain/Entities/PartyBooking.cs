@@ -23,6 +23,8 @@ public sealed class PartyBooking
 	public string? AssignedRoomId { get; set; }
 	public DateTime? RoomAssignedAtUtc { get; set; }
 	public Guid? RoomAssignmentOperationId { get; set; }
+	public Guid? LastAddOnUpdateOperationId { get; set; }
+	public ICollection<PartyBookingAddOnSelection> AddOnSelections { get; set; } = [];
 
 	public static PartyBooking CreateDraft(
 		Guid id,
@@ -74,5 +76,13 @@ public sealed class PartyBooking
 		OperationId = operationId;
 		CorrelationId = correlationId;
 		UpdatedAtUtc = assignedAtUtc;
+	}
+
+	public void UpdateAddOnSelections(Guid operationId, Guid correlationId, DateTime updatedAtUtc)
+	{
+		LastAddOnUpdateOperationId = operationId;
+		OperationId = operationId;
+		CorrelationId = correlationId;
+		UpdatedAtUtc = updatedAtUtc;
 	}
 }

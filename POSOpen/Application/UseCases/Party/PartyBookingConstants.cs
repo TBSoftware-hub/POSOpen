@@ -61,4 +61,87 @@ public static class PartyBookingConstants
 	public const string WizardSelectTimeMessage = "Choose an available time slot.";
 	public const string WizardSelectPackageMessage = "Choose a package.";
 	public const string AvailabilityLoadedMessage = "Availability loaded.";
+
+	public static readonly string[] KnownCateringOptionIds =
+	[
+		"pizza-basic",
+		"pizza-deluxe",
+		"fruit-platter",
+		"veggie-platter",
+		"cake-standard",
+		"cake-custom",
+	];
+
+	public static readonly string[] KnownDecorOptionIds =
+	[
+		"balloon-basic",
+		"balloon-premium",
+		"table-standard",
+		"table-themed",
+		"banner-standard",
+		"banner-custom",
+	];
+
+	public static readonly IReadOnlyDictionary<string, long> AddOnOptionPriceCents = new Dictionary<string, long>
+	{
+		["pizza-basic"] = 2500,
+		["pizza-deluxe"] = 4500,
+		["fruit-platter"] = 1800,
+		["veggie-platter"] = 1600,
+		["cake-standard"] = 3500,
+		["cake-custom"] = 6500,
+		["balloon-basic"] = 800,
+		["balloon-premium"] = 1500,
+		["table-standard"] = 0,
+		["table-themed"] = 1200,
+		["banner-standard"] = 0,
+		["banner-custom"] = 900,
+	};
+
+	public static readonly IReadOnlyDictionary<string, string> AddOnOptionDisplayNames = new Dictionary<string, string>
+	{
+		["pizza-basic"] = "Pizza (Basic)",
+		["pizza-deluxe"] = "Pizza (Deluxe)",
+		["fruit-platter"] = "Fruit Platter",
+		["veggie-platter"] = "Veggie Platter",
+		["cake-standard"] = "Cake (Standard)",
+		["cake-custom"] = "Cake (Custom)",
+		["balloon-basic"] = "Balloons (Basic)",
+		["balloon-premium"] = "Balloons (Premium)",
+		["table-standard"] = "Table Setup (Standard)",
+		["table-themed"] = "Table Setup (Themed)",
+		["banner-standard"] = "Banner (Standard)",
+		["banner-custom"] = "Banner (Custom)",
+	};
+
+	public static readonly IReadOnlySet<string> KnownAtRiskOptionIds = new HashSet<string>
+	{
+		"cake-custom",
+		"balloon-premium",
+		"banner-custom",
+		"table-themed",
+	};
+
+	public const string RiskSeverityLow = "Low";
+	public const string RiskSeverityHigh = "High";
+
+	public const string RiskReasonInventoryShortfall = "Inventory shortfall risk for this option near event date.";
+	public const string RiskReasonPolicyConflict = "This option may conflict with booking policy rules.";
+
+	public static readonly IReadOnlyDictionary<string, (string Severity, string Reason)> AtRiskOptionMeta =
+		new Dictionary<string, (string, string)>
+		{
+			["cake-custom"] = (RiskSeverityHigh, RiskReasonInventoryShortfall),
+			["balloon-premium"] = (RiskSeverityHigh, RiskReasonInventoryShortfall),
+			["banner-custom"] = (RiskSeverityLow, RiskReasonPolicyConflict),
+			["table-themed"] = (RiskSeverityLow, RiskReasonPolicyConflict),
+		};
+
+	public const string ErrorAddOnUpdateFailed = "BOOKING_ADDON_UPDATE_FAILED";
+	public const string ErrorAddOnOptionInvalid = "BOOKING_ADDON_OPTION_INVALID";
+	public const string SafeAddOnUpdateFailedMessage = "Failed to save add-on selections. Please try again.";
+	public const string SafeAddOnOptionInvalidMessage = "One or more selected options are not valid.";
+	public const string AddOnSelectionsUpdatedMessage = "Catering and decor options saved.";
+	public const string AddOnSelectionsAlreadySavedMessage = "Add-on selections were already saved for this operation.";
+	public const string AddOnOptionsLoadedMessage = "Add-on options loaded.";
 }
