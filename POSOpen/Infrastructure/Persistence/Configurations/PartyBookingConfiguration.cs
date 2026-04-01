@@ -23,12 +23,26 @@ public sealed class PartyBookingConfiguration : IEntityTypeConfiguration<PartyBo
 		builder.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").HasConversion(UtcDateTimeConverter.Instance).IsRequired();
 		builder.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc").HasConversion(UtcDateTimeConverter.Instance).IsRequired();
 		builder.Property(x => x.BookedAtUtc).HasColumnName("booked_at_utc").HasConversion(NullableUtcDateTimeConverter.Instance);
+		builder.Property(x => x.DepositAmountCents).HasColumnName("deposit_amount_cents");
+		builder.Property(x => x.DepositCurrency).HasColumnName("deposit_currency").HasMaxLength(3);
+		builder.Property(x => x.DepositCommittedAtUtc).HasColumnName("deposit_committed_at_utc").HasConversion(NullableUtcDateTimeConverter.Instance);
+		builder.Property(x => x.DepositCommitmentStatus).HasColumnName("deposit_commitment_status").HasConversion<int>().IsRequired();
+		builder.Property(x => x.DepositCommitmentOperationId).HasColumnName("deposit_commitment_operation_id");
+		builder.Property(x => x.CompletedAtUtc).HasColumnName("completed_at_utc").HasConversion(NullableUtcDateTimeConverter.Instance);
 
 		builder.HasIndex(x => x.OperationId)
 			.HasDatabaseName("ix_party_bookings_operation_id");
 
+		builder.HasIndex(x => x.DepositCommitmentOperationId)
+			.HasDatabaseName("ux_party_bookings_deposit_commitment_operation_id")
+			.IsUnique()
+			.HasFilter("deposit_commitment_operation_id IS NOT NULL");
+
 		builder.HasIndex(x => new { x.PartyDateUtc, x.SlotId, x.Status })
 			.HasDatabaseName("ix_party_bookings_party_date_slot_status");
+
+		builder.HasIndex(x => new { x.Status, x.PartyDateUtc })
+			.HasDatabaseName("ix_party_bookings_status_party_date");
 
 		builder.HasIndex(x => new { x.PartyDateUtc, x.SlotId })
 			.IsUnique()

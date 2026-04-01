@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:partyViewModels="clr-namespace:POSOpen.Features.Party.ViewModels"
+             xmlns:partyUseCases="clr-namespace:POSOpen.Application.UseCases.Party"
+             x:Class="POSOpen.Features.Party.Views.PartyBookingDetailPage"
+             x:DataType="partyViewModels:PartyBookingDetailViewModel"
+             Title="Party Booking Detail">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*"
+          Padding="16"
+          RowSpacing="12">
+
+        <VerticalStackLayout Grid.Row="0" Spacing="8">
+            <Label Text="Booking Timeline"
+                   FontAttributes="Bold"
+                   FontSize="18" />
+            <Label Text="{Binding ProcessingState, StringFormat='State: {0}'}"
+                   FontSize="12"
+                   TextColor="#64748B" />
+
+            <Border Background="#FEF2F2"
+                    IsVisible="{Binding HasError}"
+                    Padding="10">
+                <Label Text="{Binding ErrorMessage}" TextColor="#DC2626" />
+            </Border>
+
+            <Border Background="#EFF6FF"
+                    Padding="10">
+                <Label Text="{Binding StatusMessage}" />
+            </Border>
+        </VerticalStackLayout>
+
+        <Border Grid.Row="1"
+                Background="#F8FAFC"
+                Padding="12">
+            <Grid ColumnDefinitions="2*,*,*"
+                  RowDefinitions="Auto,Auto"
+                  ColumnSpacing="8"
+                  RowSpacing="8">
+                <Entry Grid.Row="0"
+                       Grid.Column="0"
+                       Placeholder="Deposit amount (cents)"
+                       Keyboard="Numeric"
+                       Text="{Binding DepositAmountInput}" />
+                <Entry Grid.Row="0"
+                       Grid.Column="1"
+                       Placeholder="Currency"
+                       MaxLength="3"
+                       Text="{Binding DepositCurrency}" />
+                <Button Grid.Row="0"
+                        Grid.Column="2"
+                        Text="Save Deposit"
+                        Command="{Binding SubmitDepositCommitmentCommand}"
+                        IsEnabled="{Binding CanSubmitDeposit}" />
+
+                <Button Grid.Row="1"
+                        Grid.Column="0"
+                        Text="Refresh Timeline"
+                        Command="{Binding RefreshTimelineCommand}" />
+                <Button Grid.Row="1"
+                        Grid.Column="1"
+                        Text="Mark Completed"
+                        Command="{Binding MarkCompletedCommand}" />
+                <ActivityIndicator Grid.Row="1"
+                                   Grid.Column="2"
+                                   IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+            </Grid>
+        </Border>
+
+        <Label Grid.Row="2"
+               Text="Milestones and next actions"
+               FontAttributes="Bold" />
+
+        <CollectionView Grid.Row="3" ItemsSource="{Binding Milestones}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="partyUseCases:PartyBookingTimelineMilestoneDto">
+                    <Border StrokeThickness="1"
+                            Stroke="#E2E8F0"
+                            Background="#FFFFFF"
+                            Padding="10"
+                            Margin="0,0,0,8">
+                        <Grid ColumnDefinitions="*,Auto"
+                              RowDefinitions="Auto,Auto,Auto"
+                              RowSpacing="4">
+                            <Label Grid.Row="0"
+                                   Grid.Column="0"
+                                   Text="{Binding MilestoneKey}"
+                                   FontAttributes="Bold" />
+                            <Label Grid.Row="0"
+                                   Grid.Column="1"
+                                   Text="{Binding Status}" />
+
+                            <Label Grid.Row="1"
+                                   Grid.ColumnSpan="2"
+                                   Text="{Binding NextActionLabel}" />
+
+                            <Label Grid.Row="2"
+                                   Grid.Column="0"
+                                   Text="{Binding EffectiveAtUtc, StringFormat='Effective: {0:yyyy-MM-dd HH:mm} UTC'}"
+                                   FontSize="12"
+                                   TextColor="#64748B" />
+                            <Label Grid.Row="2"
+                                   Grid.Column="1"
+                                   Text="{Binding RailLabel}"
+                                   FontSize="12"
+                                   TextColor="#0F766E" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

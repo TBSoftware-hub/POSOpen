@@ -15,4 +15,20 @@ public interface IPartyBookingRepository
 	Task<PartyBooking> UpsertDraftAsync(PartyBooking booking, CancellationToken ct = default);
 
 	Task<PartyBooking> ConfirmAsync(PartyBooking booking, Guid operationId, Guid correlationId, DateTime bookedAtUtc, CancellationToken ct = default);
+
+	Task<PartyBooking> RecordDepositCommitmentAsync(
+		PartyBooking booking,
+		long depositAmountCents,
+		string depositCurrency,
+		Guid operationId,
+		Guid correlationId,
+		DateTime committedAtUtc,
+		CancellationToken ct = default);
+
+	Task<PartyBooking> MarkCompletedAsync(
+		PartyBooking booking,
+		Guid operationId,
+		Guid correlationId,
+		DateTime completedAtUtc,
+		CancellationToken ct = default);
 }

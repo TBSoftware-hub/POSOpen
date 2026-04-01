@@ -18,6 +18,8 @@ public sealed partial class PartyBookingWizardViewModel : ObservableObject
 
 	private Guid? _bookingId;
 
+	public Guid? BookingId => _bookingId;
+
 	public PartyBookingWizardViewModel(
 		GetBookingAvailabilityUseCase getBookingAvailabilityUseCase,
 		CreateDraftPartyBookingUseCase createDraftPartyBookingUseCase,
@@ -62,6 +64,9 @@ public sealed partial class PartyBookingWizardViewModel : ObservableObject
 	[ObservableProperty]
 	private bool _isBusy;
 
+	[ObservableProperty]
+	private bool _isBookingConfirmed;
+
 	public ObservableCollection<BookingSlotAvailabilityDto> AvailableSlots { get; } = [];
 
 	public ObservableCollection<string> AvailablePackages { get; } = [];
@@ -98,6 +103,8 @@ public sealed partial class PartyBookingWizardViewModel : ObservableObject
 		ErrorMessage = null;
 		StatusMessage = string.Empty;
 		CurrentStepIndex = 0;
+		IsBookingConfirmed = false;
+		_bookingId = null;
 
 		try
 		{
@@ -240,6 +247,7 @@ public sealed partial class PartyBookingWizardViewModel : ObservableObject
 				return;
 			}
 
+			IsBookingConfirmed = true;
 			SetSuccessState(result.UserMessage);
 		}
 		finally

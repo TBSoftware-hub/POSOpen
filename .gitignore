@@ -5,6 +5,8 @@
 # Test outputs
 TestResults/
 **/TestResults/
+test_output.txt
+test_results.txt
 
 # User-specific IDE files
 .vs/

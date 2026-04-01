@@ -124,6 +124,11 @@
                         IsVisible="{Binding IsReviewStep}"
                         Text="Confirm Booking"
                         Command="{Binding ConfirmCommand}" />
+                <Button Grid.Row="3"
+                        Margin="0,46,0,0"
+                        IsVisible="{Binding IsBookingConfirmed}"
+                        Text="Open Booking Detail"
+                        Clicked="OpenBookingDetailClicked" />
             </Grid>
         </Grid>
     </Grid>

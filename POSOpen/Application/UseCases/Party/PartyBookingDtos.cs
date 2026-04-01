@@ -27,3 +27,18 @@ public sealed record ConfirmPartyBookingResultDto(
 	DateTime BookedAtUtc,
 	Guid OperationId,
 	Guid CorrelationId);
+
+public sealed record RecordPartyDepositCommitmentResultDto(
+	Guid BookingId,
+	PartyDepositCommitmentStatus DepositCommitmentStatus,
+	long DepositAmountCents,
+	string DepositCurrency,
+	DateTime DepositCommittedAtUtc,
+	Guid OperationId,
+	Guid CorrelationId);
+
+public sealed record MarkPartyBookingCompletedResultDto(
+	Guid BookingId,
+	DateTime CompletedAtUtc,
+	Guid OperationId,
+	Guid CorrelationId);

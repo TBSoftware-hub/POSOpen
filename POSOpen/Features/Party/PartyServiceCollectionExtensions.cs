@@ -12,10 +12,16 @@ public static class PartyServiceCollectionExtensions
 		services.AddTransient<GetBookingAvailabilityUseCase>();
 		services.AddTransient<CreateDraftPartyBookingUseCase>();
 		services.AddTransient<ConfirmPartyBookingUseCase>();
+		services.AddTransient<RecordPartyDepositCommitmentUseCase>();
+		services.AddTransient<GetPartyBookingTimelineUseCase>();
+		services.AddTransient<MarkPartyBookingCompletedUseCase>();
 		services.AddTransient<PartyBookingWizardViewModel>();
+		services.AddTransient<PartyBookingDetailViewModel>();
 		services.AddTransient<PartyBookingWizardPage>();
+		services.AddTransient<PartyBookingDetailPage>();
 
 		Routing.RegisterRoute(PartyRoutes.PartyBookingWizard, typeof(PartyBookingWizardPage));
+		Routing.RegisterRoute(PartyRoutes.PartyBookingDetail, typeof(PartyBookingDetailPage));
 		return services;
 	}
 }
