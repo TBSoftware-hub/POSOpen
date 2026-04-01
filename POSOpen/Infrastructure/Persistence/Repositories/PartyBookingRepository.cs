@@ -139,4 +139,76 @@ var existing = await dbContext.Set<PartyBooking>().FirstAsync(x => x.Id == booki
 		throw;
 	}
 }
+
+public async Task<PartyBooking> RecordDepositCommitmentAsync(
+	PartyBooking booking,
+	long depositAmountCents,
+	string depositCurrency,
+	Guid operationId,
+	Guid correlationId,
+	DateTime committedAtUtc,
+	CancellationToken ct = default)
+{
+	await using var dbContext = await _dbContextFactory.CreateDbContextAsync(ct);
+	await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+	try
+	{
+		var existing = await dbContext.Set<PartyBooking>().FirstAsync(x => x.Id == booking.Id, ct);
+		if (existing.DepositCommitmentOperationId == operationId)
+		{
+			await transaction.CommitAsync(ct);
+			return existing;
+		}
+
+		existing.RecordDepositCommitment(
+			depositAmountCents,
+			depositCurrency,
+			operationId,
+			correlationId,
+			DateTime.SpecifyKind(committedAtUtc, DateTimeKind.Utc));
+
+		await dbContext.SaveChangesAsync(ct);
+		await transaction.CommitAsync(ct);
+		return existing;
+	}
+	catch
+	{
+		await transaction.RollbackAsync(ct);
+		throw;
+	}
+}
+
+public async Task<PartyBooking> MarkCompletedAsync(
+	PartyBooking booking,
+	Guid operationId,
+	Guid correlationId,
+	DateTime completedAtUtc,
+	CancellationToken ct = default)
+{
+	await using var dbContext = await _dbContextFactory.CreateDbContextAsync(ct);
+	await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+	try
+	{
+		var existing = await dbContext.Set<PartyBooking>().FirstAsync(x => x.Id == booking.Id, ct);
+		if (existing.CompletedAtUtc.HasValue)
+		{
+			await transaction.CommitAsync(ct);
+			return existing;
+		}
+
+		existing.MarkCompleted(
+			operationId,
+			correlationId,
+			DateTime.SpecifyKind(completedAtUtc, DateTimeKind.Utc));
+
+		await dbContext.SaveChangesAsync(ct);
+		await transaction.CommitAsync(ct);
+		return existing;
+	}
+	catch
+	{
+		await transaction.RollbackAsync(ct);
+		throw;
+	}
+}
 }

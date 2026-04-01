@@ -14,6 +14,12 @@ public sealed class PartyBooking
 	public DateTime CreatedAtUtc { get; set; }
 	public DateTime UpdatedAtUtc { get; set; }
 	public DateTime? BookedAtUtc { get; set; }
+	public long? DepositAmountCents { get; set; }
+	public string? DepositCurrency { get; set; }
+	public DateTime? DepositCommittedAtUtc { get; set; }
+	public PartyDepositCommitmentStatus DepositCommitmentStatus { get; set; }
+	public Guid? DepositCommitmentOperationId { get; set; }
+	public DateTime? CompletedAtUtc { get; set; }
 
 	public static PartyBooking CreateDraft(
 		Guid id,
@@ -34,5 +40,26 @@ public sealed class PartyBooking
 			CorrelationId = correlationId,
 			CreatedAtUtc = createdAtUtc,
 			UpdatedAtUtc = createdAtUtc,
+			DepositCommitmentStatus = PartyDepositCommitmentStatus.None,
 		};
+
+	public void RecordDepositCommitment(long depositAmountCents, string depositCurrency, Guid operationId, Guid correlationId, DateTime committedAtUtc)
+	{
+		DepositAmountCents = depositAmountCents;
+		DepositCurrency = depositCurrency;
+		DepositCommittedAtUtc = committedAtUtc;
+		DepositCommitmentStatus = PartyDepositCommitmentStatus.Committed;
+		DepositCommitmentOperationId = operationId;
+		OperationId = operationId;
+		CorrelationId = correlationId;
+		UpdatedAtUtc = committedAtUtc;
+	}
+
+	public void MarkCompleted(Guid operationId, Guid correlationId, DateTime completedAtUtc)
+	{
+		CompletedAtUtc = completedAtUtc;
+		OperationId = operationId;
+		CorrelationId = correlationId;
+		UpdatedAtUtc = completedAtUtc;
+	}
 }
