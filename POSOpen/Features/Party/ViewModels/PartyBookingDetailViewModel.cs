@@ -79,6 +79,9 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 
 	public ObservableCollection<PartyBookingTimelineMilestoneDto> Milestones { get; } = [];
 
+	private DateTime _partyDateUtc;
+	private string _partySlotId = string.Empty;
+
 	public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
 
 	public bool HasConflict => !string.IsNullOrWhiteSpace(ConflictMessage);
@@ -116,6 +119,8 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 				Milestones.Add(milestone);
 			}
 
+			_partyDateUtc = timelineResult.Payload.PartyDateUtc;
+			_partySlotId = timelineResult.Payload.SlotId;
 			DepositCommitted = timelineResult.Payload.IsDepositCommitted;
 			SetSuccessState(timelineResult.UserMessage);
 		}
@@ -205,7 +210,7 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 
 		try
 		{
-			var query = new GetRoomOptionsQuery(DateTime.UtcNow, string.Empty);
+			var query = new GetRoomOptionsQuery(_partyDateUtc, _partySlotId);
 			var result = await _getRoomOptionsUseCase.ExecuteAsync(query);
 			RoomOptions.Clear();
 			ConflictMessage = null;
@@ -219,9 +224,10 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 				}
 			}
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
-			// Non-critical — room options remain empty
+			System.Diagnostics.Trace.TraceError(
+				$"Failed to load room options for booking '{BookingId}': {ex}");
 		}
 	}
 

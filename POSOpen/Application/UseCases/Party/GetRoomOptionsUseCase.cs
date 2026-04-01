@@ -24,7 +24,7 @@ public sealed class GetRoomOptionsUseCase
 
 			foreach (var roomId in PartyBookingConstants.KnownRoomIds)
 			{
-				var unavailable = await _partyBookingRepository.IsRoomUnavailableAsync(targetDateUtc, roomId, null, ct);
+				var unavailable = await _partyBookingRepository.IsRoomUnavailableAsync(targetDateUtc, query.SlotId, roomId, null, ct);
 				rooms.Add(new RoomOptionItemDto(
 					roomId,
 					roomId.Replace("-", " ").ToUpperInvariant(),

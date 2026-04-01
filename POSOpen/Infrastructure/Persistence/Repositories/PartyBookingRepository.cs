@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using POSOpen.Application.Abstractions.Repositories;
+using POSOpen.Application.Exceptions;
 using POSOpen.Domain.Entities;
 using POSOpen.Domain.Enums;
 
@@ -218,7 +219,7 @@ public async Task<PartyBooking> MarkCompletedAsync(
 	}
 }
 
-public async Task<bool> IsRoomUnavailableAsync(DateTime partyDateUtc, string roomId, Guid? excludingBookingId = null, CancellationToken ct = default)
+public async Task<bool> IsRoomUnavailableAsync(DateTime partyDateUtc, string slotId, string roomId, Guid? excludingBookingId = null, CancellationToken ct = default)
 {
 	var dateUtc = DateTime.SpecifyKind(partyDateUtc, DateTimeKind.Utc).Date;
 	var nextDateUtc = dateUtc.AddDays(1);
@@ -227,6 +228,7 @@ public async Task<bool> IsRoomUnavailableAsync(DateTime partyDateUtc, string roo
 	var query = dbContext.Set<PartyBooking>()
 		.AsNoTracking()
 		.Where(x => x.PartyDateUtc >= dateUtc && x.PartyDateUtc < nextDateUtc)
+		.Where(x => x.SlotId == slotId)
 		.Where(x => x.AssignedRoomId == roomId)
 		.Where(x => x.Status != PartyBookingStatus.Cancelled);
 
@@ -257,15 +259,15 @@ public async Task<PartyBooking> AssignRoomAsync(PartyBooking booking, string roo
 		var roomConflict = await dbContext.Set<PartyBooking>()
 			.Where(x => x.PartyDateUtc >= dateUtc && x.PartyDateUtc < nextDateUtc
 				&& x.AssignedRoomId == roomId
+				&& x.SlotId == existing.SlotId
 				&& x.Status != PartyBookingStatus.Cancelled
 				&& x.Id != existing.Id)
 			.AnyAsync(ct);
 
 		if (roomConflict)
 		{
-			throw new Microsoft.EntityFrameworkCore.DbUpdateException(
-				"ROOM conflict: that room is already assigned for this date.",
-				new InvalidOperationException("Room conflict detected within transaction."));
+			throw new RoomConflictException(
+				$"Room '{roomId}' is already assigned for slot '{existing.SlotId}' on this date.");
 		}
 
 		existing.AssignRoom(
@@ -295,7 +297,7 @@ public async Task<IReadOnlyList<string>> ListAlternativeRoomsAsync(DateTime part
 			continue;
 		}
 
-		var unavailable = await IsRoomUnavailableAsync(partyDateUtc, roomId, null, ct);
+		var unavailable = await IsRoomUnavailableAsync(partyDateUtc, slotId, roomId, null, ct);
 		if (!unavailable)
 		{
 			alternatives.Add(roomId);
@@ -315,7 +317,7 @@ public async Task<IReadOnlyList<string>> ListAlternativeSlotsAsync(DateTime part
 			continue;
 		}
 
-		var unavailable = await IsSlotUnavailableAsync(partyDateUtc, slotId, null, ct);
+		var unavailable = await IsRoomUnavailableAsync(partyDateUtc, slotId, roomId, null, ct);
 		if (!unavailable)
 		{
 			alternatives.Add(slotId);

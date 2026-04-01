@@ -51,7 +51,9 @@ public sealed class GetPartyBookingTimelineUseCase
 				booking.Status,
 				booking.DepositCommitmentStatus == PartyDepositCommitmentStatus.Committed,
 				nowUtc,
-				milestones);
+				milestones,
+				booking.PartyDateUtc,
+				booking.SlotId);
 
 			return AppResult<PartyBookingTimelineDto>.Success(
 				timeline,

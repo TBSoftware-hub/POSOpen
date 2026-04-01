@@ -15,7 +15,7 @@ public sealed class GetRoomOptionsUseCaseTests
 	public async Task ExecuteAsync_WhenAllRoomsFree_ReturnsAllSelectable()
 	{
 		var repo = new Mock<IPartyBookingRepository>();
-		repo.Setup(x => x.IsRoomUnavailableAsync(It.IsAny<DateTime>(), It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
+		repo.Setup(x => x.IsRoomUnavailableAsync(It.IsAny<DateTime>(), It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(false);
 		var sut = CreateSut(repo.Object);
 		var query = new GetRoomOptionsQuery(new DateTime(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc), "10:00");
@@ -33,9 +33,9 @@ public sealed class GetRoomOptionsUseCaseTests
 	{
 		var occupiedRoom = PartyBookingConstants.KnownRoomIds[1]; // "room-b"
 		var repo = new Mock<IPartyBookingRepository>();
-		repo.Setup(x => x.IsRoomUnavailableAsync(It.IsAny<DateTime>(), It.Is<string>(s => s == occupiedRoom), null, It.IsAny<CancellationToken>()))
+		repo.Setup(x => x.IsRoomUnavailableAsync(It.IsAny<DateTime>(), It.IsAny<string>(), It.Is<string>(s => s == occupiedRoom), null, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(true);
-		repo.Setup(x => x.IsRoomUnavailableAsync(It.IsAny<DateTime>(), It.Is<string>(s => s != occupiedRoom), null, It.IsAny<CancellationToken>()))
+		repo.Setup(x => x.IsRoomUnavailableAsync(It.IsAny<DateTime>(), It.IsAny<string>(), It.Is<string>(s => s != occupiedRoom), null, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(false);
 		var sut = CreateSut(repo.Object);
 		var query = new GetRoomOptionsQuery(new DateTime(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc), "10:00");
@@ -53,7 +53,7 @@ public sealed class GetRoomOptionsUseCaseTests
 	public async Task ExecuteAsync_ReturnsRoomsInDeterministicOrderMatchingKnownRoomIds()
 	{
 		var repo = new Mock<IPartyBookingRepository>();
-		repo.Setup(x => x.IsRoomUnavailableAsync(It.IsAny<DateTime>(), It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
+		repo.Setup(x => x.IsRoomUnavailableAsync(It.IsAny<DateTime>(), It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(false);
 		var sut = CreateSut(repo.Object);
 		var query = new GetRoomOptionsQuery(new DateTime(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc), "10:00");

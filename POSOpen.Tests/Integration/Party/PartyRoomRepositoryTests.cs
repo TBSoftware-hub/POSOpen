@@ -2,6 +2,7 @@ using System.Diagnostics;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using POSOpen.Application.Exceptions;
 using POSOpen.Application.UseCases.Party;
 using POSOpen.Domain.Entities;
 using POSOpen.Domain.Enums;
@@ -47,7 +48,7 @@ public sealed class PartyRoomRepositoryTests
 			await db.SaveChangesAsync();
 		}
 
-		var result = await fixture.Repository.IsRoomUnavailableAsync(TestDateUtc, "room-a");
+		var result = await fixture.Repository.IsRoomUnavailableAsync(TestDateUtc, "10:00", "room-a");
 
 		result.Should().BeTrue();
 	}
@@ -64,7 +65,7 @@ public sealed class PartyRoomRepositoryTests
 			await db.SaveChangesAsync();
 		}
 
-		var result = await fixture.Repository.IsRoomUnavailableAsync(TestDateUtc, "room-a");
+		var result = await fixture.Repository.IsRoomUnavailableAsync(TestDateUtc, "10:00", "room-a");
 
 		result.Should().BeFalse();
 	}
@@ -81,7 +82,7 @@ public sealed class PartyRoomRepositoryTests
 			await db.SaveChangesAsync();
 		}
 
-		var result = await fixture.Repository.IsRoomUnavailableAsync(TestDateUtc, "room-a", booking.Id);
+		var result = await fixture.Repository.IsRoomUnavailableAsync(TestDateUtc, "10:00", "room-a", booking.Id);
 
 		result.Should().BeFalse();
 	}
@@ -128,11 +129,11 @@ public sealed class PartyRoomRepositoryTests
 	}
 
 	[Fact]
-	public async Task AssignRoomAsync_ThrowsOnConflict_AndRollsBack()
+	public async Task AssignRoomAsync_AllowsSameRoomForDifferentSlots()
 	{
 		await using var fixture = await CreateFixtureAsync();
 
-		// Two bookings, both try to get room-a
+		// Two bookings on different slots can both use room-a (room is per-slot, not per-day)
 		var booking1 = MakeBooking(slotId: "10:00");
 		var booking2 = MakeBooking(slotId: "13:00");
 		await using (var db = await fixture.DbContextFactory.CreateDbContextAsync())
@@ -142,16 +143,12 @@ public sealed class PartyRoomRepositoryTests
 		}
 
 		// First assignment succeeds
-		await fixture.Repository.AssignRoomAsync(booking1, "room-a", Guid.NewGuid(), Guid.NewGuid(), TestDateUtc);
+		var result1 = await fixture.Repository.AssignRoomAsync(booking1, "room-a", Guid.NewGuid(), Guid.NewGuid(), TestDateUtc);
+		result1.AssignedRoomId.Should().Be("room-a");
 
-		// Second assignment to same room should throw
-		var act = async () => await fixture.Repository.AssignRoomAsync(booking2, "room-a", Guid.NewGuid(), Guid.NewGuid(), TestDateUtc);
-		await act.Should().ThrowAsync<DbUpdateException>().WithMessage("*ROOM*");
-
-		// booking2 should still have no room assigned
-		await using var verifyDb = await fixture.DbContextFactory.CreateDbContextAsync();
-		var persisted = await verifyDb.Set<PartyBooking>().FirstAsync(b => b.Id == booking2.Id);
-		persisted.AssignedRoomId.Should().BeNull();
+		// Second booking on a different slot should also get room-a without conflict
+		var result2 = await fixture.Repository.AssignRoomAsync(booking2, "room-a", Guid.NewGuid(), Guid.NewGuid(), TestDateUtc);
+		result2.AssignedRoomId.Should().Be("room-a");
 	}
 
 	[Fact]
@@ -207,7 +204,7 @@ public sealed class PartyRoomRepositoryTests
 		await Task.WhenAll(Enumerable.Range(0, 20).Select(async i =>
 		{
 			var sw = Stopwatch.StartNew();
-			await fixture.Repository.IsRoomUnavailableAsync(TestDateUtc, "room-a");
+			await fixture.Repository.IsRoomUnavailableAsync(TestDateUtc, "slot-0000", "room-a");
 			sw.Stop();
 			durations[i] = sw.ElapsedMilliseconds;
 		}));

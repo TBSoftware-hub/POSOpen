@@ -52,7 +52,9 @@ public sealed class PartyBookingConfiguration : IEntityTypeConfiguration<PartyBo
 			.HasDatabaseName("ux_party_bookings_active_slot")
 			.HasFilter($"status <> {(int)PartyBookingStatus.Cancelled}");
 
-		builder.HasIndex(x => new { x.AssignedRoomId, x.PartyDateUtc, x.Status })
-			.HasDatabaseName("idx_party_bookings_room_date_status");
+		builder.HasIndex(x => new { x.AssignedRoomId, x.PartyDateUtc, x.SlotId })
+			.IsUnique()
+			.HasDatabaseName("ux_party_bookings_room_date_slot")
+			.HasFilter($"assigned_room_id IS NOT NULL AND status <> {(int)PartyBookingStatus.Cancelled}");
 	}
 }

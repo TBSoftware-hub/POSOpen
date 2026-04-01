@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using POSOpen.Application.Abstractions.Repositories;
+using POSOpen.Application.Exceptions;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.UseCases.Party;
 using POSOpen.Domain.Entities;
@@ -112,7 +113,7 @@ public sealed class AssignPartyRoomUseCaseTests
 		var repo = new Mock<IPartyBookingRepository>();
 		repo.Setup(x => x.GetByIdAsync(TestBookingId, It.IsAny<CancellationToken>())).ReturnsAsync(booking);
 		repo.Setup(x => x.AssignRoomAsync(It.IsAny<PartyBooking>(), "room-a", It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
-			.ThrowsAsync(new DbUpdateException("ROOM conflict: that room is already assigned for this date.", new InvalidOperationException("Room conflict.")));
+			.ThrowsAsync(new RoomConflictException("Room 'room-a' is already assigned for slot on this date."));
 		repo.Setup(x => x.ListAlternativeRoomsAsync(It.IsAny<DateTime>(), It.IsAny<string>(), "room-a", It.IsAny<CancellationToken>()))
 			.ReturnsAsync(new[] { "room-b", "room-c" });
 		repo.Setup(x => x.ListAlternativeSlotsAsync(It.IsAny<DateTime>(), "room-a", It.IsAny<string>(), It.IsAny<CancellationToken>()))

@@ -33,15 +33,17 @@ namespace POSOpen.Infrastructure.Persistence.Migrations
 				nullable: true);
 
 			migrationBuilder.CreateIndex(
-				name: "idx_party_bookings_room_date_status",
+				name: "ux_party_bookings_room_date_slot",
 				table: "party_bookings",
-				columns: new[] { "assigned_room_id", "party_date_utc", "status" });
+				columns: new[] { "assigned_room_id", "party_date_utc", "slot_id" },
+				unique: true,
+				filter: "assigned_room_id IS NOT NULL AND status <> 2");
 		}
 
 		protected override void Down(MigrationBuilder migrationBuilder)
 		{
 			migrationBuilder.DropIndex(
-				name: "idx_party_bookings_room_date_status",
+				name: "ux_party_bookings_room_date_slot",
 				table: "party_bookings");
 
 			migrationBuilder.DropColumn(

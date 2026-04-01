@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using POSOpen.Application.Abstractions.Repositories;
+using POSOpen.Application.Exceptions;
 using POSOpen.Application.Results;
 
 namespace POSOpen.Application.UseCases.Party;
@@ -60,7 +60,7 @@ public sealed class AssignPartyRoomUseCase
 				new RoomAssignmentResultDto(persisted.Id, persisted.AssignedRoomId, milestones),
 				PartyBookingConstants.RoomAssignedMessage);
 		}
-		catch (DbUpdateException ex) when (ex.Message.Contains("ROOM"))
+		catch (RoomConflictException ex)
 		{
 			_logger.LogWarning(ex, "Room conflict for booking {BookingId} on room {RoomId}", command.BookingId, command.RoomId);
 			try

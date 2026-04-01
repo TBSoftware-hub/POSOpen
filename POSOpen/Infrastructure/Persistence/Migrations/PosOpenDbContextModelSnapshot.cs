@@ -514,8 +514,10 @@ namespace POSOpen.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ux_party_bookings_active_slot")
                         .HasFilter("status <> 2");
 
-                    b.HasIndex("AssignedRoomId", "PartyDateUtc", "Status")
-                        .HasDatabaseName("idx_party_bookings_room_date_status");
+b.HasIndex("AssignedRoomId", "PartyDateUtc", "SlotId")
+						.IsUnique()
+						.HasDatabaseName("ux_party_bookings_room_date_slot")
+						.HasFilter("assigned_room_id IS NOT NULL AND status <> 2");
 
                     b.ToTable("party_bookings", (string)null);
                 });
