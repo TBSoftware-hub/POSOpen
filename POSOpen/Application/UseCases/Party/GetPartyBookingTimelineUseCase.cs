@@ -49,6 +49,7 @@ public sealed class GetPartyBookingTimelineUseCase
 			var timeline = new PartyBookingTimelineDto(
 				booking.Id,
 				booking.Status,
+				booking.DepositCommitmentStatus == PartyDepositCommitmentStatus.Committed,
 				nowUtc,
 				milestones);
 
@@ -60,8 +61,8 @@ public sealed class GetPartyBookingTimelineUseCase
 		{
 			_logger.LogError(ex, "Failed to generate timeline for booking {BookingId}", bookingId);
 			return AppResult<PartyBookingTimelineDto>.Failure(
-				PartyBookingConstants.ErrorCommitFailed,
-				PartyBookingConstants.SafeCommitFailedMessage);
+				PartyBookingConstants.ErrorTimelineUnavailable,
+				PartyBookingConstants.SafeTimelineUnavailableMessage);
 		}
 	}
 
@@ -101,7 +102,9 @@ public sealed class GetPartyBookingTimelineUseCase
 				"booked",
 				bookedStatus,
 				booking.BookedAtUtc,
-				PartyBookingConstants.NextActionCaptureDepositCode,
+				booking.DepositCommitmentStatus == PartyDepositCommitmentStatus.Committed
+					? PartyBookingConstants.NextActionPrepareArrivalCode
+					: PartyBookingConstants.NextActionCaptureDepositCode,
 				booking.DepositCommitmentStatus == PartyDepositCommitmentStatus.Committed
 					? PartyBookingConstants.NextActionPrepareArrivalLabel
 					: PartyBookingConstants.NextActionCaptureDepositLabel,

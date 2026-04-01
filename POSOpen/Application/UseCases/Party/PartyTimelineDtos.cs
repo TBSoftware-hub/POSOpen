@@ -13,5 +13,6 @@ public sealed record PartyBookingTimelineMilestoneDto(
 public sealed record PartyBookingTimelineDto(
 	Guid BookingId,
 	PartyBookingStatus BookingStatus,
+	bool IsDepositCommitted,
 	DateTime GeneratedAtUtc,
 	IReadOnlyList<PartyBookingTimelineMilestoneDto> Milestones);

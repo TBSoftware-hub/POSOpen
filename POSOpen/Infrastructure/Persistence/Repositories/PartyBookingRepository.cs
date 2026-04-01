@@ -160,6 +160,12 @@ public async Task<PartyBooking> RecordDepositCommitmentAsync(
 			return existing;
 		}
 
+		if (existing.DepositCommitmentStatus == PartyDepositCommitmentStatus.Committed && existing.DepositCommittedAtUtc.HasValue)
+		{
+			await transaction.CommitAsync(ct);
+			return existing;
+		}
+
 		existing.RecordDepositCommitment(
 			depositAmountCents,
 			depositCurrency,

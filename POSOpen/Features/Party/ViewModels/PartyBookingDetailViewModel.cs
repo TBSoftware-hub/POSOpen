@@ -32,6 +32,7 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 	private string _processingState = "Idle";
 
 	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(CanSubmitDeposit))]
 	private bool _isBusy;
 
 	[ObservableProperty]
@@ -48,6 +49,7 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 	private string _depositCurrency = "USD";
 
 	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(CanSubmitDeposit))]
 	private bool _depositCommitted;
 
 	public ObservableCollection<PartyBookingTimelineMilestoneDto> Milestones { get; } = [];
@@ -86,9 +88,7 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 				Milestones.Add(milestone);
 			}
 
-			DepositCommitted = timelineResult.Payload.Milestones.Any(
-				x => x.MilestoneKey == "booked" && x.NextActionCode != PartyBookingConstants.NextActionCaptureDepositCode);
-			OnPropertyChanged(nameof(CanSubmitDeposit));
+			DepositCommitted = timelineResult.Payload.IsDepositCommitted;
 			SetSuccessState(timelineResult.UserMessage);
 		}
 		finally

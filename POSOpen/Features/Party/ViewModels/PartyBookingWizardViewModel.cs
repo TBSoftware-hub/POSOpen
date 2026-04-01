@@ -103,6 +103,8 @@ public sealed partial class PartyBookingWizardViewModel : ObservableObject
 		ErrorMessage = null;
 		StatusMessage = string.Empty;
 		CurrentStepIndex = 0;
+		IsBookingConfirmed = false;
+		_bookingId = null;
 
 		try
 		{

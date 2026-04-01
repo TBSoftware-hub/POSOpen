@@ -16,6 +16,7 @@ public partial class PartyBookingDetailPage : ContentPage, IQueryAttributable
 	{
 		if (!query.TryGetValue("bookingId", out var value) || value is null)
 		{
+			_bookingId = null;
 			return;
 		}
 
@@ -23,7 +24,10 @@ public partial class PartyBookingDetailPage : ContentPage, IQueryAttributable
 		if (Guid.TryParse(candidate, out var parsed))
 		{
 			_bookingId = parsed;
+			return;
 		}
+
+		_bookingId = null;
 	}
 
 	protected override async void OnAppearing()
