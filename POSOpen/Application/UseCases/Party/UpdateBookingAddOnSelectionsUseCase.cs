@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using POSOpen.Application.Abstractions.Repositories;
 using POSOpen.Application.Results;
+using POSOpen.Application.UseCases.Inventory;
 using POSOpen.Domain.Entities;
 using POSOpen.Domain.Enums;
 
@@ -9,15 +10,21 @@ namespace POSOpen.Application.UseCases.Party;
 public sealed class UpdateBookingAddOnSelectionsUseCase
 {
 	private readonly IPartyBookingRepository _partyBookingRepository;
+	private readonly ReleaseBookingInventoryUseCase _releaseBookingInventoryUseCase;
+	private readonly ReserveBookingInventoryUseCase _reserveBookingInventoryUseCase;
 	private readonly GetPartyBookingTimelineUseCase _getPartyBookingTimelineUseCase;
 	private readonly ILogger<UpdateBookingAddOnSelectionsUseCase> _logger;
 
 	public UpdateBookingAddOnSelectionsUseCase(
 		IPartyBookingRepository partyBookingRepository,
+		ReleaseBookingInventoryUseCase releaseBookingInventoryUseCase,
+		ReserveBookingInventoryUseCase reserveBookingInventoryUseCase,
 		GetPartyBookingTimelineUseCase getPartyBookingTimelineUseCase,
 		ILogger<UpdateBookingAddOnSelectionsUseCase> logger)
 	{
 		_partyBookingRepository = partyBookingRepository;
+		_releaseBookingInventoryUseCase = releaseBookingInventoryUseCase;
+		_reserveBookingInventoryUseCase = reserveBookingInventoryUseCase;
 		_getPartyBookingTimelineUseCase = getPartyBookingTimelineUseCase;
 		_logger = logger;
 	}
@@ -49,6 +56,10 @@ public sealed class UpdateBookingAddOnSelectionsUseCase
 
 		try
 		{
+			var previousSelections = booking.AddOnSelections
+				.GroupBy(x => x.OptionId, StringComparer.Ordinal)
+				.ToDictionary(x => x.Key, x => x.Sum(y => y.Quantity), StringComparer.Ordinal);
+
 			var occurredUtc = DateTime.SpecifyKind(command.OperationContext.OccurredUtc, DateTimeKind.Utc);
 			var newSelections = command.Selections.Select(selection => new PartyBookingAddOnSelection
 			{
@@ -68,6 +79,49 @@ public sealed class UpdateBookingAddOnSelectionsUseCase
 				command.OperationContext.CorrelationId,
 				occurredUtc,
 				ct);
+
+			if (booking.Status == PartyBookingStatus.Booked)
+			{
+				var latestSelectionMap = command.Selections
+					.GroupBy(x => x.OptionId, StringComparer.Ordinal)
+					.ToDictionary(x => x.Key, x => x.Sum(y => y.Quantity), StringComparer.Ordinal);
+
+				var removedOptionIds = previousSelections.Keys
+					.Where(x => !latestSelectionMap.ContainsKey(x))
+					.OrderBy(x => x, StringComparer.Ordinal)
+					.ToArray();
+
+				var reduced = previousSelections
+					.Where(x => latestSelectionMap.TryGetValue(x.Key, out var nextQty) && nextQty < x.Value)
+					.ToDictionary(x => x.Key, x => x.Value - latestSelectionMap[x.Key], StringComparer.Ordinal);
+
+				var releaseTriggers = new List<InventoryReleaseTrigger>();
+				if (removedOptionIds.Length > 0)
+				{
+					releaseTriggers.Add(InventoryReleaseTrigger.BookingItemRemoved);
+				}
+
+				if (reduced.Count > 0)
+				{
+					releaseTriggers.Add(InventoryReleaseTrigger.BookingItemQuantityReduced);
+				}
+
+				if (releaseTriggers.Count > 0)
+				{
+					await _releaseBookingInventoryUseCase.ExecuteAsync(
+						new ReleaseBookingInventoryCommand(
+							booking.Id,
+							releaseTriggers,
+							command.OperationContext,
+							removedOptionIds,
+							reduced),
+						ct);
+				}
+
+				await _reserveBookingInventoryUseCase.ExecuteAsync(
+					new ReserveBookingInventoryCommand(booking.Id, command.OperationContext),
+					ct);
+			}
 
 			var milestones = await TryLoadMilestones(command.BookingId, ct);
 			var refreshedBooking = await _partyBookingRepository.GetByIdWithSelectionsAsync(command.BookingId, ct) ?? booking;

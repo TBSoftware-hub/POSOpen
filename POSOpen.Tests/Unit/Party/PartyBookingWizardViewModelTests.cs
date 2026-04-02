@@ -2,6 +2,7 @@ using FluentAssertions;
 using Moq;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.Results;
+using POSOpen.Application.UseCases.Inventory;
 using POSOpen.Application.UseCases.Party;
 using POSOpen.Features.Party.ViewModels;
 using POSOpen.Shared.Operational;
@@ -103,6 +104,10 @@ public sealed class PartyBookingWizardViewModelTests
 			repository.Object,
 			operationLogRepo.Object,
 			clock.Object,
+			new ReserveBookingInventoryUseCase(
+				repository.Object,
+				new Mock<POSOpen.Application.Abstractions.Repositories.IInventoryReservationRepository>().Object,
+				Microsoft.Extensions.Logging.Abstractions.NullLogger<ReserveBookingInventoryUseCase>.Instance),
 			Microsoft.Extensions.Logging.Abstractions.NullLogger<ConfirmPartyBookingUseCase>.Instance);
 		var operationContextFactory = new Mock<IOperationContextFactory>();
 		operationContextFactory.Setup(x => x.CreateRoot(It.IsAny<Guid?>()))

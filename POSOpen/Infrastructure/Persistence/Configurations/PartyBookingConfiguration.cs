@@ -33,6 +33,8 @@ public sealed class PartyBookingConfiguration : IEntityTypeConfiguration<PartyBo
 		builder.Property(x => x.RoomAssignedAtUtc).HasColumnName("room_assigned_at_utc").HasConversion(NullableUtcDateTimeConverter.Instance);
 		builder.Property(x => x.RoomAssignmentOperationId).HasColumnName("room_assignment_operation_id");
 		builder.Property(x => x.LastAddOnUpdateOperationId).HasColumnName("last_add_on_update_operation_id");
+		builder.Property(x => x.LastInventoryReserveOperationId).HasColumnName("last_inventory_reserve_operation_id");
+		builder.Property(x => x.LastInventoryReleaseOperationId).HasColumnName("last_inventory_release_operation_id");
 
 		builder.HasMany(x => x.AddOnSelections)
 			.WithOne(x => x.Booking)

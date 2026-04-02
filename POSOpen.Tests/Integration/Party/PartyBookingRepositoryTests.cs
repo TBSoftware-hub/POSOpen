@@ -2,6 +2,7 @@
 using Moq;
 using POSOpen.Application.Abstractions.Repositories;
 using POSOpen.Application.Security;
+using POSOpen.Application.UseCases.Inventory;
 using POSOpen.Application.UseCases.Party;
 using POSOpen.Domain.Enums;
 using POSOpen.Infrastructure.Persistence;
@@ -18,7 +19,15 @@ public async Task UpsertDraftAndConfirm_PersistsLifecycleAndTraceabilityFields()
 await using var fixture = await CreateFixtureAsync();
 var partyDate = new DateTime(2026, 4, 8, 10, 0, 0, DateTimeKind.Utc);
 var createUseCase = new CreateDraftPartyBookingUseCase(fixture.Repository, fixture.Clock, NullLoggerFactory.CreateLogger<CreateDraftPartyBookingUseCase>());
-var confirmUseCase = new ConfirmPartyBookingUseCase(fixture.Repository, new Mock<IOperationLogRepository>().Object, fixture.Clock, NullLoggerFactory.CreateLogger<ConfirmPartyBookingUseCase>());
+var confirmUseCase = new ConfirmPartyBookingUseCase(
+	fixture.Repository,
+	new Mock<IOperationLogRepository>().Object,
+	fixture.Clock,
+	new ReserveBookingInventoryUseCase(
+		fixture.Repository,
+		new InventoryReservationRepository(fixture.DbContextFactory),
+		NullLoggerFactory.CreateLogger<ReserveBookingInventoryUseCase>()),
+	NullLoggerFactory.CreateLogger<ConfirmPartyBookingUseCase>());
 
 var draftContext = new OperationContext(Guid.NewGuid(), Guid.NewGuid(), null, fixture.Clock.UtcNow);
 var draft = await createUseCase.ExecuteAsync(new CreateDraftPartyBookingCommand(null, partyDate, "10:00", "basic-party", draftContext));
@@ -85,6 +94,10 @@ var useCase = new ConfirmPartyBookingUseCase(
 stubRepo.Object,
 fixture.OperationLogRepository,
 fixture.Clock,
+	new ReserveBookingInventoryUseCase(
+		stubRepo.Object,
+		new Mock<IInventoryReservationRepository>().Object,
+		NullLoggerFactory.CreateLogger<ReserveBookingInventoryUseCase>()),
 NullLoggerFactory.CreateLogger<ConfirmPartyBookingUseCase>());
 
 var context = new OperationContext(Guid.NewGuid(), Guid.NewGuid(), null, fixture.Clock.UtcNow);

@@ -42,9 +42,11 @@ public static class PersistenceServiceCollectionExtensions
 		services.AddTransient<ICheckoutPaymentAttemptRepository, CheckoutPaymentAttemptRepository>();
 		services.AddTransient<IRefundRepository, RefundRepository>();
 		services.AddTransient<IPartyBookingRepository, PartyBookingRepository>();
+		services.AddTransient<IInventoryReservationRepository, InventoryReservationRepository>();
 		services.AddTransient<IReceiptMetadataRepository, ReceiptMetadataRepository>();
 		services.AddTransient<ITransactionOperationRepository, TransactionOperationRepository>();
 		services.AddTransient<IStaffAccountRepository, StaffAccountRepository>();
+		services.AddSingleton<IInventorySubstitutionPolicyProvider, SeededInventorySubstitutionPolicyProvider>();
 		services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
 
 		return services;

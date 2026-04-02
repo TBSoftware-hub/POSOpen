@@ -268,6 +268,54 @@
                                 </VerticalStackLayout>
                             </VerticalStackLayout>
                         </Border>
+
+                        <Border Background="#ECFEFF"
+                                Padding="10">
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Inventory Policy Status"
+                                       FontAttributes="Bold"
+                                       TextColor="#155E75" />
+                                <Label Text="{Binding InventoryStatusMessage}"
+                                       FontSize="12"
+                                       TextColor="#0F172A" />
+
+                                <VerticalStackLayout IsVisible="{Binding HasInventoryConstraints}"
+                                                    Spacing="4">
+                                    <Label Text="Unresolved constraints"
+                                           FontAttributes="Bold"
+                                           FontSize="12"
+                                           TextColor="#991B1B" />
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding InventoryConstraintLines}"
+                                                        Spacing="2">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="x:String">
+                                                <Label Text="{Binding .}"
+                                                       FontSize="12"
+                                                       TextColor="#B91C1C" />
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout IsVisible="{Binding HasAllowedSubstitutes}"
+                                                    Spacing="4">
+                                    <Label Text="Policy-allowed substitutes"
+                                           FontAttributes="Bold"
+                                           FontSize="12"
+                                           TextColor="#0369A1" />
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding AllowedSubstituteLines}"
+                                                        Spacing="2">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="x:String">
+                                                <Label Text="{Binding .}"
+                                                       FontSize="12"
+                                                       TextColor="#1D4ED8" />
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
                     </VerticalStackLayout>
                 </Border>
 

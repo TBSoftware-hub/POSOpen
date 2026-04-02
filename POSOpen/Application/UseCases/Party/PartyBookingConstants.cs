@@ -16,6 +16,9 @@ public static class PartyBookingConstants
 	public const string ErrorDepositAmountInvalid = "BOOKING_DEPOSIT_AMOUNT_INVALID";
 	public const string ErrorDepositCurrencyInvalid = "BOOKING_DEPOSIT_CURRENCY_INVALID";
 	public const string ErrorTimelineUnavailable = "BOOKING_TIMELINE_UNAVAILABLE";
+	public const string ErrorInventoryReservationFailed = "BOOKING_INVENTORY_RESERVATION_FAILED";
+	public const string ErrorInventoryReleaseFailed = "BOOKING_INVENTORY_RELEASE_FAILED";
+	public const string ErrorInventoryFinalizationBlocked = "BOOKING_INVENTORY_FINALIZATION_BLOCKED";
 
 	public const string SafeBookingNotFoundMessage = "The selected booking could not be found.";
 	public const string SafeDateInvalidMessage = "Choose a future party date to continue.";
@@ -28,6 +31,9 @@ public static class PartyBookingConstants
 	public const string SafeDepositAmountInvalidMessage = "Enter a valid deposit amount to continue.";
 	public const string SafeDepositCurrencyInvalidMessage = "Enter a valid 3-letter currency code to continue.";
 	public const string SafeTimelineUnavailableMessage = "Timeline data is unavailable for this booking.";
+	public const string SafeInventoryReservationFailedMessage = "Inventory reservation failed. Please try again.";
+	public const string SafeInventoryReleaseFailedMessage = "Inventory release failed. Please try again.";
+	public const string SafeInventoryFinalizationBlockedMessage = "Resolve inventory constraints before finalizing this booking.";
 
 	public const string ErrorRoomConflict = "BOOKING_ROOM_CONFLICT";
 	public const string ErrorRoomInvalid = "BOOKING_ROOM_INVALID";
@@ -144,4 +150,29 @@ public static class PartyBookingConstants
 	public const string AddOnSelectionsUpdatedMessage = "Catering and decor options saved.";
 	public const string AddOnSelectionsAlreadySavedMessage = "Add-on selections were already saved for this operation.";
 	public const string AddOnOptionsLoadedMessage = "Add-on options loaded.";
+
+	public const string InventoryReservationSavedMessage = "Inventory reservation updated.";
+	public const string InventoryReservationSavedWithConstraintsMessage = "Inventory reservation saved with unresolved constraints.";
+	public const string InventoryReservationSatisfiedMessage = "Inventory requirements are fully reserved.";
+	public const string InventoryConstraintGuidanceMessage = "Review constrained items and choose an allowed substitute.";
+	public const string InventoryReleaseAppliedMessage = "Inventory release policy applied.";
+	public const string InventorySubstitutesLoadedMessage = "Substitute options loaded.";
+
+	public const int DefaultInventoryCapacity = 20;
+
+	public static readonly IReadOnlyDictionary<string, int> InventoryCapacityByOption = new Dictionary<string, int>
+	{
+		["pizza-basic"] = 30,
+		["pizza-deluxe"] = 20,
+		["fruit-platter"] = 15,
+		["veggie-platter"] = 15,
+		["cake-standard"] = 12,
+		["cake-custom"] = 2,
+		["balloon-basic"] = 18,
+		["balloon-premium"] = 2,
+		["table-standard"] = 12,
+		["table-themed"] = 1,
+		["banner-standard"] = 12,
+		["banner-custom"] = 1,
+	};
 }
