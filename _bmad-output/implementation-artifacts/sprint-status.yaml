@@ -75,7 +75,7 @@ development_status:
   epic-4-retrospective: optional
   epic-5: in-progress
   5-1-enable-offline-mode-for-critical-frontline-workflows: done
-  5-2-queue-offline-captured-operational-and-financial-actions: review
+  5-2-queue-offline-captured-operational-and-financial-actions: done
   5-3-implement-reconnect-synchronization-and-deterministic-replay: backlog
   5-4-prevent-duplicate-finalization-and-preserve-traceability: backlog
   5-5-expose-sync-health-exceptions-and-tablet-led-failover: backlog

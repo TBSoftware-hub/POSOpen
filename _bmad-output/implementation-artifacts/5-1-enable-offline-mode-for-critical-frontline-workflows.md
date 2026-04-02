@@ -1,6 +1,6 @@
 # Story 5.1: Enable Offline Mode for Critical Frontline Workflows
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 

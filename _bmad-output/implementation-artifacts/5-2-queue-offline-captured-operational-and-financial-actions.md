@@ -1,6 +1,6 @@
 # Story 5.2: Queue Offline-Captured Operational and Financial Actions
 
-Status: review
+Status: done
 
 ## Story
 
