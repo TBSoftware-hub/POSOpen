@@ -3,12 +3,26 @@
     x:Class="POSOpen.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:shellViewModels="clr-namespace:POSOpen.Features.Shell.ViewModels"
     xmlns:authViews="clr-namespace:POSOpen.Features.Authentication.Views"
     xmlns:admissionsViews="clr-namespace:POSOpen.Features.Admissions.Views"
     xmlns:staffViews="clr-namespace:POSOpen.Features.StaffManagement.Views"
     xmlns:shellViews="clr-namespace:POSOpen.Features.Shell.Views"
     xmlns:securityViews="clr-namespace:POSOpen.Features.Security.Views"
+    x:DataType="shellViewModels:AppShellViewModel"
     Title="POSOpen">
+
+    <Shell.FlyoutHeader>
+        <Border
+            Background="#FF8C00"
+            Padding="10"
+            IsVisible="{Binding IsOffline}">
+            <Label
+                Text="{Binding OfflineMessage}"
+                TextColor="White"
+                FontAttributes="Bold" />
+        </Border>
+    </Shell.FlyoutHeader>
 
     <ShellContent
         x:Name="SignInShellContent"

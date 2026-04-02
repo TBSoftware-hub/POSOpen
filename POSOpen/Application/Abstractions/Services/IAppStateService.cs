@@ -6,6 +6,10 @@ public interface IAppStateService
 {
 	bool IsAuthenticated { get; }
 
+	bool IsOffline { get; }
+
+	DateTimeOffset? OfflineSince { get; }
+
 	Guid? CurrentStaffId { get; }
 
 	StaffRole? CurrentStaffRole { get; }
@@ -20,6 +24,8 @@ public interface IAppStateService
 
 	DateTimeOffset LastUpdatedUtc { get; }
 
+	event EventHandler? StateChanged;
+
 	void SetCurrentSession(Guid staffId, StaffRole role, long sessionVersion);
 
 	void SetSessionVersion(long sessionVersion);
@@ -29,4 +35,6 @@ public interface IAppStateService
 	void SetTerminalMode(string terminalMode);
 
 	void SetSyncState(string syncState);
+
+	void SetOfflineMode(bool isOffline);
 }

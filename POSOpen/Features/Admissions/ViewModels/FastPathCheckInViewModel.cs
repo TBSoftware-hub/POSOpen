@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using POSOpen.Application;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.UseCases.Admissions;
 using POSOpen.Domain.Enums;
@@ -19,6 +20,8 @@ public partial class FastPathCheckInViewModel : ObservableObject
 	private readonly IFastPathCheckInUiService _uiService;
 	private readonly ICheckInLatencyTimer _checkInLatencyTimer;
 	private readonly ICheckInLatencyMonitor _checkInLatencyMonitor;
+	private readonly IConnectivityService _connectivityService;
+	private readonly IWorkflowCapabilityService _workflowCapabilityService;
 	private AdmissionTotal? _cachedAdmissionTotal;
 	private Guid? _cachedAdmissionTotalFamilyId;
 
@@ -29,7 +32,9 @@ public partial class FastPathCheckInViewModel : ObservableObject
 		IAdmissionPricingService admissionPricingService,
 		IFastPathCheckInUiService uiService,
 		ICheckInLatencyTimer checkInLatencyTimer,
-		ICheckInLatencyMonitor checkInLatencyMonitor)
+		ICheckInLatencyMonitor checkInLatencyMonitor,
+		IConnectivityService? connectivityService = null,
+		IWorkflowCapabilityService? workflowCapabilityService = null)
 	{
 		_evaluateFastPathCheckInUseCase = evaluateFastPathCheckInUseCase;
 		_profileAdmissionUseCase = profileAdmissionUseCase;
@@ -38,6 +43,8 @@ public partial class FastPathCheckInViewModel : ObservableObject
 		_uiService = uiService;
 		_checkInLatencyTimer = checkInLatencyTimer;
 		_checkInLatencyMonitor = checkInLatencyMonitor;
+		_connectivityService = connectivityService ?? AlwaysConnectedConnectivityService.Instance;
+		_workflowCapabilityService = workflowCapabilityService ?? PassThroughWorkflowCapabilityService.Instance;
 	}
 
 	public Guid? FamilyId { get; private set; }
@@ -53,6 +60,10 @@ public partial class FastPathCheckInViewModel : ObservableObject
 
 	[ObservableProperty]
 	private string _guidanceMessage = "Waiver status will be evaluated at check-in.";
+
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasOfflineGuidance))]
+	private string? _offlineGuidanceMessage;
 
 	[ObservableProperty]
 	private bool _isEligible;
@@ -99,11 +110,14 @@ public partial class FastPathCheckInViewModel : ObservableObject
 
 	public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
 
+	public bool HasOfflineGuidance => !string.IsNullOrWhiteSpace(OfflineGuidanceMessage);
+
 	public void Initialize(Guid familyId)
 	{
 		FamilyId = familyId;
 		ResetAdmissionTotalCache();
 		ResetCompletionState();
+		OfflineGuidanceMessage = ResolveOfflineGuidance();
 	}
 
 	public async Task LoadAsync(CancellationToken ct = default)
@@ -239,6 +253,7 @@ public partial class FastPathCheckInViewModel : ObservableObject
 		IsLoading = true;
 		try
 		{
+			OfflineGuidanceMessage = ResolveOfflineGuidance();
 			var result = await _evaluateFastPathCheckInUseCase.ExecuteAsync(
 				new EvaluateFastPathCheckInQuery(FamilyId.Value, isRefreshRequested),
 				ct);
@@ -257,6 +272,10 @@ public partial class FastPathCheckInViewModel : ObservableObject
 			WaiverStatus = payload.WaiverStatus;
 			WaiverStatusLabel = payload.WaiverStatusLabel;
 			GuidanceMessage = payload.GuidanceMessage;
+			if (!string.IsNullOrWhiteSpace(OfflineGuidanceMessage))
+			{
+				GuidanceMessage = $"{GuidanceMessage} {OfflineGuidanceMessage}";
+			}
 			IsEligible = payload.IsEligible;
 			ShowRecoveryAction = payload.ShowRecoveryAction;
 			ShowRefreshAction = payload.ShowRefreshAction;
@@ -366,5 +385,42 @@ public partial class FastPathCheckInViewModel : ObservableObject
 	{
 		_cachedAdmissionTotalFamilyId = null;
 		_cachedAdmissionTotal = null;
+	}
+
+	private string? ResolveOfflineGuidance()
+	{
+		if (_connectivityService.IsConnected)
+		{
+			return null;
+		}
+
+		if (!_workflowCapabilityService.IsOfflineSupported(WorkflowKeys.PaymentSettlement))
+		{
+			return _workflowCapabilityService.GetOfflineFallbackGuidance(WorkflowKeys.PaymentSettlement);
+		}
+
+		return null;
+	}
+
+	private sealed class AlwaysConnectedConnectivityService : IConnectivityService
+	{
+		public static readonly AlwaysConnectedConnectivityService Instance = new();
+
+		public bool IsConnected => true;
+
+		public event EventHandler<bool>? ConnectivityChanged
+		{
+			add { }
+			remove { }
+		}
+	}
+
+	private sealed class PassThroughWorkflowCapabilityService : IWorkflowCapabilityService
+	{
+		public static readonly PassThroughWorkflowCapabilityService Instance = new();
+
+		public bool IsOfflineSupported(string workflowKey) => true;
+
+		public string GetOfflineFallbackGuidance(string workflowKey) => string.Empty;
 	}
 }

@@ -2,6 +2,7 @@
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.Security;
 using POSOpen.Features.Authentication;
+using POSOpen.Features.Shell.ViewModels;
 
 namespace POSOpen;
 
@@ -14,12 +15,14 @@ public partial class AppShell : Shell
 	public AppShell(
 		IAuthorizationPolicyService authorizationPolicyService,
 		ICurrentSessionService currentSessionService,
-		IAppStateService appStateService)
+		IAppStateService appStateService,
+		AppShellViewModel viewModel)
 	{
 		_authorizationPolicyService = authorizationPolicyService;
 		_currentSessionService = currentSessionService;
 		_appStateService = appStateService;
 		InitializeComponent();
+		BindingContext = viewModel;
 		Loaded += OnLoaded;
 		ApplyRoleAwareVisibility();
 	}

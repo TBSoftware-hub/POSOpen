@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.ApplicationModel;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.UseCases.Shell;
 using POSOpen.Features.Checkout;
@@ -15,6 +16,8 @@ public sealed partial class HomeViewModel : ObservableObject
 	private string _subHeadline = "Operational baseline initialized for role-aware, offline-first workflows.";
 	private string _terminalMode = string.Empty;
 	private string _syncState = string.Empty;
+	private bool _isOffline;
+	private string _offlineSinceDisplay = "Online";
 	private string _foundationStatus = string.Empty;
 	private string _authorizationMessage = string.Empty;
 
@@ -24,6 +27,7 @@ public sealed partial class HomeViewModel : ObservableObject
 	{
 		_appStateService = appStateService;
 		_executeManagerOperationUseCase = executeManagerOperationUseCase;
+		_appStateService.StateChanged += HandleStateChanged;
 		Refresh();
 	}
 
@@ -51,6 +55,18 @@ public sealed partial class HomeViewModel : ObservableObject
 		private set => SetProperty(ref _syncState, value);
 	}
 
+	public bool IsOffline
+	{
+		get => _isOffline;
+		private set => SetProperty(ref _isOffline, value);
+	}
+
+	public string OfflineSinceDisplay
+	{
+		get => _offlineSinceDisplay;
+		private set => SetProperty(ref _offlineSinceDisplay, value);
+	}
+
 	public string FoundationStatus
 	{
 		get => _foundationStatus;
@@ -74,9 +90,18 @@ public sealed partial class HomeViewModel : ObservableObject
 	public void Refresh()
 	{
 		TerminalMode = _appStateService.TerminalMode;
-		SyncState = _appStateService.SyncState;
+		IsOffline = _appStateService.IsOffline;
+		SyncState = _appStateService.IsOffline ? "Offline Mode Active" : _appStateService.SyncState;
+		OfflineSinceDisplay = _appStateService.IsOffline && _appStateService.OfflineSince is not null
+			? _appStateService.OfflineSince.Value.ToString("yyyy-MM-dd HH:mm:ss 'UTC'")
+			: "Online";
 		FoundationStatus = $"Last updated {_appStateService.LastUpdatedUtc:yyyy-MM-dd HH:mm:ss} UTC";
 		AuthorizationMessage = string.Empty;
+	}
+
+	private void HandleStateChanged(object? sender, EventArgs e)
+	{
+		MainThread.BeginInvokeOnMainThread(Refresh);
 	}
 
 	public string TerminalModeA11y => $"Terminal mode {TerminalMode}";

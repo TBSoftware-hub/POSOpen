@@ -41,6 +41,7 @@
     <Compile Include="..\POSOpen\Application\UseCases\Checkout\*.cs" Link="Source\Application\UseCases\Checkout\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\Inventory\*.cs" Link="Source\Application\UseCases\Inventory\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Application\UseCases\Party\*.cs" Link="Source\Application\UseCases\Party\%(Filename)%(Extension)" />
+    <Compile Include="..\POSOpen\Application\WorkflowKeys.cs" Link="Source\Application\WorkflowKeys.cs" />
     <Compile Include="..\POSOpen\Features\Admissions\ViewModels\FastPathCheckInViewModel.cs" Link="Source\Features\Admissions\ViewModels\FastPathCheckInViewModel.cs" />
     <Compile Include="..\POSOpen\Features\Admissions\ViewModels\NewProfileAdmissionViewModel.cs" Link="Source\Features\Admissions\ViewModels\NewProfileAdmissionViewModel.cs" />
     <Compile Include="..\POSOpen\Features\Checkout\CheckoutRoutes.cs" Link="Source\Features\Checkout\CheckoutRoutes.cs" />
@@ -58,7 +59,7 @@
     <Compile Include="..\POSOpen\Infrastructure\Persistence\**\*.cs" Exclude="..\POSOpen\Infrastructure\Persistence\DesignTime\**\*.cs;..\POSOpen\Infrastructure\Persistence\PersistenceServiceCollectionExtensions.cs" Link="Source\Infrastructure\Persistence\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Infrastructure\Security\Pbkdf2PasswordHasher.cs" Link="Source\Infrastructure\Security\Pbkdf2PasswordHasher.cs" />
     <Compile Include="..\POSOpen\Infrastructure\Security\AuthorizationPolicyService.cs" Link="Source\Infrastructure\Security\AuthorizationPolicyService.cs" />
-    <Compile Include="..\POSOpen\Infrastructure\Services\*.cs" Exclude="..\POSOpen\Infrastructure\Services\CheckoutUiService.cs;..\POSOpen\Infrastructure\Services\FastPathCheckInUiService.cs;..\POSOpen\Infrastructure\Services\ProfileAdmissionUiService.cs" Link="Source\Infrastructure\Services\%(Filename)%(Extension)" />
+    <Compile Include="..\POSOpen\Infrastructure\Services\*.cs" Exclude="..\POSOpen\Infrastructure\Services\CheckoutUiService.cs;..\POSOpen\Infrastructure\Services\FastPathCheckInUiService.cs;..\POSOpen\Infrastructure\Services\ProfileAdmissionUiService.cs;..\POSOpen\Infrastructure\Services\MauiConnectivityService.cs" Link="Source\Infrastructure\Services\%(Filename)%(Extension)" />
     <Compile Include="..\POSOpen\Shared\**\*.cs" Exclude="..\POSOpen\Shared\Converters\**\*.cs" Link="Source\Shared\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
