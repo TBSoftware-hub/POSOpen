@@ -51,8 +51,9 @@ public sealed class ReleaseBookingInventoryUseCase
 		{
 			var releasedCount = 0;
 			IReadOnlyList<InventoryReservationSummaryDto> active = [];
+			var normalizedTriggers = NormalizeTriggers(command.ReleaseTriggers);
 
-			foreach (var trigger in command.ReleaseTriggers)
+			foreach (var trigger in normalizedTriggers)
 			{
 				var released = await _inventoryReservationRepository.ReleaseByTriggerAsync(
 					command.BookingId,
@@ -91,6 +92,28 @@ public sealed class ReleaseBookingInventoryUseCase
 				PartyBookingConstants.ErrorInventoryReleaseFailed,
 				PartyBookingConstants.SafeInventoryReleaseFailedMessage);
 		}
+	}
+
+	private static IReadOnlyList<InventoryReleaseTrigger> NormalizeTriggers(IReadOnlyList<InventoryReleaseTrigger> triggers)
+	{
+		if (triggers.Count == 0)
+		{
+			return [];
+		}
+
+		var requested = new HashSet<InventoryReleaseTrigger>(triggers);
+		InventoryReleaseTrigger[] policyOrder =
+		[
+			InventoryReleaseTrigger.BookingItemRemoved,
+			InventoryReleaseTrigger.BookingItemQuantityReduced,
+			InventoryReleaseTrigger.BookingDateOrSlotChanged,
+			InventoryReleaseTrigger.BookingCancelled,
+			InventoryReleaseTrigger.BookingUpdatedNonInventoryFields,
+		];
+
+		return policyOrder
+			.Where(requested.Contains)
+			.ToArray();
 	}
 }
 

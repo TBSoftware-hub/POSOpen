@@ -507,7 +507,7 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 
 		if (constraints.Count == 0)
 		{
-			AllowedSubstituteLines.Clear();
+			AllowedSubstituteLines = [];
 			InventoryStatusMessage = PartyBookingConstants.InventoryReservationSatisfiedMessage;
 			return;
 		}

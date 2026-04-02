@@ -77,6 +77,8 @@ public sealed class InventoryReservationRepository : IInventoryReservationReposi
 				return await dbContext.Set<InventoryReservation>()
 					.AsNoTracking()
 					.Where(x => x.BookingId == bookingId && x.ReservationState == InventoryReservationState.Reserved)
+					.OrderBy(x => x.OptionId)
+					.ThenBy(x => x.ReservedAtUtc)
 					.ToListAsync(ct);
 			}
 

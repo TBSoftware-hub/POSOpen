@@ -106,6 +106,14 @@ public sealed class ConfirmPartyBookingUseCase
 				new ReserveBookingInventoryCommand(persisted.Id, command.Context),
 				ct);
 
+			if (!inventoryResult.IsSuccess)
+			{
+				return AppResult<ConfirmPartyBookingResultDto>.Failure(
+					PartyBookingConstants.ErrorInventoryReservationFailed,
+					PartyBookingConstants.SafeInventoryReservationFailedMessage,
+					inventoryResult.DiagnosticMessage);
+			}
+
 			await _operationLogRepository.AppendAsync(
 				SecurityAuditEventTypes.PartyBookingConfirmed,
 				persisted.Id.ToString(),
@@ -121,9 +129,9 @@ public sealed class ConfirmPartyBookingUseCase
 
 			return AppResult<ConfirmPartyBookingResultDto>.Success(
 				Map(persisted, bookedAtUtc),
-				inventoryResult.IsSuccess
-					? PartyBookingConstants.BookingConfirmedMessage
-					: $"{PartyBookingConstants.BookingConfirmedMessage} {PartyBookingConstants.InventoryConstraintGuidanceMessage}");
+				inventoryResult.Payload?.UnresolvedConstraints.Count > 0
+					? $"{PartyBookingConstants.BookingConfirmedMessage} {PartyBookingConstants.InventoryConstraintGuidanceMessage}"
+					: PartyBookingConstants.BookingConfirmedMessage);
 		}
 		catch (Exception ex)
 		{

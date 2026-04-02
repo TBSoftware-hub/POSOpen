@@ -43,6 +43,7 @@ public sealed class ConfirmPartyBookingUseCaseTests
 
 		var repository = new Mock<IPartyBookingRepository>();
 		repository.Setup(x => x.GetByIdAsync(booking.Id, It.IsAny<CancellationToken>())).ReturnsAsync(booking);
+		repository.Setup(x => x.GetByIdWithSelectionsAsync(booking.Id, It.IsAny<CancellationToken>())).ReturnsAsync(booking);
 		repository.Setup(x => x.IsSlotUnavailableAsync(booking.PartyDateUtc, booking.SlotId, booking.Id, It.IsAny<CancellationToken>()))
 			.ReturnsAsync(false);
 		repository.Setup(x => x.ConfirmAsync(
@@ -77,6 +78,21 @@ public sealed class ConfirmPartyBookingUseCaseTests
 		var clock = new Mock<IUtcClock>();
 		clock.Setup(x => x.UtcNow).Returns(DateTime.UtcNow);
 		var inventoryRepo = new Mock<POSOpen.Application.Abstractions.Repositories.IInventoryReservationRepository>();
+		inventoryRepo
+			.Setup(x => x.GetActiveReservedTotalsByOptionAsync(
+				It.IsAny<IReadOnlyCollection<string>>(),
+				It.IsAny<Guid?>(),
+				It.IsAny<CancellationToken>()))
+			.ReturnsAsync(new Dictionary<string, int>());
+		inventoryRepo
+			.Setup(x => x.PersistReservationPlanAsync(
+				It.IsAny<Guid>(),
+				It.IsAny<IReadOnlyDictionary<string, int>>(),
+				It.IsAny<Guid>(),
+				It.IsAny<Guid>(),
+				It.IsAny<DateTime>(),
+				It.IsAny<CancellationToken>()))
+			.ReturnsAsync(Array.Empty<POSOpen.Domain.Entities.InventoryReservation>());
 
 		var operationLogRepository = new Mock<IOperationLogRepository>();
 		operationLogRepository
