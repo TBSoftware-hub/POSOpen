@@ -7,6 +7,4 @@ public sealed record AdmissionCheckInPersistenceRequest(
 	AdmissionCheckInRecord Record,
 	string OperationLogEventType,
 	object OperationLogPayload,
-	OperationContext OperationContext,
-	string? OutboxEventType,
-	object? OutboxPayload);
+	OperationContext OperationContext);

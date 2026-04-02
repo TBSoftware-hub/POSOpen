@@ -4,6 +4,7 @@ using POSOpen.Application.Abstractions.Security;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.Results;
 using POSOpen.Application.Security;
+using POSOpen.Application.UseCases.Sync;
 using POSOpen.Domain.Entities;
 using POSOpen.Domain.Enums;
 
@@ -17,6 +18,7 @@ public sealed class CompleteAdmissionCheckInUseCase
 	private readonly IAuthorizationPolicyService _authorizationPolicyService;
 	private readonly IAdmissionSettlementService _admissionSettlementService;
 	private readonly IAdmissionCheckInRepository _admissionCheckInRepository;
+	private readonly IOfflineActionQueueService _offlineActionQueueService;
 	private readonly IOperationContextFactory _operationContextFactory;
 	private readonly IAppStateService _appStateService;
 	private readonly ILogger<CompleteAdmissionCheckInUseCase> _logger;
@@ -28,6 +30,7 @@ public sealed class CompleteAdmissionCheckInUseCase
 		IAuthorizationPolicyService authorizationPolicyService,
 		IAdmissionSettlementService admissionSettlementService,
 		IAdmissionCheckInRepository admissionCheckInRepository,
+		IOfflineActionQueueService offlineActionQueueService,
 		IOperationContextFactory operationContextFactory,
 		IAppStateService appStateService,
 		ILogger<CompleteAdmissionCheckInUseCase> logger)
@@ -38,6 +41,7 @@ public sealed class CompleteAdmissionCheckInUseCase
 		_authorizationPolicyService = authorizationPolicyService;
 		_admissionSettlementService = admissionSettlementService;
 		_admissionCheckInRepository = admissionCheckInRepository;
+		_offlineActionQueueService = offlineActionQueueService;
 		_operationContextFactory = operationContextFactory;
 		_appStateService = appStateService;
 		_logger = logger;
@@ -137,6 +141,7 @@ public sealed class CompleteAdmissionCheckInUseCase
 				familyId = command.FamilyId,
 				amountCents = command.AmountCents,
 				currencyCode = record.CurrencyCode,
+				actorStaffId = session.StaffId,
 				confirmationCode,
 				receiptReference,
 				operationId = operationContext.OperationId,
@@ -154,10 +159,20 @@ public sealed class CompleteAdmissionCheckInUseCase
 						? CompleteAdmissionCheckInConstants.EventAdmissionCompleted
 						: CompleteAdmissionCheckInConstants.EventAdmissionPaymentQueued,
 					operationPayload,
-					operationContext,
-					outboxPayload is null ? null : CompleteAdmissionCheckInConstants.EventAdmissionPaymentQueued,
-					outboxPayload),
+					operationContext),
 				ct);
+
+			if (outboxPayload is not null)
+			{
+				await _offlineActionQueueService.QueueAsync(
+					new QueueOfflineActionCommand(
+						CompleteAdmissionCheckInConstants.EventAdmissionPaymentQueued,
+						command.FamilyId.ToString(),
+						session.StaffId,
+						outboxPayload,
+						operationContext),
+					ct);
+			}
 		}
 		catch (Exception ex)
 		{

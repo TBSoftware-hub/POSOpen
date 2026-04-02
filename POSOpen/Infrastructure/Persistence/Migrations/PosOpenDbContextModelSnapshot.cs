@@ -441,6 +441,9 @@ namespace POSOpen.Infrastructure.Persistence.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("ActorStaffId")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid?>("CausationId")
                         .HasColumnType("TEXT");
 
@@ -529,12 +532,19 @@ namespace POSOpen.Infrastructure.Persistence.Migrations
                     b.Property<string>("PublishedUtc")
                         .HasColumnType("TEXT");
 
+                    b.Property<long>("QueueSequence")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("queue_sequence");
+
                     b.HasKey("Id");
 
                     b.HasIndex("MessageId")
                         .IsUnique();
 
-                    b.HasIndex("PublishedUtc", "EnqueuedUtc");
+                    b.HasIndex("PublishedUtc", "QueueSequence", "EnqueuedUtc");
+
+                    b.HasIndex("QueueSequence")
+                        .IsUnique();
 
                     b.ToTable("OutboxMessages", (string)null);
                 });

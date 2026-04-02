@@ -14,7 +14,7 @@ namespace POSOpen.Tests.Integration.Admissions;
 public sealed class AdmissionCheckInRepositoryTests
 {
 	[Fact]
-	public async Task SaveCompletionAsync_deferred_completion_persists_admission_log_and_outbox_with_same_operation_id()
+	public async Task SaveCompletionAsync_deferred_completion_persists_admission_and_operation_log()
 	{
 		await using var fixture = await CreateFixtureAsync();
 		var operationContext = new OperationContext(Guid.NewGuid(), Guid.NewGuid(), null, DateTime.UtcNow);
@@ -34,18 +34,14 @@ public sealed class AdmissionCheckInRepositoryTests
 				record,
 				CompleteAdmissionCheckInConstants.EventAdmissionPaymentQueued,
 				new { operationId = operationContext.OperationId },
-				operationContext,
-				CompleteAdmissionCheckInConstants.EventAdmissionPaymentQueued,
-				new { operationId = operationContext.OperationId }));
+				operationContext));
 
 		await using var dbContext = await fixture.DbContextFactory.CreateDbContextAsync();
 		var persistedAdmission = await dbContext.AdmissionCheckInRecords.SingleAsync();
 		var persistedLog = await dbContext.OperationLogEntries.SingleAsync();
-		var persistedOutbox = await dbContext.OutboxMessages.SingleAsync();
 
 		persistedAdmission.OperationId.Should().Be(operationContext.OperationId);
 		persistedLog.OperationId.Should().Be(operationContext.OperationId);
-		persistedOutbox.OperationId.Should().Be(operationContext.OperationId);
 		persistedAdmission.SettlementStatus.Should().Be(AdmissionSettlementStatus.DeferredQueued);
 	}
 
@@ -70,9 +66,7 @@ public sealed class AdmissionCheckInRepositoryTests
 				record,
 				CompleteAdmissionCheckInConstants.EventAdmissionCompleted,
 				new { operationId = operationContext.OperationId },
-				operationContext,
-				null,
-				null));
+				operationContext));
 
 		await using var dbContext = await fixture.DbContextFactory.CreateDbContextAsync();
 		var admissionCount = await dbContext.AdmissionCheckInRecords.CountAsync();
