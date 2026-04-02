@@ -7,7 +7,7 @@
 | Epic | 4 - Party Booking Lifecycle and Inventory Coordination |
 | Story | 4.5 |
 | Key | `4-5-reserve-and-release-inventory-by-booking-policy` |
-| Status | review |
+| Status | done |
 | Author | Timbe (via BMAD Story Creator) |
 | Created | 2026-04-01 |
 | Target Sprint | Current |

@@ -152,8 +152,7 @@
                   Command="{Binding RefreshWaiverStatusCommand}"
                   Style="{StaticResource SecondaryActionButtonStyle}"
                   AutomationId="fast-path-refresh-button"
-                  SemanticProperties.Description="Refresh waiver status without leaving this screen"
-                  TabIndex="1" />
+                                                               SemanticProperties.Description="Refresh waiver status without leaving this screen" />
 
             <Button Grid.Row="6"
                     Text="Start Waiver Recovery"
@@ -161,8 +160,7 @@
                   Command="{Binding StartWaiverRecoveryCommand}"
                   Style="{StaticResource SecondaryActionButtonStyle}"
                   AutomationId="fast-path-recovery-button"
-                  SemanticProperties.Description="Start waiver recovery flow while preserving current check-in context"
-                  TabIndex="2" />
+                                                               SemanticProperties.Description="Start waiver recovery flow while preserving current check-in context" />
 
            <Button Grid.Row="7"
                   Text="Complete Profile"
@@ -170,8 +168,7 @@
                 Command="{Binding StartProfileCompletionCommand}"
                 Style="{StaticResource TertiaryActionButtonStyle}"
                 AutomationId="fast-path-profile-button"
-                SemanticProperties.Description="Open profile completion for required fields"
-                TabIndex="3" />
+                                                        SemanticProperties.Description="Open profile completion for required fields" />
 
            <ActivityIndicator Grid.Row="8"
                                IsVisible="{Binding IsLoading}"
@@ -183,7 +180,6 @@
               Command="{Binding CompleteCheckInCommand}"
               Style="{StaticResource PrimaryActionButtonStyle}"
               AutomationId="fast-path-complete-check-in-button"
-              SemanticProperties.Description="Primary action to complete check-in"
-              TabIndex="0" />
+                                                 SemanticProperties.Description="Primary action to complete check-in" />
     </Grid>
 </ContentPage>

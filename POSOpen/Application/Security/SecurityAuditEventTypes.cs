@@ -19,6 +19,9 @@ public static class SecurityAuditEventTypes
 	public const string RefundApprovalDenied = "RefundApprovalDenied";
 	public const string PartyBookingConfirmed = "PartyBookingConfirmed";
 	public const string PartyBookingConfirmationDenied = "PartyBookingConfirmationDenied";
+	public const string InventorySubstitutionPolicyCreated = "InventorySubstitutionPolicyCreated";
+	public const string InventorySubstitutionPolicyUpdated = "InventorySubstitutionPolicyUpdated";
+	public const string InventorySubstitutionPolicyDeleted = "InventorySubstitutionPolicyDeleted";
 
 	/// <summary>All event types that constitute the security-critical audit scope.</summary>
 	public static readonly IReadOnlyList<string> SecurityCriticalScope =
@@ -36,5 +39,8 @@ public static class SecurityAuditEventTypes
 		RefundApprovalDenied,
 		PartyBookingConfirmed,
 		PartyBookingConfirmationDenied,
+		InventorySubstitutionPolicyCreated,
+		InventorySubstitutionPolicyUpdated,
+		InventorySubstitutionPolicyDeleted,
 	];
 }

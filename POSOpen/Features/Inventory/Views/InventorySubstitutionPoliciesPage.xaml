@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:inventoryUseCases="clr-namespace:POSOpen.Application.UseCases.Inventory"
+             xmlns:inventoryViewModels="clr-namespace:POSOpen.Features.Inventory.ViewModels"
+             x:Class="POSOpen.Features.Inventory.Views.InventorySubstitutionPoliciesPage"
+             x:DataType="inventoryViewModels:InventorySubstitutionPoliciesViewModel"
+             Title="Substitution Policies">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Padding="16" RowSpacing="10">
+        <Border Grid.Row="0" Padding="10" Background="#FEF2F2" IsVisible="{Binding HasSummaryError}">
+            <Label Text="{Binding SummaryError}" TextColor="#DC2626" />
+        </Border>
+
+        <Border Grid.Row="1" Padding="10" Background="#ECFDF3" IsVisible="{Binding HasStatusMessage}">
+            <Label Text="{Binding StatusMessage}" TextColor="#166534" />
+        </Border>
+
+        <Border Grid.Row="2" Padding="12" Background="#F8FAFC" Stroke="#CBD5E1" StrokeShape="RoundRectangle 12">
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*,*" RowSpacing="6" ColumnSpacing="8">
+                <Label Grid.Row="0" Grid.Column="0" Text="Source Item ID" />
+                <Label Grid.Row="0" Grid.Column="1" Text="Substitute Item ID" />
+                <Entry Grid.Row="1" Grid.Column="0" Text="{Binding SourceOptionId}" Placeholder="e.g. cake-custom" />
+                <Entry Grid.Row="1" Grid.Column="1" Text="{Binding AllowedSubstituteOptionId}" Placeholder="e.g. cake-standard" />
+                <Label Grid.Row="2" Grid.Column="0" Text="{Binding SourceError}" TextColor="#DC2626" FontSize="12" />
+                <Label Grid.Row="2" Grid.Column="1" Text="{Binding SubstituteError}" TextColor="#DC2626" FontSize="12" />
+
+                <Label Grid.Row="3" Grid.ColumnSpan="2" Text="Allowed Roles" FontAttributes="Bold" />
+                <Grid Grid.Row="4" Grid.ColumnSpan="2" ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                    <CheckBox Grid.Column="0" IsChecked="{Binding AllowOwnerRole}" />
+                    <CheckBox Grid.Column="1" IsChecked="{Binding AllowAdminRole}" />
+                    <CheckBox Grid.Column="2" IsChecked="{Binding AllowManagerRole}" />
+                    <CheckBox Grid.Column="3" IsChecked="{Binding AllowCashierRole}" />
+                </Grid>
+                <Grid Grid.Row="5" Grid.ColumnSpan="2" ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Owner" FontSize="12" />
+                    <Label Grid.Column="1" Text="Admin" FontSize="12" />
+                    <Label Grid.Column="2" Text="Manager" FontSize="12" />
+                    <Label Grid.Column="3" Text="Cashier" FontSize="12" />
+                </Grid>
+                <Label Grid.Row="6" Grid.ColumnSpan="2" Text="{Binding RolesError}" TextColor="#DC2626" FontSize="12" />
+            </Grid>
+        </Border>
+
+        <CollectionView Grid.Row="3" ItemsSource="{Binding Policies}" SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="inventoryUseCases:InventorySubstitutionPolicyManagementDto">
+                    <Border Margin="0,0,0,8" Padding="10" Background="White" Stroke="#CBD5E1" StrokeShape="RoundRectangle 12">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8">
+                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding SourceDisplayName}" FontAttributes="Bold" />
+                            <Label Grid.Row="1" Grid.Column="0" Text="{Binding AllowedSubstituteDisplayName}" />
+                            <Label Grid.Row="2" Grid.Column="0" Text="{Binding AllowedRolesDisplay}" FontSize="12" TextColor="#475569" />
+                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding IsActive}" FontSize="12" TextColor="#0F766E" />
+                            <Button Grid.Row="1" Grid.Column="1"
+                                    Text="Edit"
+                                    FontSize="12"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EditPolicyCommand}"
+                                    CommandParameter="{Binding .}" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Grid Grid.Row="4" ColumnDefinitions="*,*,*" ColumnSpacing="8">
+            <Button Grid.Column="0" Text="New" Command="{Binding StartCreateCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
+            <Button Grid.Column="1" Text="Save" Command="{Binding SaveCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
+            <Button Grid.Column="2" Text="Delete" Command="{Binding DeleteCommand}" IsEnabled="{Binding CanDelete}" TextColor="#B91C1C" />
+        </Grid>
+    </Grid>
+</ContentPage>
