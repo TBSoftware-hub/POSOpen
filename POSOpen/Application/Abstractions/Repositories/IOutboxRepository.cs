@@ -10,6 +10,7 @@ public interface IOutboxRepository
 		string aggregateId,
 		TPayload payload,
 		OperationContext operationContext,
+		Guid actorStaffId,
 		CancellationToken cancellationToken = default);
 
 	Task<IReadOnlyList<OutboxMessage>> ListPendingAsync(CancellationToken cancellationToken = default);

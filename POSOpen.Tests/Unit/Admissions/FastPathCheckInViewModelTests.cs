@@ -451,6 +451,11 @@ public sealed class FastPathCheckInViewModelTests
 			.Setup(x => x.CreateRoot(It.IsAny<Guid?>()))
 			.Returns(new OperationContext(Guid.NewGuid(), Guid.NewGuid(), null, DateTime.UtcNow));
 
+		var offlineQueueService = new Mock<IOfflineActionQueueService>();
+		offlineQueueService
+			.Setup(x => x.QueueAsync(It.IsAny<POSOpen.Application.UseCases.Sync.QueueOfflineActionCommand>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(new POSOpen.Application.UseCases.Sync.QueueOfflineActionResultDto("msg", Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow, 1));
+
 		return new CompleteAdmissionCheckInUseCase(
 			evaluateUseCase,
 			profileUseCase,
@@ -458,6 +463,7 @@ public sealed class FastPathCheckInViewModelTests
 			authorization.Object,
 			settlementService.Object,
 			repositoryMock.Object,
+			offlineQueueService.Object,
 			operationContextFactory.Object,
 			Mock.Of<IAppStateService>(),
 			Microsoft.Extensions.Logging.Abstractions.NullLogger<CompleteAdmissionCheckInUseCase>.Instance);

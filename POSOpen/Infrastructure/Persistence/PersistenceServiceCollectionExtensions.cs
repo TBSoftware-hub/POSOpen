@@ -7,6 +7,7 @@ using POSOpen.Application.Abstractions.Services;
 using POSOpen.Infrastructure.Persistence.Repositories;
 using POSOpen.Infrastructure.Security;
 using POSOpen.Infrastructure.Services;
+using POSOpen.Infrastructure.Sync;
 
 namespace POSOpen.Infrastructure.Persistence;
 
@@ -36,6 +37,7 @@ public static class PersistenceServiceCollectionExtensions
 		services.AddSingleton<IAppDbContextInitializer, AppDbContextInitializer>();
 		services.AddTransient<IOperationLogRepository, OperationLogRepository>();
 		services.AddTransient<IOutboxRepository, OutboxRepository>();
+		services.AddTransient<IOfflineActionQueueService, OfflineActionQueueService>();
 		services.AddTransient<IAdmissionCheckInRepository, AdmissionCheckInRepository>();
 		services.AddTransient<IFamilyProfileRepository, FamilyProfileRepository>();
 		services.AddTransient<ICartSessionRepository, CartSessionRepository>();

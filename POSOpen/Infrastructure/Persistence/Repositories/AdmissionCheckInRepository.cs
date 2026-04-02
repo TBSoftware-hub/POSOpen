@@ -65,30 +65,6 @@ public sealed class AdmissionCheckInRepository : IAdmissionCheckInRepository
 				});
 			}
 
-			if (!string.IsNullOrWhiteSpace(request.OutboxEventType) && request.OutboxPayload is not null)
-			{
-				var outboxExists = await dbContext.OutboxMessages.AnyAsync(
-					message => message.OperationId == request.OperationContext.OperationId && message.EventType == request.OutboxEventType,
-					cancellationToken);
-
-				if (!outboxExists)
-				{
-					dbContext.OutboxMessages.Add(new OutboxMessage
-					{
-						Id = Guid.NewGuid(),
-						MessageId = Guid.NewGuid().ToString("N"),
-						EventType = request.OutboxEventType,
-						AggregateId = request.Record.FamilyId.ToString(),
-						OperationId = request.OperationContext.OperationId,
-						CorrelationId = request.OperationContext.CorrelationId,
-						CausationId = request.OperationContext.CausationId,
-						PayloadJson = JsonSerializer.Serialize(request.OutboxPayload, AppJsonSerializerOptions.Default),
-						OccurredUtc = request.OperationContext.OccurredUtc,
-						EnqueuedUtc = _clock.UtcNow
-					});
-				}
-			}
-
 			await dbContext.SaveChangesAsync(cancellationToken);
 			await transaction.CommitAsync(cancellationToken);
 			return request.Record;

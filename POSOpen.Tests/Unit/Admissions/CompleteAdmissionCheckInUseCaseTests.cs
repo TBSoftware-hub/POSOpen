@@ -5,6 +5,7 @@ using POSOpen.Application.Abstractions.Security;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.Security;
 using POSOpen.Application.UseCases.Admissions;
+using POSOpen.Application.UseCases.Sync;
 using POSOpen.Domain.Entities;
 using POSOpen.Domain.Enums;
 using POSOpen.Shared.Operational;
@@ -25,9 +26,11 @@ public sealed class CompleteAdmissionCheckInUseCaseTests
 			.Callback<AdmissionCheckInPersistenceRequest, CancellationToken>((request, _) => captured = request)
 			.ReturnsAsync((AdmissionCheckInPersistenceRequest request, CancellationToken _) => request.Record);
 
+		var offlineQueueService = new Mock<IOfflineActionQueueService>();
 		var useCase = CreateUseCase(
 			familyRepository.Object,
 			admissionRepository.Object,
+			offlineQueueService.Object,
 			new AdmissionSettlementDecision(AdmissionSettlementDecisionType.Authorized, "auth-ref", null, null));
 
 		var result = await useCase.ExecuteAsync(new CompleteAdmissionCheckInCommand(familyId, 2500, "USD"));
@@ -36,8 +39,10 @@ public sealed class CompleteAdmissionCheckInUseCaseTests
 		result.Payload.Should().NotBeNull();
 		result.Payload!.SettlementStatus.Should().Be(AdmissionSettlementStatus.Authorized);
 		captured.Should().NotBeNull();
-		captured!.OutboxEventType.Should().BeNull();
 		captured.OperationLogEventType.Should().Be(CompleteAdmissionCheckInConstants.EventAdmissionCompleted);
+		offlineQueueService.Verify(
+			x => x.QueueAsync(It.IsAny<QueueOfflineActionCommand>(), It.IsAny<CancellationToken>()),
+			Times.Never);
 	}
 
 	[Fact]
@@ -52,9 +57,15 @@ public sealed class CompleteAdmissionCheckInUseCaseTests
 			.Callback<AdmissionCheckInPersistenceRequest, CancellationToken>((request, _) => captured = request)
 			.ReturnsAsync((AdmissionCheckInPersistenceRequest request, CancellationToken _) => request.Record);
 
+		var offlineQueueService = new Mock<IOfflineActionQueueService>();
+		offlineQueueService
+			.Setup(x => x.QueueAsync(It.IsAny<QueueOfflineActionCommand>(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(new QueueOfflineActionResultDto("msg-1", Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow, 1));
+
 		var useCase = CreateUseCase(
 			familyRepository.Object,
 			admissionRepository.Object,
+			offlineQueueService.Object,
 			new AdmissionSettlementDecision(AdmissionSettlementDecisionType.DeferredEligible, null, "NETWORK_UNAVAILABLE", "queued"));
 
 		var result = await useCase.ExecuteAsync(new CompleteAdmissionCheckInCommand(familyId, 2500, "USD"));
@@ -62,8 +73,13 @@ public sealed class CompleteAdmissionCheckInUseCaseTests
 		result.IsSuccess.Should().BeTrue();
 		result.Payload!.SettlementStatus.Should().Be(AdmissionSettlementStatus.DeferredQueued);
 		captured.Should().NotBeNull();
-		captured!.OutboxEventType.Should().Be(CompleteAdmissionCheckInConstants.EventAdmissionPaymentQueued);
-		captured.OutboxPayload.Should().NotBeNull();
+		offlineQueueService.Verify(
+			x => x.QueueAsync(
+				It.Is<QueueOfflineActionCommand>(command =>
+					command.EventType == CompleteAdmissionCheckInConstants.EventAdmissionPaymentQueued &&
+					command.AggregateId == familyId.ToString()),
+				It.IsAny<CancellationToken>()),
+			Times.Once);
 	}
 
 	[Fact]
@@ -74,6 +90,7 @@ public sealed class CompleteAdmissionCheckInUseCaseTests
 		var useCase = CreateUseCase(
 			familyRepository.Object,
 			Mock.Of<IAdmissionCheckInRepository>(),
+			Mock.Of<IOfflineActionQueueService>(),
 			new AdmissionSettlementDecision(AdmissionSettlementDecisionType.Authorized, "auth-ref", null, null));
 
 		var result = await useCase.ExecuteAsync(new CompleteAdmissionCheckInCommand(familyId, 2500, "USD"));
@@ -91,6 +108,7 @@ public sealed class CompleteAdmissionCheckInUseCaseTests
 		var useCase = CreateUseCase(
 			familyRepository.Object,
 			Mock.Of<IAdmissionCheckInRepository>(),
+			Mock.Of<IOfflineActionQueueService>(),
 			new AdmissionSettlementDecision(AdmissionSettlementDecisionType.Authorized, "auth-ref", null, null),
 			hasPermission: false);
 
@@ -110,6 +128,7 @@ public sealed class CompleteAdmissionCheckInUseCaseTests
 		var useCase = CreateUseCase(
 			familyRepository.Object,
 			admissionRepository.Object,
+			Mock.Of<IOfflineActionQueueService>(),
 			new AdmissionSettlementDecision(
 				AdmissionSettlementDecisionType.NonEligibleFailure,
 				null,
@@ -141,6 +160,7 @@ public sealed class CompleteAdmissionCheckInUseCaseTests
 	private static CompleteAdmissionCheckInUseCase CreateUseCase(
 		IFamilyProfileRepository familyRepository,
 		IAdmissionCheckInRepository admissionCheckInRepository,
+		IOfflineActionQueueService offlineActionQueueService,
 		AdmissionSettlementDecision settlementDecision,
 		bool hasPermission = true)
 	{
@@ -188,6 +208,7 @@ public sealed class CompleteAdmissionCheckInUseCaseTests
 			authorizationPolicyService.Object,
 			settlementService.Object,
 			admissionCheckInRepository,
+			offlineActionQueueService,
 			operationContextFactory.Object,
 			Mock.Of<IAppStateService>(),
 			Microsoft.Extensions.Logging.Abstractions.NullLogger<CompleteAdmissionCheckInUseCase>.Instance);

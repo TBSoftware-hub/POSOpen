@@ -21,6 +21,7 @@ public sealed class PersistenceRepositoryTests
 		var operationRepository = new OperationLogRepository(dbContextFactory, clock);
 		var outboxRepository = new OutboxRepository(dbContextFactory, clock);
 		var operationContext = operationContextFactory.CreateRoot();
+		var actorStaffId = Guid.NewGuid();
 
 		var operationLogEntry = await operationRepository.AppendAsync(
 			"TerminalOpened",
@@ -33,7 +34,8 @@ public sealed class PersistenceRepositoryTests
 			"TerminalOpened",
 			"terminal-001",
 			new { cashierId = "cashier-1", isDeferred = false },
-			operationContext);
+			operationContext,
+			actorStaffId);
 
 		operationLogEntry.RecordedUtc.Kind.Should().Be(DateTimeKind.Utc);
 		outboxMessage.EnqueuedUtc.Kind.Should().Be(DateTimeKind.Utc);
@@ -46,6 +48,8 @@ public sealed class PersistenceRepositoryTests
 		operationRows[0].Version.Should().Be(3);
 		operationRows[0].CorrelationId.Should().Be(operationContext.CorrelationId);
 		pendingMessages[0].PublishedUtc.Should().BeNull();
+		pendingMessages[0].ActorStaffId.Should().Be(actorStaffId);
+		pendingMessages[0].QueueSequence.Should().BeGreaterThan(0);
 		JsonDocument.Parse(operationRows[0].PayloadJson).RootElement.GetProperty("cashierId").GetString().Should().Be("cashier-1");
 		JsonDocument.Parse(outboxMessage.PayloadJson).RootElement.GetProperty("isDeferred").GetBoolean().Should().BeFalse();
 		JsonSerializer.Serialize(new { payload = "ok" }, AppJsonSerializerOptions.Default).Should().Contain("payload");

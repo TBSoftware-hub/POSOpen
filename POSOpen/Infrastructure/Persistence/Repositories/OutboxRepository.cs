@@ -24,29 +24,55 @@ public sealed class OutboxRepository : IOutboxRepository
 		string aggregateId,
 		TPayload payload,
 		OperationContext operationContext,
+		Guid actorStaffId,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(eventType);
 		ArgumentException.ThrowIfNullOrWhiteSpace(aggregateId);
-
-		var message = new OutboxMessage
+		if (actorStaffId == Guid.Empty)
 		{
-			Id = Guid.NewGuid(),
-			MessageId = Guid.NewGuid().ToString("N"),
-			EventType = eventType,
-			AggregateId = aggregateId,
-			OperationId = operationContext.OperationId,
-			CorrelationId = operationContext.CorrelationId,
-			CausationId = operationContext.CausationId,
-			PayloadJson = JsonSerializer.Serialize(payload, AppJsonSerializerOptions.Default),
-			OccurredUtc = operationContext.OccurredUtc,
-			EnqueuedUtc = _clock.UtcNow
-		};
+			throw new ArgumentException("Actor staff id is required.", nameof(actorStaffId));
+		}
 
 		await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-		dbContext.OutboxMessages.Add(message);
-		await dbContext.SaveChangesAsync(cancellationToken);
-		return message;
+		await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+		try
+		{
+			await dbContext.Database.ExecuteSqlRawAsync(
+				"INSERT INTO OutboxQueueSequenceAllocations DEFAULT VALUES;",
+				cancellationToken);
+
+			var queueSequence = await dbContext.Database
+				.SqlQueryRaw<long>("SELECT last_insert_rowid() AS Value")
+				.SingleAsync(cancellationToken);
+
+			var message = new OutboxMessage
+			{
+				Id = Guid.NewGuid(),
+				MessageId = Guid.NewGuid().ToString("N"),
+				EventType = eventType,
+				AggregateId = aggregateId,
+				OperationId = operationContext.OperationId,
+				CorrelationId = operationContext.CorrelationId,
+				CausationId = operationContext.CausationId,
+				ActorStaffId = actorStaffId,
+				PayloadJson = JsonSerializer.Serialize(payload, AppJsonSerializerOptions.Default),
+				OccurredUtc = operationContext.OccurredUtc,
+				EnqueuedUtc = _clock.UtcNow,
+				QueueSequence = queueSequence
+			};
+
+			dbContext.OutboxMessages.Add(message);
+			await dbContext.SaveChangesAsync(cancellationToken);
+			await transaction.CommitAsync(cancellationToken);
+			return message;
+		}
+		catch
+		{
+			await transaction.RollbackAsync(cancellationToken);
+			throw;
+		}
 	}
 
 	public async Task<IReadOnlyList<OutboxMessage>> ListPendingAsync(CancellationToken cancellationToken = default)
@@ -55,7 +81,8 @@ public sealed class OutboxRepository : IOutboxRepository
 		return await dbContext.OutboxMessages
 			.AsNoTracking()
 			.Where(message => message.PublishedUtc == null)
-			.OrderBy(message => message.EnqueuedUtc)
+			.OrderBy(message => message.QueueSequence)
+			.ThenBy(message => message.EnqueuedUtc)
 			.ToListAsync(cancellationToken);
 	}
 }

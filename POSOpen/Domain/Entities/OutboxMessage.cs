@@ -16,11 +16,15 @@ public sealed class OutboxMessage
 
 	public Guid? CausationId { get; set; }
 
+	public Guid ActorStaffId { get; set; }
+
 	public string PayloadJson { get; set; } = string.Empty;
 
 	public DateTime OccurredUtc { get; set; }
 
 	public DateTime EnqueuedUtc { get; set; }
+
+	public long QueueSequence { get; set; }
 
 	public DateTime? PublishedUtc { get; set; }
 }
