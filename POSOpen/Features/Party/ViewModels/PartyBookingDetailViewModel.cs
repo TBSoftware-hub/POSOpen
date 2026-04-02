@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using POSOpen.Application;
 using POSOpen.Application.Abstractions.Security;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.UseCases.Inventory;
@@ -22,6 +23,8 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 	private readonly GetAllowedSubstitutesUseCase _getAllowedSubstitutesUseCase;
 	private readonly ICurrentSessionService _currentSessionService;
 	private readonly IOperationContextFactory _operationContextFactory;
+	private readonly IConnectivityService _connectivityService;
+	private readonly IWorkflowCapabilityService _workflowCapabilityService;
 
 	public PartyBookingDetailViewModel(
 		GetPartyBookingTimelineUseCase getPartyBookingTimelineUseCase,
@@ -34,7 +37,9 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 		ReserveBookingInventoryUseCase reserveBookingInventoryUseCase,
 		GetAllowedSubstitutesUseCase getAllowedSubstitutesUseCase,
 		ICurrentSessionService currentSessionService,
-		IOperationContextFactory operationContextFactory)
+		IOperationContextFactory operationContextFactory,
+		IConnectivityService? connectivityService = null,
+		IWorkflowCapabilityService? workflowCapabilityService = null)
 	{
 		_getPartyBookingTimelineUseCase = getPartyBookingTimelineUseCase;
 		_recordPartyDepositCommitmentUseCase = recordPartyDepositCommitmentUseCase;
@@ -47,6 +52,8 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 		_getAllowedSubstitutesUseCase = getAllowedSubstitutesUseCase;
 		_currentSessionService = currentSessionService;
 		_operationContextFactory = operationContextFactory;
+		_connectivityService = connectivityService ?? AlwaysConnectedConnectivityService.Instance;
+		_workflowCapabilityService = workflowCapabilityService ?? PassThroughWorkflowCapabilityService.Instance;
 	}
 
 	[ObservableProperty]
@@ -125,6 +132,10 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 	[ObservableProperty]
 	private string _inventoryStatusMessage = PartyBookingConstants.InventoryReservationSatisfiedMessage;
 
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasOfflineGuidance))]
+	private string? _offlineGuidanceMessage;
+
 	public ObservableCollection<PartyBookingTimelineMilestoneDto> Milestones { get; } = [];
 
 	private DateTime _partyDateUtc;
@@ -140,11 +151,14 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 
 	public bool HasAllowedSubstitutes => AllowedSubstituteLines.Count > 0;
 
+	public bool HasOfflineGuidance => !string.IsNullOrWhiteSpace(OfflineGuidanceMessage);
+
 	public bool CanSubmitDeposit => !DepositCommitted && !IsBusy;
 
 	public async Task LoadAsync(Guid bookingId)
 	{
 		BookingId = bookingId;
+		OfflineGuidanceMessage = ResolveOfflineGuidance();
 		await RefreshTimelineAsync();
 		await LoadRoomOptionsCommand.ExecuteAsync(null);
 		await LoadAddOnOptionsCommand.ExecuteAsync(null);
@@ -545,5 +559,42 @@ public sealed partial class PartyBookingDetailViewModel : ObservableObject
 		ProcessingState = "Success";
 		ErrorMessage = null;
 		StatusMessage = message;
+	}
+
+	private string? ResolveOfflineGuidance()
+	{
+		if (_connectivityService.IsConnected)
+		{
+			return null;
+		}
+
+		if (!_workflowCapabilityService.IsOfflineSupported(WorkflowKeys.CloudSync))
+		{
+			return _workflowCapabilityService.GetOfflineFallbackGuidance(WorkflowKeys.CloudSync);
+		}
+
+		return null;
+	}
+
+	private sealed class AlwaysConnectedConnectivityService : IConnectivityService
+	{
+		public static readonly AlwaysConnectedConnectivityService Instance = new();
+
+		public bool IsConnected => true;
+
+		public event EventHandler<bool>? ConnectivityChanged
+		{
+			add { }
+			remove { }
+		}
+	}
+
+	private sealed class PassThroughWorkflowCapabilityService : IWorkflowCapabilityService
+	{
+		public static readonly PassThroughWorkflowCapabilityService Instance = new();
+
+		public bool IsOfflineSupported(string workflowKey) => true;
+
+		public string GetOfflineFallbackGuidance(string workflowKey) => string.Empty;
 	}
 }

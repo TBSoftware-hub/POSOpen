@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Networking;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Features.Admissions;
 using POSOpen.Features.Checkout;
@@ -44,9 +45,14 @@ public static class MauiProgram
 		builder.Services.AddTransient<ICheckoutUiService, CheckoutUiService>();
 		builder.Services.AddTransient<IFastPathCheckInUiService, FastPathCheckInUiService>();
 		builder.Services.AddTransient<IProfileAdmissionUiService, ProfileAdmissionUiService>();
+		builder.Services.AddSingleton<IConnectivity>(Connectivity.Current);
+		builder.Services.AddSingleton<IConnectivityService, MauiConnectivityService>();
+		builder.Services.AddSingleton<IWorkflowCapabilityService, WorkflowCapabilityService>();
+		builder.Services.AddSingleton<ConnectivityMonitorService>();
 		builder.Services.AddSingleton<AppShell>();
 		builder.Services.AddSingleton<HomePage>();
 		builder.Services.AddSingleton<ManagerOperationsPage>();
+		builder.Services.AddSingleton<AppShellViewModel>();
 		builder.Services.AddSingleton<HomeViewModel>();
 		builder.Services.AddSingleton<ManagerOperationsViewModel>();
 
@@ -56,6 +62,8 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 #endif
 
-		return builder.Build();
+		var app = builder.Build();
+		app.Services.GetRequiredService<ConnectivityMonitorService>().Initialize();
+		return app;
 	}
 }

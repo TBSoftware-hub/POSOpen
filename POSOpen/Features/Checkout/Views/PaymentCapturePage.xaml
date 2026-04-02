@@ -24,6 +24,12 @@
 			                   IsVisible="{Binding IsLoading}"
 			                   HorizontalOptions="Center" />
 
+			<Border Background="#FEF3C7"
+			        IsVisible="{Binding HasOfflineGuidance}"
+			        Padding="12">
+				<Label Text="{Binding OfflineGuidanceMessage}" TextColor="#92400E" />
+			</Border>
+
 			<Border Background="#FEF2F2"
 			        IsVisible="{Binding HasError}"
 			        Padding="12">

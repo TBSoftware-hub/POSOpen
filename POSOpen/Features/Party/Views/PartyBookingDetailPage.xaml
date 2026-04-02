@@ -19,6 +19,12 @@
                            FontSize="12"
                            TextColor="#64748B" />
 
+                    <Border Background="#FEF3C7"
+                            IsVisible="{Binding HasOfflineGuidance}"
+                            Padding="10">
+                        <Label Text="{Binding OfflineGuidanceMessage}" TextColor="#92400E" />
+                    </Border>
+
                     <Border Background="#FEF2F2"
                             IsVisible="{Binding HasError}"
                             Padding="10">

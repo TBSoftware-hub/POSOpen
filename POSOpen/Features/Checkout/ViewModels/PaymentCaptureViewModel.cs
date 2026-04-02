@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using POSOpen.Application;
 using POSOpen.Application.Abstractions.Services;
 using POSOpen.Application.UseCases.Checkout;
 
@@ -10,16 +11,22 @@ public partial class PaymentCaptureViewModel : ObservableObject
 	private readonly GetCartPaymentSummaryUseCase _getCartPaymentSummaryUseCase;
 	private readonly ProcessCardPaymentUseCase _processCardPaymentUseCase;
 	private readonly ICheckoutUiService _checkoutUiService;
+	private readonly IConnectivityService _connectivityService;
+	private readonly IWorkflowCapabilityService _workflowCapabilityService;
 	private Guid? _cartSessionId;
 
 	public PaymentCaptureViewModel(
 		GetCartPaymentSummaryUseCase getCartPaymentSummaryUseCase,
 		ProcessCardPaymentUseCase processCardPaymentUseCase,
-		ICheckoutUiService checkoutUiService)
+		ICheckoutUiService checkoutUiService,
+		IConnectivityService? connectivityService = null,
+		IWorkflowCapabilityService? workflowCapabilityService = null)
 	{
 		_getCartPaymentSummaryUseCase = getCartPaymentSummaryUseCase;
 		_processCardPaymentUseCase = processCardPaymentUseCase;
 		_checkoutUiService = checkoutUiService;
+		_connectivityService = connectivityService ?? AlwaysConnectedConnectivityService.Instance;
+		_workflowCapabilityService = workflowCapabilityService ?? PassThroughWorkflowCapabilityService.Instance;
 	}
 
 	public string CartId { get; set; } = string.Empty;
@@ -48,17 +55,24 @@ public partial class PaymentCaptureViewModel : ObservableObject
 	[ObservableProperty]
 	private bool _isAuthorized;
 
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(HasOfflineGuidance))]
+	private string? _offlineGuidanceMessage;
+
 	public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
 
 	public bool HasDiagnosticCode => !string.IsNullOrWhiteSpace(DiagnosticCode);
 
 	public bool HasProcessorReference => !string.IsNullOrWhiteSpace(ProcessorReference);
 
+	public bool HasOfflineGuidance => !string.IsNullOrWhiteSpace(OfflineGuidanceMessage);
+
 	[RelayCommand]
 	private async Task InitializeAsync()
 	{
 		IsLoading = true;
 		ErrorMessage = null;
+		OfflineGuidanceMessage = ResolveOfflineGuidance();
 		DiagnosticCode = null;
 		ProcessorReference = null;
 		IsAuthorized = false;
@@ -96,6 +110,14 @@ public partial class PaymentCaptureViewModel : ObservableObject
 			return;
 		}
 
+		OfflineGuidanceMessage = ResolveOfflineGuidance();
+		if (!_connectivityService.IsConnected && !_workflowCapabilityService.IsOfflineSupported(WorkflowKeys.PaymentSettlement))
+		{
+			ErrorMessage = OfflineGuidanceMessage;
+			StatusMessage = OfflineGuidanceMessage ?? "Payment authorization is unavailable while offline.";
+			return;
+		}
+
 		IsLoading = true;
 		ErrorMessage = null;
 		try
@@ -127,5 +149,42 @@ public partial class PaymentCaptureViewModel : ObservableObject
 	private async Task CancelAsync()
 	{
 		await _checkoutUiService.ClosePaymentCaptureAsync();
+	}
+
+	private string? ResolveOfflineGuidance()
+	{
+		if (_connectivityService.IsConnected)
+		{
+			return null;
+		}
+
+		if (!_workflowCapabilityService.IsOfflineSupported(WorkflowKeys.PaymentSettlement))
+		{
+			return _workflowCapabilityService.GetOfflineFallbackGuidance(WorkflowKeys.PaymentSettlement);
+		}
+
+		return null;
+	}
+
+	private sealed class AlwaysConnectedConnectivityService : IConnectivityService
+	{
+		public static readonly AlwaysConnectedConnectivityService Instance = new();
+
+		public bool IsConnected => true;
+
+		public event EventHandler<bool>? ConnectivityChanged
+		{
+			add { }
+			remove { }
+		}
+	}
+
+	private sealed class PassThroughWorkflowCapabilityService : IWorkflowCapabilityService
+	{
+		public static readonly PassThroughWorkflowCapabilityService Instance = new();
+
+		public bool IsOfflineSupported(string workflowKey) => true;
+
+		public string GetOfflineFallbackGuidance(string workflowKey) => string.Empty;
 	}
 }
