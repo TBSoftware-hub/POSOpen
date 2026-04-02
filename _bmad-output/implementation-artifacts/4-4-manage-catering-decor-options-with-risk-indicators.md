@@ -7,7 +7,7 @@
 | Epic | 4 - Party Booking Lifecycle and Inventory Coordination |
 | Story | 4.4 |
 | Key | `4-4-manage-catering-decor-options-with-risk-indicators` |
-| Status | review |
+| Status | done |
 | Author | Timbe (via BMAD Story Creator) |
 | Created | 2026-04-01 |
 | Target Sprint | Current |

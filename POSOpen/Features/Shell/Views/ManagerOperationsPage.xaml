@@ -16,6 +16,8 @@
 				       FontSize="24"
 				       FontAttributes="Bold" />
 				<Label Text="{Binding Summary}" />
+				<Button Text="Manage Inventory Substitution Policies"
+				        Command="{Binding OpenSubstitutionPoliciesCommand}" />
 			</VerticalStackLayout>
 		</Border>
 	</Grid>
